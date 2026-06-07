@@ -1,0 +1,18 @@
+{
+  "name": "@univocity-tools/builder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI for Univocity contract build and deploy artifacts",
+  "type": "module",
+  "bin": {
+    "builder": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "bun build ./src/cli.ts --outdir dist --target bun",
+    "dev": "bun run ./src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": [
+    "dist"
+  ]
+}

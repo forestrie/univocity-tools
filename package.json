@@ -1,0 +1,20 @@
+{
+  "name": "univocity-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript/Bun CLI tooling for Univocity smart contracts",
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "build": "bun run --filter '@univocity-tools/*' build",
+    "test": "bun test",
+    "typecheck": "bun run --filter '@univocity-tools/*' typecheck",
+    "check": "prettier --check apps packages",
+    "format": "prettier --write apps packages"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2"
+  }
+}

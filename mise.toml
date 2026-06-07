@@ -1,0 +1,6 @@
+# Univocity-tools: Bun for TypeScript CLIs; Doppler for future deploy tasks.
+# Used by direnv in this directory when configured.
+
+[tools]
+bun = "1.2.21"
+doppler = "3.75.3"
