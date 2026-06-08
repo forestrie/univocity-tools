@@ -28,13 +28,11 @@ describe("parseValidateBatchOptions", () => {
     const options = parseValidateBatchOptions({
       _: ["./batch.json"],
       path: "./batch.json",
-      verbose: true,
       "univocity-root": "/tmp/univocity",
     });
 
     const univocityRoot = path.resolve(process.cwd(), "/tmp/univocity");
     expect(options).toEqual({
-      verbose: true,
       univocityRoot,
       forgeConfig: path.resolve(univocityRoot, "foundry.toml"),
       outDir: path.resolve(univocityRoot, "out"),

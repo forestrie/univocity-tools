@@ -1,16 +1,12 @@
 import { defineAppCommand, mergeCommandArgs } from "@univocity-tools/cli-kit";
 export { defineCommandRunner } from "@univocity-tools/cli-kit";
+import { verbosityArgs } from "@univocity-tools/cli-kit/reporting";
 import { create3Args } from "@univocity-tools/create3-options/commoncli";
 import { foundryBinArgs } from "@univocity-tools/foundry-exec/commoncli";
 import { forgeArgs } from "@univocity-tools/forge-options/commoncli";
 import type { ArgsDef, CommandDef } from "citty";
 
 const deployerOnlyArgs = {
-  verbose: {
-    type: "boolean",
-    description: "Verbose logging",
-    alias: ["v"],
-  },
   "univocity-root": {
     type: "string",
     description:
@@ -24,6 +20,7 @@ const deployerOnlyArgs = {
  * Flags shared by every deployer command and subcommand.
  */
 export const commonArgs = {
+  ...verbosityArgs,
   ...deployerOnlyArgs,
   ...forgeArgs,
   ...foundryBinArgs,

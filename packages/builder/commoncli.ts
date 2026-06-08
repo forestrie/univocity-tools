@@ -1,15 +1,11 @@
 import { defineAppCommand, mergeCommandArgs } from "@univocity-tools/cli-kit";
 export { defineCommandRunner } from "@univocity-tools/cli-kit";
+import { verbosityArgs } from "@univocity-tools/cli-kit/reporting";
 import { foundryBinArgs } from "@univocity-tools/foundry-exec/commoncli";
 import { forgeArgs } from "@univocity-tools/forge-options/commoncli";
 import type { ArgsDef, CommandDef } from "citty";
 
 const builderOnlyArgs = {
-  verbose: {
-    type: "boolean",
-    description: "Verbose logging",
-    alias: ["v"],
-  },
   "univocity-root": {
     type: "string",
     description:
@@ -27,13 +23,14 @@ const builderOnlyArgs = {
  * or `withBuilderArgs`.
  */
 export const commonArgs = {
+  ...verbosityArgs,
   ...builderOnlyArgs,
   ...forgeArgs,
   ...foundryBinArgs,
 } as const satisfies ArgsDef;
 
 export type BuilderCommonArgs = {
-  verbose?: boolean;
+  verbosity?: string;
   univocityRoot?: string;
   forgeConfig?: string;
   foundryOut?: string;

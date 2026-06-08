@@ -1,3 +1,4 @@
+import type { Out } from "@univocity-tools/cli-kit/reporting";
 import type { ValidateBatchOptions } from "./options.js";
 
 /**
@@ -7,18 +8,15 @@ import type { ValidateBatchOptions } from "./options.js";
  * — no citty or argv parsing here.
  */
 export async function runValidateBatch(
+  out: Out,
   options: ValidateBatchOptions,
 ): Promise<void> {
-  if (options.verbose) {
-    console.error(
-      "validate batch:",
-      options.path,
-      "univocity-root:",
-      options.univocityRoot,
-      "forge-config:",
-      options.forgeConfig,
-    );
-  }
+  out.log(
+    "validate batch: %s univocity-root: %s forge-config: %s",
+    options.path,
+    options.univocityRoot,
+    options.forgeConfig,
+  );
   // Implementation: read file, run validators, Bun.spawn as needed.
   void options;
 }

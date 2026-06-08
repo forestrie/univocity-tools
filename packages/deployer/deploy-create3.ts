@@ -1,4 +1,5 @@
 import type { Create3Config } from "@univocity-tools/create3-options/create3-config";
+import type { Out } from "@univocity-tools/cli-kit/reporting";
 import {
   toFoundryExecContext,
   requireCastBin,
@@ -29,13 +30,14 @@ const PROXY_POLL_MS = 500;
 const PROXY_POLL_MAX = 60;
 
 async function castCode(
+  out: Out,
   options: DeployCreate3Options,
   address: string,
 ): Promise<string> {
   const ctx = toFoundryExecContext({
     forgeBin: options.forgeBin,
     castBin: options.castBin,
-    verbose: options.verbose,
+    out,
     cwd: options.univocityRoot,
   });
   const { stdout } = await runCast(ctx, [
@@ -48,12 +50,13 @@ async function castCode(
 }
 
 async function buildCreate3Factory(
+  out: Out,
   options: DeployCreate3Options,
 ): Promise<void> {
   const ctx = toFoundryExecContext({
     forgeBin: options.forgeBin,
     castBin: options.castBin,
-    verbose: options.verbose,
+    out,
     cwd: options.univocityRoot,
   });
   const configPath = create3FactoryForgeConfigPath(options.univocityRoot);
@@ -61,14 +64,13 @@ async function buildCreate3Factory(
 }
 
 async function ensureArachnidProxy(
+  out: Out,
   options: DeployCreate3Options,
   create3: Create3Config,
 ): Promise<void> {
-  const proxyCode = await castCode(options, create3.proxy);
+  const proxyCode = await castCode(out, options, create3.proxy);
   if (hasContractCode(proxyCode)) {
-    if (options.verbose) {
-      console.error(`Arachnid proxy already at ${create3.proxy}`);
-    }
+    out.log("Arachnid proxy already at %s", create3.proxy);
     return;
   }
 
@@ -81,11 +83,11 @@ async function ensureArachnidProxy(
     );
   }
 
-  console.error(`Deploying Arachnid proxy to ${create3.proxy}...`);
+  out.print("Deploying Arachnid proxy to %s...", create3.proxy);
   const ctx = toFoundryExecContext({
     forgeBin: options.forgeBin,
     castBin: options.castBin,
-    verbose: options.verbose,
+    out,
     cwd: options.univocityRoot,
   });
   await runCast(ctx, [
@@ -97,9 +99,9 @@ async function ensureArachnidProxy(
   ]);
 
   for (let attempt = 0; attempt < PROXY_POLL_MAX; attempt++) {
-    const code = await castCode(options, create3.proxy);
+    const code = await castCode(out, options, create3.proxy);
     if (hasContractCode(code)) {
-      console.error(`Arachnid proxy deployed at ${create3.proxy}`);
+      out.print("Arachnid proxy deployed at %s", create3.proxy);
       return;
     }
     await Bun.sleep(PROXY_POLL_MS);
@@ -111,6 +113,7 @@ async function ensureArachnidProxy(
 }
 
 function warnIfFactoryAddressMismatch(
+  out: Out,
   options: DeployCreate3Options,
   bytecode: Hex,
   create3: Create3Config,
@@ -123,14 +126,17 @@ function warnIfFactoryAddressMismatch(
     salt: saltHash,
   });
   if (computed.toLowerCase() !== create3.factory.toLowerCase()) {
-    console.error(
-      `WARNING: salt "${options.create3Salt}" + bytecode would deploy to ` +
-        `${computed}, not configured factory ${create3.factory}`,
+    out.warn(
+      'WARNING: salt "%s" + bytecode would deploy to %s, not configured factory %s',
+      options.create3Salt,
+      computed,
+      create3.factory,
     );
   }
 }
 
 async function deployCreate3Factory(
+  out: Out,
   options: DeployCreate3Options,
   create3: Create3Config,
   bytecode: Hex,
@@ -144,18 +150,19 @@ async function deployCreate3Factory(
     );
   }
 
-  warnIfFactoryAddressMismatch(options, bytecode, create3);
+  warnIfFactoryAddressMismatch(out, options, bytecode, create3);
 
   const calldata = buildDeployCalldata(options.create3Salt, bytecode);
-  console.error(
-    `Deploying CREATE3 factory via Arachnid ${create3.proxy} ` +
-      `(expected ${create3.factory})...`,
+  out.print(
+    "Deploying CREATE3 factory via Arachnid %s (expected %s)...",
+    create3.proxy,
+    create3.factory,
   );
 
   const ctx = toFoundryExecContext({
     forgeBin: options.forgeBin,
     castBin: options.castBin,
-    verbose: options.verbose,
+    out,
     cwd: options.univocityRoot,
   });
   const { stdout } = await runCast(ctx, [
@@ -169,9 +176,7 @@ async function deployCreate3Factory(
     "--json",
   ]);
 
-  if (options.verbose) {
-    console.error(stdout);
-  }
+  out.log("%s", stdout);
 
   const parsed: unknown = JSON.parse(stdout);
   if (
@@ -188,6 +193,7 @@ async function deployCreate3Factory(
 
 /** Deploy the shared CREATE3 factory via Arachnid if not already deployed. */
 export async function runDeployCreate3(
+  out: Out,
   options: DeployCreate3Options,
 ): Promise<void> {
   requireForgeBin(options);
@@ -195,26 +201,26 @@ export async function runDeployCreate3(
 
   const create3 = options.create3;
 
-  const factoryCode = await castCode(options, create3.factory);
+  const factoryCode = await castCode(out, options, create3.factory);
   if (hasContractCode(factoryCode)) {
-    console.log(`CREATE3 factory already deployed at ${create3.factory}`);
+    out.out("CREATE3 factory already deployed at %s", create3.factory);
     return;
   }
 
-  await buildCreate3Factory(options);
+  await buildCreate3Factory(out, options);
   const artifact = await readFactoryBytecode(
     create3FactoryArtifactPath(options.univocityRoot),
   );
 
-  await ensureArachnidProxy(options, create3);
-  await deployCreate3Factory(options, create3, artifact.bytecode);
+  await ensureArachnidProxy(out, options, create3);
+  await deployCreate3Factory(out, options, create3, artifact.bytecode);
 
-  const deployedCode = await castCode(options, create3.factory);
+  const deployedCode = await castCode(out, options, create3.factory);
   if (!hasContractCode(deployedCode)) {
     throw new Error(
       `CREATE3 factory still has no code at ${create3.factory} after deployment`,
     );
   }
 
-  console.log(`CREATE3 factory deployed at ${create3.factory}`);
+  out.out("CREATE3 factory deployed at %s", create3.factory);
 }

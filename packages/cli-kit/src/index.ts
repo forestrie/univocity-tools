@@ -16,3 +16,17 @@ export {
   readEvaluatedStringOption,
   type OptionSourceContext,
 } from "./evaluate-option-value.js";
+export {
+  createCaptureOut,
+  createNullOut,
+  createOut,
+  formatMessage,
+  resolveVerbosity,
+  verbosityArgs,
+  type CaptureOut,
+  type CapturedLine,
+  type Out,
+  type OutFn,
+  type OutStreams,
+  type Verbosity,
+} from "./reporting/index.js";

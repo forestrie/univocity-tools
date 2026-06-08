@@ -11,7 +11,8 @@ describe("defineCommandRunner", () => {
         name: String(args.name ?? args._?.[0]),
         loud: args.loud === true,
       }),
-      (options) => {
+      (out, options) => {
+        expect(out.verbosity).toBe(0);
         expect(options).toEqual({ name: "alice", loud: true });
       },
     );

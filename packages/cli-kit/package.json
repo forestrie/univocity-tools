@@ -4,7 +4,10 @@
   "private": true,
   "description": "Shared citty helpers for univocity-tools CLIs",
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./reporting": "./src/reporting/index.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },

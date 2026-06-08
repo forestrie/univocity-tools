@@ -136,6 +136,29 @@ Resolution order at parse time:
 Do not put a filesystem path in the citty `default:` for `--create3-config`;
 omitting the flag uses embedded stable values (or discovery in a checkout).
 
+### Output and verbosity
+
+`@univocity-tools/cli-kit/reporting` centralizes CLI output. Merge
+**`verbosityArgs`** into each app's `commonArgs` (deployer and builder already
+do). **`defineCommandRunner`** resolves verbosity from citty args, builds an
+**`Out`** instance, and passes it as the **first** argument to every
+`run*(out, options)` handler.
+
+| Method | Stream | Shown when |
+|--------|--------|------------|
+| `out.out(…)` | stdout | always (pipeable content) |
+| `out.print(…)` | stderr | verbosity ≥ 0 |
+| `out.warn(…)` | stderr | verbosity ≥ 0 |
+| `out.log(…)` | stderr | verbosity > 2 (trace) |
+
+**`--verbosity` / `-v`:** default `0`. `-1` silences stderr feedback
+(`.print`, `.warn`, `.log`); stdout `.out()` still works. Repeat standalone
+`-v` flags: level = `max(0, count - 1)`. Explicit `-v N` / `--verbosity N`
+wins over repeat counting.
+
+Do not use raw `console.log` / `console.error` in `packages/<app>/main.ts`.
+Pass **`Out`** into subprocess helpers (for example `FoundryExecContext.out`).
+
 ### Contracts checkout root resolution
 
 At parse time, in order:
@@ -192,20 +215,24 @@ export function parseValidateBatchOptions(
 
 ```typescript
 // packages/builder/main.ts — no citty
+import type { Out } from "@univocity-tools/cli-kit/reporting";
+
 export async function runValidateBatch(
+  out: Out,
   options: ValidateBatchOptions,
 ): Promise<void> {
+  out.log("validate batch: %s", options.path);
   /* Bun.spawn, validators, etc. */
 }
 ```
 
 ```typescript
 // Another app or test — direct call (absolute paths)
+import { createOut } from "@univocity-tools/cli-kit/reporting";
 import { runValidateBatch } from "@univocity-tools/builder-common/main";
 
-await runValidateBatch({
+await runValidateBatch(createOut(0), {
   path: "/abs/batch.json",
-  verbose: true,
   univocityRoot: "/abs/univocity",
   forgeConfig: "/abs/univocity/foundry.toml",
 });

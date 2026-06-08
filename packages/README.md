@@ -11,14 +11,15 @@ apps/builder/src/commands/**      → thin parse + wire to run*
 
 packages/builder/commoncli.ts     → commonArgs, defineBuilderCommand
 packages/builder/options.ts       → ValidateBatchOptions, parseValidateBatchOptions
-packages/builder/main.ts          → runValidateBatch(options)
+packages/builder/main.ts          → runValidateBatch(out, options)
 ```
 
 See [docs/agents/cli.md](../docs/agents/cli.md).
 
 Generic helpers: **`@univocity-tools/cli-kit`**
 (`mergeCommandArgs`, `defineCommandRunner`, `evaluateOptionValue` for
-`${env}` / `${env:VAR}` option value sources).
+`${env}` / `${env:VAR}` option value sources, **`reporting`** for `Out`
+and `--verbosity`).
 
 ## Cross-app packages
 

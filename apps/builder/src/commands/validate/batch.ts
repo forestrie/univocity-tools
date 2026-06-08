@@ -1,4 +1,7 @@
-import { defineBuilderCommand } from "@univocity-tools/builder-common";
+import {
+  defineBuilderCommand,
+  defineCommandRunner,
+} from "@univocity-tools/builder-common";
 import { runValidateBatch } from "@univocity-tools/builder-common/main";
 import { parseValidateBatchOptions } from "@univocity-tools/builder-common/options";
 
@@ -14,7 +17,5 @@ export default defineBuilderCommand({
       required: true,
     },
   },
-  async run({ args }) {
-    await runValidateBatch(parseValidateBatchOptions(args));
-  },
+  run: defineCommandRunner(parseValidateBatchOptions, runValidateBatch),
 });

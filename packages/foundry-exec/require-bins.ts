@@ -1,8 +1,10 @@
+import type { Out } from "@univocity-tools/cli-kit/reporting";
+
 /** Narrowed options for subprocess helpers — only execution-relevant fields. */
 export type FoundryExecContext = {
   forgeBin: string;
   castBin: string;
-  verbose: boolean;
+  out: Out;
   cwd?: string;
 };
 
@@ -27,13 +29,13 @@ export function requireCastBin(options: { castBin: string | false }): string {
 export function toFoundryExecContext(options: {
   forgeBin: string | false;
   castBin: string | false;
-  verbose: boolean;
+  out: Out;
   cwd?: string;
 }): FoundryExecContext {
   return {
     forgeBin: requireForgeBin(options),
     castBin: requireCastBin(options),
-    verbose: options.verbose,
+    out: options.out,
     ...(options.cwd !== undefined ? { cwd: options.cwd } : {}),
   };
 }

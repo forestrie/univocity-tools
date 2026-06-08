@@ -7,7 +7,6 @@ import { resolveContractsCheckoutRootEager } from "./contracts-checkout-root.js"
 
 /** Flags shared by every builder command (after parsing). */
 export type BuilderCommonOptions = {
-  verbose: boolean;
   /** Contracts checkout root — always an absolute path after parsing. */
   univocityRoot: string;
 } & ForgeOptions &
@@ -19,7 +18,6 @@ export type ValidateBatchOptions = BuilderCommonOptions & {
 };
 
 type CommonArgSlice = {
-  verbose?: boolean | undefined;
   univocityRoot?: string | undefined;
   "univocity-root"?: string | undefined;
   forgeConfig?: string | undefined;
@@ -37,7 +35,6 @@ export function parseBuilderCommonOptions(
 ): BuilderCommonOptions {
   const univocityRoot = resolveContractsCheckoutRootEager(args);
   return {
-    verbose: args.verbose ?? false,
     univocityRoot,
     ...parseForgeOptions(args, univocityRoot),
     ...parseFoundryBinOptions(args),

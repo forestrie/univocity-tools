@@ -4,7 +4,7 @@ import { mergeCommandArgs } from "../src/merge-args.js";
 
 describe("mergeCommandArgs", () => {
   const common = {
-    verbose: { type: "boolean" as const, alias: ["v"] },
+    verbosity: { type: "string" as const, alias: ["v"], default: "0" },
   };
 
   test("returns common when specific is omitted", () => {
@@ -17,7 +17,7 @@ describe("mergeCommandArgs", () => {
         path: { type: "positional", required: true },
       }),
     ).toEqual({
-      verbose: common.verbose,
+      verbosity: common.verbosity,
       path: { type: "positional", required: true },
     });
   });
@@ -28,7 +28,7 @@ describe("mergeCommandArgs", () => {
     }));
     expect(typeof merged).toBe("function");
     const resolved = await (merged as () => Promise<ArgsDef>)();
-    expect(resolved.verbose).toEqual(common.verbose);
+    expect(resolved.verbosity).toEqual(common.verbosity);
     expect(resolved.path).toEqual({ type: "positional", required: true });
   });
 });

@@ -25,8 +25,8 @@ async function runBin(
     proc.exited,
   ]);
 
-  if (ctx.verbose && stderr.length > 0) {
-    console.error(stderr);
+  if (stderr.length > 0) {
+    ctx.out.log("%s", stderr);
   }
 
   return { stdout, stderr, exitCode };

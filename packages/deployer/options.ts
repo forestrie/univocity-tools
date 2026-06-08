@@ -15,7 +15,6 @@ import {
 
 /** Flags shared by every deployer command (after parsing). */
 export type DeployerCommonOptions = {
-  verbose: boolean;
   /** Contracts checkout root — always an absolute path after parsing. */
   univocityRoot: string;
   create3: Create3Config;
@@ -23,7 +22,6 @@ export type DeployerCommonOptions = {
   FoundryBinOptions;
 
 type CommonArgSlice = {
-  verbose?: boolean | undefined;
   univocityRoot?: string | undefined;
   "univocity-root"?: string | undefined;
   forgeConfig?: string | undefined;
@@ -43,7 +41,6 @@ export function parseDeployerCommonOptions(
 ): DeployerCommonOptions {
   const univocityRoot = resolveContractsCheckoutRootEager(args);
   return {
-    verbose: args.verbose ?? false,
     univocityRoot,
     create3: parseCreate3Options(args),
     ...parseForgeOptions(args, univocityRoot),
