@@ -1,0 +1,19 @@
+{
+  "name": "@univocity-tools/forge-options",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mixable forge CLI flags and typed options for foundry.toml paths",
+  "type": "module",
+  "exports": {
+    ".": "./options.ts",
+    "./commoncli": "./commoncli.ts",
+    "./options": "./options.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@univocity-tools/cli-kit": "workspace:*",
+    "citty": "^0.2.2"
+  }
+}

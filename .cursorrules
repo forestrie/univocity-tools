@@ -1,0 +1,27 @@
+# Univocity-tools agent rules
+
+Establish context by first reading [AGENTS.md](./AGENTS.md).
+
+## CLIs (apps/)
+
+All tools under `apps/` **must** use **[citty](https://github.com/unjs/citty)**
+for argument parsing, help, and nested subcommands. Do not use
+`commander`, `yargs`, or manual `process.argv` parsing. See
+[docs/agents/cli.md](docs/agents/cli.md).
+
+Each app has **`packages/<app-name>/commoncli.ts`** — use
+`define<App>Command` / `with<App>Args` to merge shared flags on every
+command and subcommand.
+
+Citty **`run`** handlers must only parse args and call **`run*`** in
+**`packages/<app>/main.ts`** — see
+[cli-command-structure.mdc](./cli-command-structure.mdc).
+
+## Subprocesses (apps/ and packages/)
+
+All external process invocation in TypeScript under `apps/` and
+`packages/` **must** use **`Bun.spawn`**.
+
+Do **not** use Node-compatible APIs (`node:child_process`, `exec`,
+`execSync`, `spawn`, `execFile`, etc.) or Bun’s `$` shell helper for
+subprocesses. See [docs/agents/subprocess.md](docs/agents/subprocess.md).

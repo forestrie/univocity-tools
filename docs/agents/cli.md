@@ -1,0 +1,204 @@
+# CLI conventions (citty)
+
+All command-line tools under **`apps/`** are built with
+**[citty](https://github.com/unjs/citty)** ([UnJS](https://unjs.io/)).
+
+Do not hand-roll `process.argv` parsing, and do not add alternate CLI
+frameworks (`commander`, `yargs`, `clipanion`, `cac`, etc.).
+
+## Command structure (parse vs execute)
+
+Separate **argument processing** from **command behavior**:
+
+```text
+apps/<name>/src/cli.ts          → runMain(command)
+apps/<name>/src/command.ts      → citty root + subCommands
+apps/<name>/src/commands/**     → thin citty modules (schema + run wiring)
+
+packages/<name>/commoncli.ts    → commonArgs, define<App>Command
+packages/<name>/options.ts      → <Command>Options types, parse* functions
+packages/<name>/main.ts         → run*(options) — callable without citty
+```
+
+| Layer | Must | Must not |
+|-------|------|----------|
+| `apps/…/commands/*.ts` | Declare citty `args`; call `parse*` then `run*` | `Bun.spawn`, business logic, heavy I/O |
+| `packages/…/options.ts` | Map `ParsedArgs` → typed options | Side effects |
+| `packages/…/main.ts` | Accept typed options; implement behavior | citty imports, `process.argv` |
+
+Other apps and unit tests call **`run*`** from `@univocity-tools/<name>-common/main`
+with a typed options object — no CLI required.
+
+Use **`defineCommandRunner(parse, execute)`** from `@univocity-tools/<name>-common`
+(re-exported from cli-kit) in citty `run` handlers.
+
+## Layout
+
+Each app in `apps/<name>/`:
+
+| Path | Role |
+|------|------|
+| `src/cli.ts` | Entry: `runMain(command)` |
+| `src/command.ts` | Root citty command (`define<App>Command`) |
+| `src/commands/` | Subcommand modules — parsing wiring only |
+
+Each app has a **companion package** `@univocity-tools/<name>-common`:
+
+| Path | Role |
+|------|------|
+| `commoncli.ts` | `commonArgs`, `define<App>Command`, re-export `defineCommandRunner` |
+| `options.ts` | Per-command `*Options` types and `parse*Options(args)` |
+| `main.ts` | Per-command `run*(options: *Options)` implementations |
+
+Shared merge helpers: **`@univocity-tools/cli-kit`**.
+
+### Why merge on every command?
+
+citty does **not** pass parent flags into subcommand `run({ args })`.
+Merge `commonArgs` on **every** command via `define<App>Command`. See
+existing section below.
+
+Put **positionals only** on the leaf command that uses them.
+
+## Option mixins
+
+Reusable flag sets live in cross-app packages (for example
+**`@univocity-tools/forge-options`**) and merge into an app's
+`commonArgs`. Each mixin exports citty `args` and `parse*` helpers.
+
+Builder always merges **forge options** (`--forge-config`, default
+`foundry.toml`). Parsed options include:
+
+| Field | Meaning |
+|-------|---------|
+| `univocityRoot` | Absolute **contracts checkout root** (see ADR-0002) |
+| `forgeConfig` | Absolute **forge config path** (`foundry.toml` or override) |
+
+Relative `--forge-config` resolves against `univocityRoot`. When spawning
+forge, pass `--config-path` with `options.forgeConfig` — not `--forge-config`.
+
+### Contracts checkout root resolution
+
+At parse time, in order:
+
+1. `--univocity-root` / `UNIVOCITY_ROOT` → `path.resolve(cwd, value)`
+2. Git walk: first `.git` ancestor whose directory name is `univocity`
+3. Fallback → absolute `process.cwd()`
+
+Direct API callers must supply absolute `univocityRoot` and `forgeConfig`;
+discovery runs only in `parse*` functions.
+
+## Example: root + nested command
+
+```typescript
+// apps/builder/src/command.ts
+import { defineBuilderCommand } from "@univocity-tools/builder-common";
+
+export default defineBuilderCommand({
+  meta: { name: "builder", version: "0.1.0", description: "…" },
+  subCommands: {
+    validate: () => import("./commands/validate.js").then((m) => m.default),
+  },
+});
+```
+
+```typescript
+// apps/builder/src/commands/validate/batch.ts  — citty only
+import {
+  defineBuilderCommand,
+  defineCommandRunner,
+} from "@univocity-tools/builder-common";
+import { runValidateBatch } from "@univocity-tools/builder-common/main";
+import { parseValidateBatchOptions } from "@univocity-tools/builder-common/options";
+
+export default defineBuilderCommand({
+  meta: { name: "batch", description: "Validate Safe batch JSON" },
+  args: {
+    path: { type: "positional", description: "Batch file", required: true },
+  },
+  run: defineCommandRunner(parseValidateBatchOptions, runValidateBatch),
+});
+```
+
+```typescript
+// packages/builder/options.ts
+export type ValidateBatchOptions = BuilderCommonOptions & { path: string };
+
+export function parseValidateBatchOptions(
+  args: ParsedArgs<ValidateBatchArgsDef>,
+): ValidateBatchOptions {
+  return { ...parseBuilderCommonOptions(args), path: args.path! };
+}
+```
+
+```typescript
+// packages/builder/main.ts — no citty
+export async function runValidateBatch(
+  options: ValidateBatchOptions,
+): Promise<void> {
+  /* Bun.spawn, validators, etc. */
+}
+```
+
+```typescript
+// Another app or test — direct call (absolute paths)
+import { runValidateBatch } from "@univocity-tools/builder-common/main";
+
+await runValidateBatch({
+  path: "/abs/batch.json",
+  verbose: true,
+  univocityRoot: "/abs/univocity",
+  forgeConfig: "/abs/univocity/foundry.toml",
+});
+```
+
+```typescript
+// apps/builder/src/cli.ts
+import command from "./command.js";
+import { runMain } from "citty";
+
+runMain(command);
+```
+
+## Adding a new command
+
+1. Add `*Options` + `parse*Options` in `packages/<app>/options.ts`.
+2. Add `run*` in `packages/<app>/main.ts`.
+3. Add citty module under `apps/<app>/src/commands/` with
+   `defineCommandRunner(parse, run)`.
+4. Register in parent `subCommands` (lazy import).
+
+## Adding a new CLI app
+
+1. Create `apps/<name>/` (`cli.ts`, `command.ts`, `commands/`).
+2. Create `packages/<name>/` with `commoncli.ts`, `options.ts`, `main.ts`.
+3. Export subpaths in `package.json`: `./commoncli`, `./options`, `./main`.
+4. App depends on `@univocity-tools/<name>-common` only (not cli-kit).
+
+## Args and help
+
+- Declare args on each command with citty’s `args` schema.
+- Rely on citty for `--help`, usage text, and subcommand routing.
+- Use `meta.alias` for shortcuts; `meta.hidden: true` for internal commands.
+
+## Subprocesses
+
+Implement **`Bun.spawn`** only in `packages/<app>/main.ts` — see
+[subprocess.md](subprocess.md).
+
+## Forbidden in `apps/`
+
+| Do not use | Use instead |
+|------------|-------------|
+| Business logic in citty `run` | `packages/<app>/main.ts` |
+| Manual `process.argv` loops | citty + `defineCommandRunner` |
+| Duplicated global flags | `packages/<app>/commoncli.ts` |
+| `commander`, `yargs`, etc. | citty |
+
+## Dependencies
+
+- **`citty`** on each app.
+- **`@univocity-tools/cli-kit`** on each companion package only.
+- **`@univocity-tools/forge-options`** on apps that merge forge flags
+  (builder via `@univocity-tools/builder-common`).
+- App → **`@univocity-tools/<name>-common`** (parse/run via subpath exports).

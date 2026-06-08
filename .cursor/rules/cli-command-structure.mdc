@@ -1,0 +1,56 @@
+---
+description: Separate citty parsing in apps from typed command bodies in packages
+alwaysApply: true
+---
+
+# CLI command structure
+
+Applies to every command under **`apps/<name>/`**.
+
+## Layers
+
+| Layer | Location | Responsibility |
+|-------|----------|----------------|
+| Entry | `apps/<name>/src/cli.ts` | `runMain(command)` only |
+| Citty tree | `apps/<name>/src/command.ts`, `src/commands/**` | `define<App>Command`, args schema, routing |
+| Parse | `packages/<name>/options.ts` | `parse<Command>Options(args)` → typed options |
+| Execute | `packages/<name>/main.ts` | `run<Command>(options)` — no citty, no argv |
+
+## Required pattern
+
+citty `run` must be thin — parse, then execute:
+
+```typescript
+run: defineCommandRunner(parseValidateBatchOptions, runValidateBatch),
+```
+
+Or explicitly:
+
+```typescript
+async run({ args }) {
+  await runValidateBatch(parseValidateBatchOptions(args));
+},
+```
+
+**Forbidden in `run`:** `Bun.spawn`, file I/O, network, or business logic.
+Those belong in `packages/<name>/main.ts`.
+
+## Callable API
+
+Export `run*` and `parse*` from the companion package so other apps and
+tests invoke commands without citty:
+
+```typescript
+import { runValidateBatch } from "@univocity-tools/builder-common/main";
+await runValidateBatch({
+  path: "/abs/batch.json",
+  verbose: true,
+  univocityRoot: "/abs/univocity",
+  forgeConfig: "/abs/univocity/foundry.toml",
+});
+```
+
+Builder merges the **forge options mixin** — typed options include
+absolute `univocityRoot` (contracts checkout root) and `forgeConfig`.
+
+Full guide: [docs/agents/cli.md](../../docs/agents/cli.md).

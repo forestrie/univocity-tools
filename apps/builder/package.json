@@ -12,6 +12,10 @@
     "dev": "bun run ./src/cli.ts",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@univocity-tools/builder-common": "workspace:*",
+    "citty": "^0.2.2"
+  },
   "files": [
     "dist"
   ]

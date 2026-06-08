@@ -36,14 +36,39 @@ _Avoid_: builder batch, tx bundle.
 sources, `forge script`, Python proposers.
 _Avoid_: on-chain repo.
 
+**Contracts checkout root**:
+The absolute filesystem path to a **contracts repo** checkout. Builder
+commands resolve it from `--univocity-root`, `UNIVOCITY_ROOT`, git
+discovery, or cwd. TypeScript field: `univocityRoot`.
+_Avoid_: “Univocity root” alone — collides with platform **Univocity
+root bootstrap** (on-chain `rootLogId` transaction).
+
+**Forge config path**:
+The absolute path to a `foundry.toml` file used when a command invokes
+forge. Parsed from CLI `--forge-config`; default filename is
+`foundry.toml` relative to the contracts checkout root. TypeScript
+field: `forgeConfig`.
+_Avoid_: conflating CLI `--forge-config` with the forge binary flag
+`--config-path`.
+
+**Option mixin**:
+Reusable citty `args` schema plus `parse*` helpers merged into an app's
+`commonArgs` (for example `@univocity-tools/forge-options` on builder).
+_Avoid_: duplicating mixin flags only in `commoncli.ts` without a shared
+package.
+
 ## Example dialogue
 
 **Dev:** We need to regenerate the deploy Safe batch before proposing on
 Base Sepolia.
 
-**Ops:** Run the **builder tool** from **univocity-tools** to emit fresh
-**Safe batch JSON**; the canopy **log builder** is unrelated — that
-sequences transparency log entries, not Gnosis Safe transactions.
+**Ops:** Run the **builder tool** from **univocity-tools** with
+`--univocity-root` pointing at the **contracts repo**, or `cd` into that
+checkout so discovery finds it — then emit fresh **Safe batch JSON**.
+The canopy **log builder** is unrelated; that sequences transparency log
+entries, not Gnosis Safe transactions.
 
 **Dev:** Right — validation and propose logic will live here; Solidity
-stays in the **contracts repo**.
+stays in the **contracts repo**. When we add forge steps, we'll pass the
+**forge config path** to `forge --config-path`, not confuse it with our
+CLI `--forge-config` flag name.

@@ -21,6 +21,8 @@ bun install
 |---------|---------|
 | `bun run typecheck` | Typecheck all workspace packages |
 | `bun run check` | Prettier check |
+| `bun run check:subprocess` | Enforce `Bun.spawn` policy in apps/packages |
+| `bun run check:cli` | Enforce citty CLI policy in apps |
 | `bun run format` | Prettier write |
 | `bun test` | Run tests |
 | `bun run build` | Build all `@univocity-tools/*` apps |
@@ -48,3 +50,11 @@ Sibling repo: **univocity** (Foundry contracts). See
 Deploy-related tasks will use **Doppler** injected outside npm scripts
 (`doppler run -- …`), consistent with the univocity contracts repo. Do
 not commit `.env` files with secrets.
+
+## Agents (Cursor, Claude Code, etc.)
+
+Start with [AGENTS.md](./AGENTS.md).
+
+- CLIs in `apps/` use **citty** — [docs/agents/cli.md](./docs/agents/cli.md)
+- External processes use **`Bun.spawn`** —
+  [docs/agents/subprocess.md](./docs/agents/subprocess.md)

@@ -27,6 +27,12 @@ jobs:
       - name: Prettier check
         run: bun run check
 
+      - name: Subprocess policy
+        run: bun run check:subprocess
+
+      - name: CLI policy
+        run: bun run check:cli
+
       - name: Typecheck
         run: bun run typecheck
 

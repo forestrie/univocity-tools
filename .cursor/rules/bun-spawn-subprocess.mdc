@@ -1,0 +1,30 @@
+---
+description: External processes in apps/packages must use Bun.spawn only
+alwaysApply: true
+---
+
+# Subprocesses — Bun.spawn only
+
+Applies to all TypeScript under **`apps/`** and **`packages/`**.
+
+## Required
+
+Use **`Bun.spawn`** with an **argv array** (no shell) when invoking
+external programs (`forge`, `cast`, `doppler`, etc.).
+
+Read exit status from **`await proc.exited`**. Capture or inherit
+stdio via spawn options (`stdin`, `stdout`, `stderr`: `"pipe"`,
+`"inherit"`, `"ignore"`, or a `Blob`/`Buffer` for one-shot stdin).
+
+Full patterns: [docs/agents/subprocess.md](../../docs/agents/subprocess.md).
+
+## Forbidden
+
+- `node:child_process` (`spawn`, `exec`, `execFile`, `execSync`,
+  `spawnSync`, `fork`)
+- `import … from "child_process"`
+- Bun’s **`$` shell template** for subprocesses (use `Bun.spawn`
+  instead for explicit argv and consistent error handling)
+
+Shared helpers belong in `packages/` when two or more tools need the
+same spawn wrapper.

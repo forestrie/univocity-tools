@@ -10,6 +10,8 @@
     "test": "bun test",
     "typecheck": "bun run --filter '@univocity-tools/*' typecheck",
     "check": "prettier --check apps packages",
+    "check:subprocess": "bun scripts/check-subprocess-imports.ts",
+    "check:cli": "bun scripts/check-cli-imports.ts",
     "format": "prettier --write apps packages"
   },
   "devDependencies": {

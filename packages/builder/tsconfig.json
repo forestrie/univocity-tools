@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": [
+    "commoncli.ts",
+    "options.ts",
+    "main.ts",
+    "contracts-checkout-root.ts",
+    "test/**/*.ts"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "types": ["bun"]
+  }
+}
