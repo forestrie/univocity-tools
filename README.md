@@ -26,6 +26,8 @@ bun install
 | `bun run format` | Prettier write |
 | `bun test` | Run tests |
 | `bun run build` | Build all `@univocity-tools/*` apps |
+| `bun run build:binary` | Compile standalone binaries for the current platform |
+| `bun run build:binary:linux-x64` | Cross-compile Linux x64 binaries (CI release) |
 | `bun run sync:create3` | Regenerate embedded Create3 defaults from `create3.jsonc` |
 | `bun run check:create3` | Fail if `defaults.ts` is stale vs `create3.jsonc` |
 
@@ -45,6 +47,24 @@ bun run --filter @univocity-tools/deployer dev -- --help
 bun run --filter @univocity-tools/deployer dev -- config show
 bun run --filter @univocity-tools/deployer build
 ./apps/deployer/dist/cli.js config show
+```
+
+## Standalone binaries
+
+CI publishes **Linux x64** binaries on tagged releases (`v*`). On macOS,
+build a native binary locally:
+
+```bash
+bun run build:binary
+./apps/deployer/dist/deployer --help
+./apps/builder/dist/builder --help
+```
+
+Explicit targets:
+
+```bash
+bun run --filter @univocity-tools/deployer build:binary:darwin-arm64
+bun run build:binary:linux-x64   # same command CI uses for releases
 ```
 
 ## Layout

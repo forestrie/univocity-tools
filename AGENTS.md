@@ -48,6 +48,8 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 - **Subprocess policy**: `bun run check:subprocess`
 - **CLI policy**: `bun run check:cli`
 - **Build apps**: `bun run build`
+- **Build binaries (local)**: `bun run build:binary`
+- **Build binaries (Linux x64)**: `bun run build:binary:linux-x64`
 - **Builder dev**: `bun run --filter @univocity-tools/builder dev -- --help`
 
 ## Gotchas (critical)

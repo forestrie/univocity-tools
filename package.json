@@ -8,7 +8,11 @@
   "scripts": {
     "sync:create3": "bun scripts/sync-create3-defaults.ts",
     "prebuild": "bun run sync:create3",
+    "prebuild:binary": "bun run sync:create3",
+    "prebuild:binary:linux-x64": "bun run sync:create3",
     "build": "bun run --filter '@univocity-tools/*' build",
+    "build:binary": "bun run --filter '@univocity-tools/*' build:binary",
+    "build:binary:linux-x64": "bun run --filter '@univocity-tools/*' build:binary:linux-x64",
     "test": "bun test",
     "typecheck": "bun run --filter '@univocity-tools/*' typecheck",
     "check:create3": "bun run sync:create3 && git diff --exit-code packages/create3-options/src/defaults.ts",
