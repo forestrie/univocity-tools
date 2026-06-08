@@ -33,7 +33,8 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
   citty `run`). See [docs/agents/subprocess.md](docs/agents/subprocess.md).
 - **Cursor:** [.cursor/rules/citty-cli.mdc](.cursor/rules/citty-cli.mdc),
   [.cursor/rules/cli-command-structure.mdc](.cursor/rules/cli-command-structure.mdc),
-  [.cursor/rules/bun-spawn-subprocess.mdc](.cursor/rules/bun-spawn-subprocess.mdc)
+  [.cursor/rules/bun-spawn-subprocess.mdc](.cursor/rules/bun-spawn-subprocess.mdc),
+  [.cursor/rules/commit-conventions.mdc](.cursor/rules/commit-conventions.mdc)
 
 ## Commands
 
@@ -55,6 +56,9 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
   scripts (no repo-root `.env` with secrets).
 - Cross-repo work needs explicit paths (e.g. `UNIVOCITY_ROOT` to contracts
   checkout); see ADR-0001.
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/)
+  — title ≤100 chars, body lines ≤72; see
+  [.cursor/rules/commit-conventions.mdc](.cursor/rules/commit-conventions.mdc).
 
 ## Documentation map
 

@@ -38,4 +38,8 @@ split: **`options.ts`** + **`main.ts`**. See [cli.md](cli.md).
 
 ## Commits
 
-See [.cursor/rules/commit-conventions.mdc](../../.cursor/rules/commit-conventions.mdc).
+Use **[Conventional Commits](https://www.conventionalcommits.org/)** for every
+commit: `type(scope): subject` title (≤100 characters), blank line, then
+body lines ≤72 characters. Never add `Co-Authored-By` lines.
+
+Full rules: [.cursor/rules/commit-conventions.mdc](../../.cursor/rules/commit-conventions.mdc).

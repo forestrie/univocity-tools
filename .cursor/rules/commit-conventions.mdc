@@ -1,11 +1,42 @@
 ---
-description: Git commit conventions for forestrie repositories
+description: Git commit conventions for univocity-tools
 alwaysApply: true
 ---
 
 # Commit conventions
 
-- commit titles must be no more than 79 characters
-- commit body lines must be no more than 72 characters
-- never include "Co-Authored-By" lines in commit messages
-- use only the repository's configured git user as the commit author
+All commits **must** use [Conventional Commits](https://www.conventionalcommits.org/)
+form:
+
+```text
+<type>(<optional scope>): <short summary>
+```
+
+## Title (first line)
+
+- **Format:** `type(scope): subject` — scope is optional but preferred
+  when the change is localized (e.g. `builder`, `cli-kit`, `docs`).
+- **Length:** no more than **100** characters.
+- **Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`,
+  `build` — use the closest match.
+- **Subject:** imperative mood, lowercase after the colon (no trailing
+  period).
+
+Examples:
+
+```text
+feat(builder): add forge-config mixin and path discovery
+docs: document contracts checkout root in ADR-0002
+ci: enforce citty and Bun.spawn policies in workflow
+```
+
+## Body
+
+- Separate from the title with a **blank line**.
+- Wrap lines at **72** characters or fewer.
+- Explain **why**, not a file list.
+- Never include `Co-Authored-By` lines.
+
+## Author
+
+Use only the repository's configured git user as the commit author.

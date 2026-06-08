@@ -25,3 +25,9 @@ All external process invocation in TypeScript under `apps/` and
 Do **not** use Node-compatible APIs (`node:child_process`, `exec`,
 `execSync`, `spawn`, `execFile`, etc.) or Bun’s `$` shell helper for
 subprocesses. See [docs/agents/subprocess.md](docs/agents/subprocess.md).
+
+## Commits
+
+Use **[Conventional Commits](https://www.conventionalcommits.org/)** —
+title ≤100 characters, body lines ≤72. Full rules:
+[commit-conventions.mdc](./.cursor/rules/commit-conventions.mdc).
