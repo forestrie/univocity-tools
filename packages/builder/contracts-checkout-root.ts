@@ -1,4 +1,7 @@
-import { evaluateOptionValue, findGitRepoRootNamed } from "@univocity-tools/cli-kit";
+import {
+  evaluateOptionValue,
+  findGitRepoRootNamed,
+} from "@univocity-tools/cli-kit";
 import path from "node:path";
 
 export type ContractsCheckoutRootArgSlice = {

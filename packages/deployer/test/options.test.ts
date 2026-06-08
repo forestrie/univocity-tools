@@ -7,9 +7,9 @@ const ROOT = "/tmp/univocity";
 describe("parseDeployCreate3Options", () => {
   test("defaults create3Salt to univocity-create3/1", () => {
     const prevRpc = process.env.RPC_URL;
-    const prevKey = process.env.PRIVATE_KEY;
+    const prevKey = process.env.DEPLOY_KEY;
     process.env.RPC_URL = "http://127.0.0.1:8545";
-    process.env.PRIVATE_KEY =
+    process.env.DEPLOY_KEY =
       "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 
     try {
@@ -18,7 +18,7 @@ describe("parseDeployCreate3Options", () => {
       });
       expect(options.create3Salt).toBe(DEFAULT_CREATE3_SALT);
       expect(options.rpcUrl).toBe("http://127.0.0.1:8545");
-      expect(options.privateKey).toMatch(/^0x/);
+      expect(options.deployKey).toMatch(/^0x/);
     } finally {
       if (prevRpc === undefined) {
         delete process.env.RPC_URL;
@@ -26,9 +26,9 @@ describe("parseDeployCreate3Options", () => {
         process.env.RPC_URL = prevRpc;
       }
       if (prevKey === undefined) {
-        delete process.env.PRIVATE_KEY;
+        delete process.env.DEPLOY_KEY;
       } else {
-        process.env.PRIVATE_KEY = prevKey;
+        process.env.DEPLOY_KEY = prevKey;
       }
     }
   });
@@ -40,7 +40,7 @@ describe("parseDeployCreate3Options", () => {
       const options = parseDeployCreate3Options({
         "univocity-root": ROOT,
         "rpc-url": "${env}",
-        "private-key": "0x01",
+        "deploy-key": "0x01",
       });
       expect(options.rpcUrl).toBe("http://env-host:8545");
     } finally {
@@ -56,11 +56,11 @@ describe("parseDeployCreate3Options", () => {
     const options = parseDeployCreate3Options({
       "univocity-root": ROOT,
       "rpc-url": "http://example:8545",
-      "private-key": "abc123",
+      "deploy-key": "abc123",
       "create3-salt": "test/salt/0",
     });
     expect(options.rpcUrl).toBe("http://example:8545");
-    expect(options.privateKey).toBe("0xabc123");
+    expect(options.deployKey).toBe("0xabc123");
     expect(options.create3Salt).toBe("test/salt/0");
   });
 
@@ -71,7 +71,7 @@ describe("parseDeployCreate3Options", () => {
       expect(() =>
         parseDeployCreate3Options({
           "univocity-root": ROOT,
-          "private-key": "0x01",
+          "deploy-key": "0x01",
         }),
       ).toThrow("RPC URL is required");
     } finally {

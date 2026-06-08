@@ -3,6 +3,8 @@ import type { ConfigShowOptions } from "./options.js";
 import { runDeployCreate3 } from "./deploy-create3.js";
 
 export { runDeployCreate3 } from "./deploy-create3.js";
+export { runProposeImutable } from "./propose-imutable.js";
+export { runExecuteProposal } from "./execute-proposal.js";
 
 /** Print the resolved Create3 config as JSON. */
 export async function runConfigShow(

@@ -1,6 +1,7 @@
 import path from "node:path";
 
-export const CREATE3_FACTORY_FORGE_CONFIG = "script/create3-factory/foundry.toml";
+export const CREATE3_FACTORY_FORGE_CONFIG =
+  "script/create3-factory/foundry.toml";
 
 export const CREATE3_FACTORY_ARTIFACT_REL =
   "script/create3-factory/out/CREATE3Factory.sol/CREATE3Factory.json";

@@ -1,4 +1,8 @@
-import type { LooseParsedArgs } from "@univocity-tools/cli-kit";
+import {
+  optionNameToEnvVar,
+  readEvaluatedStringOption,
+  type LooseParsedArgs,
+} from "@univocity-tools/cli-kit";
 import type { Create3Config } from "@univocity-tools/create3-options/create3-config";
 import { parseCreate3Options } from "@univocity-tools/create3-options/options";
 import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";
@@ -6,12 +10,25 @@ import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import type { ForgeOptions } from "@univocity-tools/forge-options/options";
 import { parseForgeOptions } from "@univocity-tools/forge-options/options";
 import { resolveContractsCheckoutRootEager } from "@univocity-tools/builder-common/contracts-checkout-root";
-import type { Hex } from "viem";
+import { getAddress, isHex, size, type Address, type Hex } from "viem";
+import type { BootstrapAlg } from "./bootstrap-key.js";
 import {
   resolveCreate3Salt,
-  resolvePrivateKey,
+  resolveOptionalRpcUrl,
   resolveRpcUrl,
 } from "./create3-deploy-helpers.js";
+import {
+  DEFAULT_CREATE_CALL,
+  DEFAULT_SAFE_TX_SERVICE_URL,
+} from "./deploy-constants.js";
+import {
+  optionalDeployKey,
+  resolveDeployKey,
+  resolveExecuteSigner,
+  resolveProposeFrom,
+  type ExecuteSigner,
+  type SignerRole,
+} from "./signer-options.js";
 
 /** Flags shared by every deployer command (after parsing). */
 export type DeployerCommonOptions = {
@@ -48,6 +65,11 @@ export function parseDeployerCommonOptions(
   };
 }
 
+type RpcArgSlice = {
+  rpcUrl?: string | undefined;
+  "rpc-url"?: string | undefined;
+};
+
 export type ConfigShowOptions = DeployerCommonOptions;
 
 export function parseConfigShowOptions(
@@ -58,15 +80,15 @@ export function parseConfigShowOptions(
 
 export type DeployCreate3Options = DeployerCommonOptions & {
   rpcUrl: string;
-  privateKey: Hex;
+  deployKey: Hex;
   create3Salt: string;
 };
 
 type DeployCreate3ArgSlice = CommonArgSlice & {
   rpcUrl?: string | undefined;
   "rpc-url"?: string | undefined;
-  privateKey?: string | undefined;
-  "private-key"?: string | undefined;
+  deployKey?: string | undefined;
+  "deploy-key"?: string | undefined;
   create3Salt?: string | undefined;
   "create3-salt"?: string | undefined;
 };
@@ -78,7 +100,168 @@ export function parseDeployCreate3Options(
   return {
     ...parseDeployerCommonOptions(slice),
     rpcUrl: resolveRpcUrl(slice),
-    privateKey: resolvePrivateKey(slice),
+    deployKey: resolveDeployKey(slice),
     create3Salt: resolveCreate3Salt(slice),
   };
+}
+
+/**
+ * Read an option from a flag (kebab/camel, with `${env:VAR}` evaluation),
+ * falling back to a specific env var name when the flag is absent.
+ */
+function readOption(
+  args: LooseParsedArgs,
+  optionName: string,
+  envVar: string = optionNameToEnvVar(optionName),
+): string | undefined {
+  const fromFlag = readEvaluatedStringOption(
+    args as Record<string, unknown>,
+    optionName,
+  );
+  if (fromFlag !== undefined && fromFlag.trim().length > 0) {
+    return fromFlag.trim();
+  }
+  const env = process.env[envVar];
+  if (env !== undefined && env.trim().length > 0) {
+    return env.trim();
+  }
+  return undefined;
+}
+
+function parseBootstrapAlg(args: LooseParsedArgs): BootstrapAlg {
+  const raw = readOption(args, "bootstrap-alg", "BOOTSTRAP_ALG");
+  const alg = raw?.toLowerCase();
+  if (alg !== "es256" && alg !== "ks256") {
+    throw new Error(
+      "--bootstrap-alg (or BOOTSTRAP_ALG) must be es256 or ks256",
+    );
+  }
+  return alg;
+}
+
+function parseSaltOption(args: LooseParsedArgs): Hex | undefined {
+  const raw = readOption(args, "salt", "SAFE_BATCH_SALT");
+  if (raw === undefined) {
+    return undefined;
+  }
+  const hex = (raw.startsWith("0x") ? raw : `0x${raw}`) as Hex;
+  if (!isHex(hex) || size(hex) !== 32) {
+    throw new Error("--salt must be a 32-byte hex value");
+  }
+  return hex;
+}
+
+function parseChainIdOption(args: LooseParsedArgs): number | undefined {
+  const raw = readOption(args, "chain-id", "CHAIN_ID");
+  if (raw === undefined) {
+    return undefined;
+  }
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error("--chain-id must be a positive integer");
+  }
+  return value;
+}
+
+export type ProposeImutableOptions = DeployerCommonOptions & {
+  bootstrapAlg: BootstrapAlg;
+  es256Pem?: string;
+  es256Pub64?: string;
+  es256X?: string;
+  es256Y?: string;
+  ks256Signer?: string;
+  safePublish: boolean;
+  from: Address;
+  signerRole: SignerRole;
+  deployKey?: Hex;
+  createCallAddress: Address;
+  salt?: Hex;
+  chainId?: number;
+  rpcUrl?: string;
+  safeTxServiceUrl: string;
+  outPath?: string;
+};
+
+export function parseProposeImutableOptions(
+  args: LooseParsedArgs,
+): ProposeImutableOptions {
+  const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const { from, role } = resolveProposeFrom(args);
+  const createCallRaw =
+    readOption(args, "create-call-address", "CREATE_CALL_ADDRESS") ??
+    DEFAULT_CREATE_CALL;
+  const serviceUrl =
+    readOption(args, "safe-tx-service-url", "SAFE_TX_SERVICE_URL") ??
+    DEFAULT_SAFE_TX_SERVICE_URL;
+
+  const options: ProposeImutableOptions = {
+    ...common,
+    bootstrapAlg: parseBootstrapAlg(args),
+    safePublish: Boolean(args["safe-publish"] ?? args.safePublish),
+    from,
+    signerRole: role,
+    createCallAddress: getAddress(createCallRaw),
+    safeTxServiceUrl: serviceUrl,
+  };
+
+  const es256Pem = readOption(
+    args,
+    "bootstrap-es256-pem",
+    "BOOTSTRAP_PEM_ES256",
+  );
+  if (es256Pem !== undefined) options.es256Pem = es256Pem;
+  const es256Pub64 = readOption(
+    args,
+    "bootstrap-es256-pub",
+    "BOOTSTRAP_PUB_ES256",
+  );
+  if (es256Pub64 !== undefined) options.es256Pub64 = es256Pub64;
+  const es256X = readOption(args, "bootstrap-es256-x", "ES256_X");
+  if (es256X !== undefined) options.es256X = es256X;
+  const es256Y = readOption(args, "bootstrap-es256-y", "ES256_Y");
+  if (es256Y !== undefined) options.es256Y = es256Y;
+  const ks256Signer = readOption(
+    args,
+    "bootstrap-ks256-signer",
+    "KS256_SIGNER",
+  );
+  if (ks256Signer !== undefined) options.ks256Signer = ks256Signer;
+
+  const deployKey = optionalDeployKey(args);
+  if (deployKey !== undefined) options.deployKey = deployKey;
+  const salt = parseSaltOption(args);
+  if (salt !== undefined) options.salt = salt;
+  const chainId = parseChainIdOption(args);
+  if (chainId !== undefined) options.chainId = chainId;
+  const rpcUrl = resolveOptionalRpcUrl(args as RpcArgSlice);
+  if (rpcUrl !== undefined) options.rpcUrl = rpcUrl;
+  const outPath = readOption(args, "out", "DEPLOY_PROPOSAL_OUT");
+  if (outPath !== undefined) options.outPath = outPath;
+
+  return options;
+}
+
+export type ExecuteProposalOptions = DeployerCommonOptions & {
+  proposalFile?: string;
+  signer: ExecuteSigner;
+  rpcUrl?: string;
+};
+
+export function parseExecuteProposalOptions(
+  args: LooseParsedArgs,
+): ExecuteProposalOptions {
+  const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const positionals = Array.isArray(args._) ? (args._ as string[]) : [];
+  const proposalFile =
+    typeof args.proposalFile === "string" ? args.proposalFile : positionals[0];
+
+  const options: ExecuteProposalOptions = {
+    ...common,
+    signer: resolveExecuteSigner(args),
+  };
+  if (proposalFile !== undefined) options.proposalFile = proposalFile;
+  const rpcUrl = resolveOptionalRpcUrl(args as RpcArgSlice);
+  if (rpcUrl !== undefined) options.rpcUrl = rpcUrl;
+
+  return options;
 }

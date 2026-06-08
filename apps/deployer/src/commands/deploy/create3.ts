@@ -13,17 +13,6 @@ export default defineDeployerCommand({
       "Deploy the shared CREATE3 factory via Arachnid if not already deployed",
   },
   args: withDeployerArgs({
-    "rpc-url": {
-      type: "string",
-      description: "RPC endpoint (default: RPC_URL env)",
-      valueHint: "url",
-    },
-    "private-key": {
-      type: "string",
-      description:
-        "Deployer private key (default: PRIVATE_KEY or DEPLOY_KEY env)",
-      valueHint: "hex",
-    },
     "create3-salt": {
       type: "string",
       description:

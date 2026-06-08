@@ -21,7 +21,10 @@ describe("hashCreate3SaltString", () => {
 describe("encodeArachnidDeployCalldata", () => {
   test("concatenates salt hash and bytecode", () => {
     const bytecode = "0x6001" as const;
-    const calldata = encodeArachnidDeployCalldata(DEFAULT_CREATE3_SALT, bytecode);
+    const calldata = encodeArachnidDeployCalldata(
+      DEFAULT_CREATE3_SALT,
+      bytecode,
+    );
     const saltHash = hashCreate3SaltString(DEFAULT_CREATE3_SALT);
     expect(calldata).toBe(`${saltHash}6001`);
   });

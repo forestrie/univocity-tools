@@ -38,25 +38,6 @@ export function normalizeRpcUrl(raw: string): string {
   return trimmed;
 }
 
-export function resolvePrivateKey(args: {
-  privateKey?: string | undefined;
-  "private-key"?: string | undefined;
-}): Hex {
-  const raw =
-    evaluateOptionValue(
-      "private-key",
-      args.privateKey ?? args["private-key"],
-    ) ??
-    process.env.PRIVATE_KEY ??
-    process.env.DEPLOY_KEY;
-  if (!raw || raw.trim().length === 0) {
-    throw new Error(
-      "Private key is required (--private-key, PRIVATE_KEY, or DEPLOY_KEY)",
-    );
-  }
-  return normalizePrivateKey(raw);
-}
-
 export function resolveRpcUrl(args: {
   rpcUrl?: string | undefined;
   "rpc-url"?: string | undefined;
@@ -66,6 +47,20 @@ export function resolveRpcUrl(args: {
     process.env.RPC_URL;
   if (!raw) {
     throw new Error("RPC URL is required (--rpc-url or RPC_URL)");
+  }
+  return normalizeRpcUrl(raw);
+}
+
+/** Resolve the RPC URL if available, else undefined (no throw). */
+export function resolveOptionalRpcUrl(args: {
+  rpcUrl?: string | undefined;
+  "rpc-url"?: string | undefined;
+}): string | undefined {
+  const raw =
+    evaluateOptionValue("rpc-url", args.rpcUrl ?? args["rpc-url"]) ??
+    process.env.RPC_URL;
+  if (!raw || raw.trim().length === 0) {
+    return undefined;
   }
   return normalizeRpcUrl(raw);
 }
@@ -84,9 +79,6 @@ export function resolveCreate3Salt(args: {
   );
 }
 
-export function buildDeployCalldata(
-  saltString: string,
-  bytecode: Hex,
-): Hex {
+export function buildDeployCalldata(saltString: string, bytecode: Hex): Hex {
   return encodeArachnidDeployCalldata(saltString, bytecode);
 }

@@ -141,7 +141,7 @@ async function deployCreate3Factory(
   create3: Create3Config,
   bytecode: Hex,
 ): Promise<void> {
-  const account = privateKeyToAccount(options.privateKey);
+  const account = privateKeyToAccount(options.deployKey);
   const client = createPublicClient({ transport: http(options.rpcUrl) });
   const balance = await client.getBalance({ address: account.address });
   if (balance === 0n) {
@@ -170,7 +170,7 @@ async function deployCreate3Factory(
     create3.proxy,
     calldata,
     "--private-key",
-    options.privateKey,
+    options.deployKey,
     "--rpc-url",
     options.rpcUrl,
     "--json",

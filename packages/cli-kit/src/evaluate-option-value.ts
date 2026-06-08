@@ -23,7 +23,9 @@ function kebabToCamel(optionName: string): string {
   }
   return (
     first +
-    rest.map((segment) => segment[0]!.toUpperCase() + segment.slice(1)).join("")
+    rest
+      .map((segment) => segment[0]!.toUpperCase() + segment.slice(1))
+      .join("")
   );
 }
 

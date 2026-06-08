@@ -21,7 +21,9 @@ export function requireForgeBin(options: {
 
 export function requireCastBin(options: { castBin: string | false }): string {
   if (options.castBin === false) {
-    throw new Error("cast binary not found; install Foundry or pass --cast-bin");
+    throw new Error(
+      "cast binary not found; install Foundry or pass --cast-bin",
+    );
   }
   return options.castBin;
 }

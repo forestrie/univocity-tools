@@ -29,9 +29,9 @@ describe("resolveExecutableBin", () => {
 
   test("returns false for missing cwd-relative binary", () => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "foundry-exec-"));
-    expect(resolveExecutableBin("missing-forge", DEFAULT_FORGE_BIN, tmpDir)).toBe(
-      false,
-    );
+    expect(
+      resolveExecutableBin("missing-forge", DEFAULT_FORGE_BIN, tmpDir),
+    ).toBe(false);
   });
 
   test("resolves executable file relative to cwd", () => {
@@ -47,8 +47,8 @@ describe("resolveExecutableBin", () => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "foundry-exec-"));
     const binPath = path.join(tmpDir, "local-forge");
     fs.writeFileSync(binPath, "#!/bin/sh\nexit 0\n", { mode: 0o644 });
-    expect(resolveExecutableBin("local-forge", DEFAULT_FORGE_BIN, tmpDir)).toBe(
-      false,
-    );
+    expect(
+      resolveExecutableBin("local-forge", DEFAULT_FORGE_BIN, tmpDir),
+    ).toBe(false);
   });
 });

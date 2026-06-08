@@ -68,19 +68,21 @@ describe("evaluateOptionValue", () => {
 describe("readEvaluatedStringOption", () => {
   test("reads kebab-case arg and evaluates", () => {
     expect(
-      readEvaluatedStringOption(
-        { "forge-config": "${env}" },
-        "forge-config",
-        { env: { FORGE_CONFIG: "/c.toml" } },
-      ),
+      readEvaluatedStringOption({ "forge-config": "${env}" }, "forge-config", {
+        env: { FORGE_CONFIG: "/c.toml" },
+      }),
     ).toBe("/c.toml");
   });
 
   test("reads camelCase arg and evaluates", () => {
     expect(
-      readEvaluatedStringOption({ forgeConfig: "${env:ALT}" }, "forge-config", {
-        env: { ALT: "/d.toml" },
-      }),
+      readEvaluatedStringOption(
+        { forgeConfig: "${env:ALT}" },
+        "forge-config",
+        {
+          env: { ALT: "/d.toml" },
+        },
+      ),
     ).toBe("/d.toml");
   });
 

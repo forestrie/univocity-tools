@@ -40,8 +40,13 @@ Source of truth: repo-root `create3.jsonc`; build-time snapshot in
 `requireForgeBin` / `requireCastBin` guards.
 
 **`@univocity-tools/deployer-common`** — companion package for the
-`deployer` CLI (forge + create3 mixins, contracts checkout root).
+`deployer` CLI (forge + create3 mixins, contracts checkout root). Also
+hosts the deploy **propose / execute** model: shared signer flags
+(`signer-options.ts`), the `Proposal` type (`proposal.ts`), bootstrap-key
+resolution (`bootstrap-key.ts`, viem + WebCrypto), `ImutableUnivocity`
+deployment data / CREATE2 prediction (`imutable-deploy-data.ts`), and a
+viem-native Safe Transaction Service client (`safe-client.ts`).
 
-Likely candidate: `@univocity-tools/safe-batch` (Safe batch JSON types
-and validation ported from
+Likely candidate: `@univocity-tools/safe-batch` (extract the Safe batch
+JSON / `safe-client` types if a second tool needs them; ported from
 [univocity/scripts/safe_propose_common.py](https://github.com/forestrie/univocity/blob/main/scripts/safe_propose_common.py)).

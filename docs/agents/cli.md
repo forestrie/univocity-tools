@@ -300,5 +300,41 @@ deployer
 ├── config
 │   └── show
 └── deploy
-    └── create3    # Deploy shared CREATE3 factory via Arachnid
+    ├── create3                # Deploy shared CREATE3 factory via Arachnid
+    ├── propose
+    │   └── imutable           # Build a deploy-imutable proposal (EOA or Safe)
+    └── execute [proposalFile] # Broadcast a local proposal (cast send); stdin if no file
 ```
+
+### Propose / execute model
+
+`deploy propose imutable` and `deploy execute` split deployment into a
+**proposal** step and an **execution** step so the local (non-interactive)
+and Gnosis Safe multisig flows share one implementation.
+
+- **propose imutable** builds the `ImutableUnivocity` deployment data
+  (`forge build` → creation code + `abi.encode(int64 bootstrapAlg, bytes
+  bootstrapKey)`), then emits a deployer-native proposal JSON
+  (`kind: "deploy-imutable"`).
+  - Without `--safe-publish`: `publishMode: "eoa"`, one contract-create
+    transaction (`to: null`); the proposal is pipeable to `deploy execute`.
+  - With `--safe-publish`: `publishMode: "safe"`, a
+    `CreateCall.performCreate2` transaction; the SafeTx is signed with
+    `--deploy-key` and POSTed to the Safe Transaction Service.
+- **execute** reads a proposal (file or stdin), refuses `safe` proposals
+  (route those through the Safe service/UI), asserts the resolved signer
+  matches the proposal `from`, and broadcasts each transaction with
+  `cast send` (`--create` for contract-creates).
+
+Signer resolution (shared deploy-suite flags):
+
+| Flag (env) | propose | execute |
+|------------|---------|---------|
+| `--owner-address` (`OWNER_ADDRESS`) | proposal `from` (wins) | — |
+| `--deploy-key` (`DEPLOY_KEY`) | derives `from` (pre-empts `--deploy-address`); signs `--safe-publish` | signing key (fallback) |
+| `--deploy-address` (`DEPLOY_ADDRESS`) | `from` fallback | — |
+| `--owner-signer` (`OWNER_SIGNER`) | — | signing key (preferred) |
+
+Bootstrap crypto is ported to TypeScript (viem + WebCrypto), so the deploy
+step no longer needs the Solidity deploy/batch scripts; `forge` is used only
+for the build and `cast` only for chain I/O.

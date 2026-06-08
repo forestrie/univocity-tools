@@ -5,6 +5,7 @@ import { create3Args } from "@univocity-tools/create3-options/commoncli";
 import { foundryBinArgs } from "@univocity-tools/foundry-exec/commoncli";
 import { forgeArgs } from "@univocity-tools/forge-options/commoncli";
 import type { ArgsDef, CommandDef } from "citty";
+import { signerArgs } from "./signer-options.js";
 
 const deployerOnlyArgs = {
   "univocity-root": {
@@ -14,6 +15,11 @@ const deployerOnlyArgs = {
       "otherwise discovered from a git repo named univocity, else cwd)",
     valueHint: "path",
   },
+  "rpc-url": {
+    type: "string",
+    description: "RPC endpoint (default: RPC_URL env)",
+    valueHint: "url",
+  },
 } as const satisfies ArgsDef;
 
 /**
@@ -22,6 +28,7 @@ const deployerOnlyArgs = {
 export const commonArgs = {
   ...verbosityArgs,
   ...deployerOnlyArgs,
+  ...signerArgs,
   ...forgeArgs,
   ...foundryBinArgs,
   ...create3Args,

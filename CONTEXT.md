@@ -78,6 +78,57 @@ The absolute filesystem path to a **univocity tools repo** checkout.
 Optional dev-time discovery locates repo-root `create3.jsonc`.
 _Avoid_: conflating with **contracts checkout root** (`univocityRoot`).
 
+**Proposal**:
+The deployer-native JSON artifact emitted by `deploy propose …`
+(`kind: "deploy-imutable"`, version 1) wrapping Safe Transaction
+Builder-shaped transactions plus deploy metadata (`publishMode`, `from`,
+`signerRole`, optional `safe` block). Consumed by `deploy execute`.
+_Avoid_: conflating with **Safe batch JSON** (the Gnosis export shape) —
+a proposal embeds transactions in that shape but is a superset.
+
+**Propose / execute model**:
+The two-step deploy flow (`deploy propose …` then `deploy execute`) that
+gives the local (non-interactive) and Gnosis Safe multisig paths one
+implementation. `publishMode` (`eoa` | `safe`) selects the path.
+_Avoid_: “deploy command” for the pair; name the step (propose or execute).
+
+**Owner address**:
+The address recorded as the proposal `from` for every transaction
+(`--owner-address` / `OWNER_ADDRESS`); the Safe in the multisig path.
+Preferred over deriving `from` from a key.
+_Avoid_: conflating with **owner signer** (a key, execute-only).
+
+**Deploy key**:
+Shared deploy private key (`--deploy-key` / `DEPLOY_KEY`). On propose it
+derives `from` (dev convenience, pre-empting **deploy address**) and signs
+the SafeTx for `--safe-publish`; on execute it is the signing-key fallback.
+_Avoid_: legacy `PRIVATE_KEY` env (removed; `create3` now uses `DEPLOY_KEY`).
+
+**Deploy address**:
+Convenience deployer address (`--deploy-address` / `DEPLOY_ADDRESS`) used
+as the propose `from` only when neither **owner address** nor **deploy
+key** is supplied. Propose-only.
+_Avoid_: using it for execute — execute needs a key, not an address.
+
+**Owner signer**:
+Execute-only private key (`--owner-signer` / `OWNER_SIGNER`) used to sign
+and broadcast a local proposal; preferred over the **deploy key**. Never
+read by propose.
+_Avoid_: conflating with **owner address** (the logical `from`).
+
+**Safe publish**:
+The `--safe-publish` flag on `deploy propose imutable`: sign the SafeTx
+with the **deploy key** and POST it to the Safe Transaction Service,
+producing a `safe` proposal (executed via the Safe, not `deploy execute`).
+_Avoid_: expecting `deploy execute` to broadcast a `safe` proposal.
+
+**Bootstrap key / bootstrap alg**:
+The `ImutableUnivocity` constructor key fixed at deploy: `bootstrapAlg`
+is `es256` (ALG_ES256 −7; key = 64-byte P-256 `x||y`) or `ks256`
+(ALG_KS256 −65799; key = 20-byte address). Resolved by `bootstrap-key.ts`.
+_Avoid_: conflating with the platform **root bootstrap** checkpoint
+(out of scope here).
+
 ## Example dialogue
 
 **Dev:** We need to regenerate the deploy Safe batch before proposing on
