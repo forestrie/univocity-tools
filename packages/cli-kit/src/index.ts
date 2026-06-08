@@ -10,3 +10,9 @@ export {
   type OptionsParser,
 } from "./parse-options.js";
 export { findGitRepoRootNamed } from "./find-git-repo-root.js";
+export {
+  evaluateOptionValue,
+  optionNameToEnvVar,
+  readEvaluatedStringOption,
+  type OptionSourceContext,
+} from "./evaluate-option-value.js";

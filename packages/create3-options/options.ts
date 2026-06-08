@@ -1,3 +1,4 @@
+import { evaluateOptionValue } from "@univocity-tools/cli-kit";
 import path from "node:path";
 import { CREATE3_DEFAULTS } from "./src/defaults.js";
 import type { Create3Config } from "./create3-config.js";
@@ -20,7 +21,10 @@ export function resolveCreate3Config(
   cwd: string = process.cwd(),
 ): Create3Config {
   const explicit =
-    args.create3Config ?? args["create3-config"] ?? process.env.CREATE3_CONFIG;
+    evaluateOptionValue(
+      "create3-config",
+      args.create3Config ?? args["create3-config"],
+    ) ?? process.env.CREATE3_CONFIG;
 
   if (explicit) {
     return parseJsoncFileSync(path.resolve(cwd, explicit));

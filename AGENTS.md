@@ -16,7 +16,7 @@ always-on rules.
 | `packages/<app>/commoncli.ts` | Per-app shared citty flags + `define<App>Command` |
 | `packages/<app>/options.ts` | Typed options + `parse*Options` from citty args |
 | `packages/<app>/main.ts` | `run*(options)` — callable without CLI |
-| `packages/cli-kit/` | Generic `mergeCommandArgs` / `defineAppCommand` |
+| `packages/cli-kit/` | Generic `mergeCommandArgs`, `defineAppCommand`, `evaluateOptionValue` |
 | `packages/` | Other shared libraries (multi-app) |
 | `docs/adr/` | Repo-local ADRs |
 | `docs/agents/` | On-demand agent guides |
@@ -29,6 +29,9 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
   with **parse/execute split**: citty wiring in `apps/`, typed
   `parse*` in `packages/<app>/options.ts`, `run*` in
   `packages/<app>/main.ts`. See [docs/agents/cli.md](docs/agents/cli.md).
+- **Option value sources:** Call **`evaluateOptionValue`** from cli-kit as
+  the first step when parsing string CLI options (unless explicitly opted
+  out). See [docs/agents/cli.md](docs/agents/cli.md#option-value-sources).
 - **Subprocesses:** Use **`Bun.spawn`** in `packages/<app>/main.ts` (not in
   citty `run`). See [docs/agents/subprocess.md](docs/agents/subprocess.md).
 - **Cursor:** [.cursor/rules/citty-cli.mdc](.cursor/rules/citty-cli.mdc),

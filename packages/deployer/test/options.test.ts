@@ -33,6 +33,25 @@ describe("parseDeployCreate3Options", () => {
     }
   });
 
+  test("resolves --rpc-url ${env} from RPC_URL", () => {
+    const prevRpc = process.env.RPC_URL;
+    process.env.RPC_URL = "http://env-host:8545";
+    try {
+      const options = parseDeployCreate3Options({
+        "univocity-root": ROOT,
+        "rpc-url": "${env}",
+        "private-key": "0x01",
+      });
+      expect(options.rpcUrl).toBe("http://env-host:8545");
+    } finally {
+      if (prevRpc === undefined) {
+        delete process.env.RPC_URL;
+      } else {
+        process.env.RPC_URL = prevRpc;
+      }
+    }
+  });
+
   test("reads explicit flags", () => {
     const options = parseDeployCreate3Options({
       "univocity-root": ROOT,

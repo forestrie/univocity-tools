@@ -1,4 +1,4 @@
-import { findGitRepoRootNamed } from "@univocity-tools/cli-kit";
+import { evaluateOptionValue, findGitRepoRootNamed } from "@univocity-tools/cli-kit";
 import path from "node:path";
 
 export type ContractsCheckoutRootArgSlice = {
@@ -15,7 +15,10 @@ export function resolveContractsCheckoutRootEager(
   args: ContractsCheckoutRootArgSlice,
 ): string {
   const raw =
-    args.univocityRoot ?? args["univocity-root"] ?? process.env.UNIVOCITY_ROOT;
+    evaluateOptionValue(
+      "univocity-root",
+      args.univocityRoot ?? args["univocity-root"],
+    ) ?? process.env.UNIVOCITY_ROOT;
 
   if (raw) {
     return path.resolve(process.cwd(), raw);

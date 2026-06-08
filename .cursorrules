@@ -17,6 +17,10 @@ Citty **`run`** handlers must only parse args and call **`run*`** in
 **`packages/<app>/main.ts`** — see
 [cli-command-structure.mdc](./cli-command-structure.mdc).
 
+String option values in **`parse*`** functions must call
+**`evaluateOptionValue`** from cli-kit first unless explicitly opted out.
+See [option-value-sources.mdc](./.cursor/rules/option-value-sources.mdc).
+
 ## Subprocesses (apps/ and packages/)
 
 All external process invocation in TypeScript under `apps/` and

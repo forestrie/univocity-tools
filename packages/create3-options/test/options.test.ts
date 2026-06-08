@@ -87,6 +87,29 @@ describe("resolveCreate3Config", () => {
     ).toEqual(SAMPLE_CONFIG);
   });
 
+  test("resolves ${env} from option-derived variable name", () => {
+    const configPath = path.join(tempDir, "from-env.jsonc");
+    writeFileSync(configPath, JSON.stringify(SAMPLE_CONFIG));
+    process.env.CREATE3_CONFIG = configPath;
+
+    expect(
+      resolveCreate3Config({ "create3-config": "${env}" }, tempDir),
+    ).toEqual(SAMPLE_CONFIG);
+  });
+
+  test("falls back to CREATE3_CONFIG when named ${env:VAR} is unset", () => {
+    const configPath = path.join(tempDir, "fallback.jsonc");
+    writeFileSync(configPath, JSON.stringify(SAMPLE_CONFIG));
+    process.env.CREATE3_CONFIG = configPath;
+
+    expect(
+      resolveCreate3Config(
+        { "create3-config": "${env:MISSING_CREATE3}" },
+        tempDir,
+      ),
+    ).toEqual(SAMPLE_CONFIG);
+  });
+
   test("throws on invalid config file", () => {
     const configPath = path.join(tempDir, "bad.jsonc");
     writeFileSync(

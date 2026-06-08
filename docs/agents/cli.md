@@ -60,6 +60,46 @@ existing section below.
 
 Put **positionals only** on the leaf command that uses them.
 
+## Option value sources
+
+`@univocity-tools/cli-kit` provides **`evaluateOptionValue`** for resolving
+named option value sources **before** any other parse processing (path
+resolution, implicit env fallbacks, file loading, etc.).
+
+Call it as the **first step** for every string option value in `parse*`
+functions unless a command explicitly opts out.
+
+```typescript
+import { evaluateOptionValue } from "@univocity-tools/cli-kit";
+
+const raw = evaluateOptionValue(
+  "forge-config",
+  args.forgeConfig ?? args["forge-config"],
+);
+// then existing helpers, e.g. resolveForgeConfigPath(raw, univocityRoot)
+```
+
+Helpers: **`optionNameToEnvVar`** (`forge-config` → `FORGE_CONFIG`),
+**`readEvaluatedStringOption`** (kebab/camel arg lookup + evaluate).
+
+### Syntax (whole-value templates only)
+
+| Value | Resolves to |
+|-------|-------------|
+| `${env:VAR}` | `process.env.VAR` |
+| `${env}` | `process.env.<OPTION_ENV>` where option env is derived from the flag name (`--forge-config` → `FORGE_CONFIG`) |
+| `\${env}` / `\${env:VAR}` | Literal `${env}` / `${env:VAR}` (backslash escapes evaluation) |
+| Any other string | Unchanged |
+
+If the referenced environment variable is unset or empty,
+`evaluateOptionValue` returns **`undefined`** so existing downstream
+fallbacks still apply (for example `CREATE3_CONFIG`, `RPC_URL`, citty
+defaults, discovery).
+
+Example: `--forge-config '${env:MY_CONFIG}'` reads `MY_CONFIG` from the
+environment, then `resolveForgeConfigPath` resolves the result against
+`univocityRoot` as usual.
+
 ## Option mixins
 
 Reusable flag sets live in cross-app packages (for example

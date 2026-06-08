@@ -100,4 +100,40 @@ describe("parseForgeOptions", () => {
       outDir: `${ROOT}/build-out`,
     });
   });
+
+  test("resolves ${env:VAR} before path join", () => {
+    const prev = process.env.MY_FORGE_CONFIG;
+    process.env.MY_FORGE_CONFIG = "script/create3-factory/foundry.toml";
+    try {
+      expect(
+        parseForgeOptions({ "forge-config": "${env:MY_FORGE_CONFIG}" }, ROOT),
+      ).toEqual({
+        forgeConfig: `${ROOT}/script/create3-factory/foundry.toml`,
+        outDir: `${ROOT}/script/create3-factory/out`,
+      });
+    } finally {
+      if (prev === undefined) {
+        delete process.env.MY_FORGE_CONFIG;
+      } else {
+        process.env.MY_FORGE_CONFIG = prev;
+      }
+    }
+  });
+
+  test("resolves ${env} from option-derived variable name", () => {
+    const prev = process.env.FORGE_CONFIG;
+    process.env.FORGE_CONFIG = "custom/foundry.toml";
+    try {
+      expect(parseForgeOptions({ "forge-config": "${env}" }, ROOT)).toEqual({
+        forgeConfig: `${ROOT}/custom/foundry.toml`,
+        outDir: `${ROOT}/custom/out`,
+      });
+    } finally {
+      if (prev === undefined) {
+        delete process.env.FORGE_CONFIG;
+      } else {
+        process.env.FORGE_CONFIG = prev;
+      }
+    }
+  });
 });

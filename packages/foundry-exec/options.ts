@@ -1,3 +1,4 @@
+import { evaluateOptionValue } from "@univocity-tools/cli-kit";
 import {
   DEFAULT_CAST_BIN,
   DEFAULT_FORGE_BIN,
@@ -22,12 +23,12 @@ export function parseFoundryBinOptions(
 ): FoundryBinOptions {
   return {
     forgeBin: resolveExecutableBin(
-      args.forgeBin ?? args["forge-bin"],
+      evaluateOptionValue("forge-bin", args.forgeBin ?? args["forge-bin"]),
       DEFAULT_FORGE_BIN,
       cwd,
     ),
     castBin: resolveExecutableBin(
-      args.castBin ?? args["cast-bin"],
+      evaluateOptionValue("cast-bin", args.castBin ?? args["cast-bin"]),
       DEFAULT_CAST_BIN,
       cwd,
     ),

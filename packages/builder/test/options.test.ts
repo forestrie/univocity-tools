@@ -66,6 +66,22 @@ describe("resolveContractsCheckoutRootEager", () => {
       resolveContractsCheckoutRootEager({ "univocity-root": "../univocity" }),
     ).toBe(path.resolve(process.cwd(), "../univocity"));
   });
+
+  test("resolves ${env} from UNIVOCITY_ROOT", () => {
+    const prev = process.env.UNIVOCITY_ROOT;
+    process.env.UNIVOCITY_ROOT = "../univocity";
+    try {
+      expect(
+        resolveContractsCheckoutRootEager({ "univocity-root": "${env}" }),
+      ).toBe(path.resolve(process.cwd(), "../univocity"));
+    } finally {
+      if (prev === undefined) {
+        delete process.env.UNIVOCITY_ROOT;
+      } else {
+        process.env.UNIVOCITY_ROOT = prev;
+      }
+    }
+  });
 });
 
 describe("findGitRepoRootNamed", () => {

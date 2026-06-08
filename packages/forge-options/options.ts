@@ -1,3 +1,4 @@
+import { evaluateOptionValue } from "@univocity-tools/cli-kit";
 import path from "node:path";
 
 export const DEFAULT_FORGE_CONFIG = "foundry.toml";
@@ -37,13 +38,19 @@ export function parseForgeOptions(
   univocityRoot: string,
 ): ForgeOptions {
   const forgeConfig = resolveForgeConfigPath(
-    args.forgeConfig ?? args["forge-config"],
+    evaluateOptionValue(
+      "forge-config",
+      args.forgeConfig ?? args["forge-config"],
+    ),
     univocityRoot,
   );
   return {
     forgeConfig,
     outDir: resolveForgeOutDir(
-      args.foundryOut ?? args["foundry-out"],
+      evaluateOptionValue(
+        "foundry-out",
+        args.foundryOut ?? args["foundry-out"],
+      ),
       forgeConfig,
     ),
   };

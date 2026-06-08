@@ -17,7 +17,8 @@ packages/builder/main.ts          → runValidateBatch(options)
 See [docs/agents/cli.md](../docs/agents/cli.md).
 
 Generic helpers: **`@univocity-tools/cli-kit`**
-(`mergeCommandArgs`, `defineCommandRunner`).
+(`mergeCommandArgs`, `defineCommandRunner`, `evaluateOptionValue` for
+`${env}` / `${env:VAR}` option value sources).
 
 ## Cross-app packages
 

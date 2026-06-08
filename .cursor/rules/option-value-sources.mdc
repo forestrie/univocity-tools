@@ -1,0 +1,42 @@
+---
+description: Evaluate named option value sources before other parse processing
+alwaysApply: true
+---
+
+# Option value sources
+
+Applies when editing **`packages/*/options.ts`**, mixin parse helpers
+(`forge-options`, `create3-options`, `foundry-exec`), or other
+`parse*` / `resolve*` functions that read citty string flags.
+
+## Required
+
+Call **`evaluateOptionValue`** from `@univocity-tools/cli-kit` as the
+**first step** for every string option value before path resolution,
+implicit env fallbacks, file loading, or other transforms.
+
+```typescript
+import { evaluateOptionValue } from "@univocity-tools/cli-kit";
+
+const raw = evaluateOptionValue(
+  "forge-config",
+  args.forgeConfig ?? args["forge-config"],
+);
+```
+
+Use **`readEvaluatedStringOption(args, "forge-config")`** when kebab/camel
+lookup is the only pre-step.
+
+## Syntax
+
+- `${env:VAR}` — read `process.env.VAR`
+- `${env}` — read env derived from option name (`forge-config` → `FORGE_CONFIG`)
+- `\${env}` / `\${env:VAR}` — literal, not evaluated
+- Missing or empty env → `undefined` (downstream fallbacks still apply)
+
+## Opt out
+
+Skip evaluation only when a command must accept literal `${env}` strings.
+Document the reason in the parse function.
+
+Full guide: [docs/agents/cli.md](../../docs/agents/cli.md#option-value-sources).
