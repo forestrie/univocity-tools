@@ -2,11 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { findGitRepoRootNamed } from "@univocity-tools/cli-kit";
+import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import { parseValidateBatchOptions } from "../options.js";
-import {
-  findGitRepoRootNamed,
-  resolveContractsCheckoutRootEager,
-} from "../contracts-checkout-root.js";
+import { resolveContractsCheckoutRootEager } from "../contracts-checkout-root.js";
 
 function withTempRepo(
   name: string,
@@ -33,14 +32,14 @@ describe("parseValidateBatchOptions", () => {
       "univocity-root": "/tmp/univocity",
     });
 
+    const univocityRoot = path.resolve(process.cwd(), "/tmp/univocity");
     expect(options).toEqual({
       verbose: true,
-      univocityRoot: path.resolve(process.cwd(), "/tmp/univocity"),
-      forgeConfig: path.resolve(
-        path.resolve(process.cwd(), "/tmp/univocity"),
-        "foundry.toml",
-      ),
+      univocityRoot,
+      forgeConfig: path.resolve(univocityRoot, "foundry.toml"),
+      outDir: path.resolve(univocityRoot, "out"),
       path: "./batch.json",
+      ...parseFoundryBinOptions({}),
     });
   });
 
@@ -54,6 +53,9 @@ describe("parseValidateBatchOptions", () => {
 
     expect(options.forgeConfig).toBe(
       path.resolve("/tmp/univocity", "script/create3-factory/foundry.toml"),
+    );
+    expect(options.outDir).toBe(
+      path.resolve("/tmp/univocity", "script/create3-factory/out"),
     );
   });
 });

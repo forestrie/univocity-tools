@@ -77,6 +77,25 @@ Builder always merges **forge options** (`--forge-config`, default
 Relative `--forge-config` resolves against `univocityRoot`. When spawning
 forge, pass `--config-path` with `options.forgeConfig` — not `--forge-config`.
 
+Deployer merges **create3 options** (`--create3-config`, no citty
+default path). Parsed options include:
+
+| Field | Meaning |
+|-------|---------|
+| `create3` | Resolved **Create3 config** (proxy, deploy-tx, signer, factory) |
+
+Resolution order at parse time:
+
+1. `--create3-config` / `create3Config`
+2. `CREATE3_CONFIG` env
+3. Discovered repo-root `create3.jsonc` when cwd is under a git checkout
+   named `univocity-tools`
+4. **Embedded Create3 defaults** from generated `defaults.ts` (see
+   ADR-0003)
+
+Do not put a filesystem path in the citty `default:` for `--create3-config`;
+omitting the flag uses embedded stable values (or discovery in a checkout).
+
 ### Contracts checkout root resolution
 
 At parse time, in order:
@@ -201,4 +220,18 @@ Implement **`Bun.spawn`** only in `packages/<app>/main.ts` — see
 - **`@univocity-tools/cli-kit`** on each companion package only.
 - **`@univocity-tools/forge-options`** on apps that merge forge flags
   (builder via `@univocity-tools/builder-common`).
+- **`@univocity-tools/create3-options`** on apps that merge create3 flags
+  (deployer via `@univocity-tools/deployer-common`).
+- **`@univocity-tools/foundry-exec`** on apps that spawn forge/cast
+  (deployer, builder).
 - App → **`@univocity-tools/<name>-common`** (parse/run via subpath exports).
+
+## Deployer commands
+
+```text
+deployer
+├── config
+│   └── show
+└── deploy
+    └── create3    # Deploy shared CREATE3 factory via Arachnid
+```

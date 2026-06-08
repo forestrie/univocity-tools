@@ -10,6 +10,13 @@ export const forgeArgs = {
     valueHint: "path",
     default: "foundry.toml",
   },
+  "foundry-out": {
+    type: "string",
+    description:
+      "Forge artifact output directory (relative to the forge config directory)",
+    valueHint: "path",
+    default: "out",
+  },
 } as const satisfies ArgsDef;
 
 /** Merge forge flags into a command-specific `args` object. */

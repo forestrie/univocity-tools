@@ -26,6 +26,8 @@ bun install
 | `bun run format` | Prettier write |
 | `bun test` | Run tests |
 | `bun run build` | Build all `@univocity-tools/*` apps |
+| `bun run sync:create3` | Regenerate embedded Create3 defaults from `create3.jsonc` |
+| `bun run check:create3` | Fail if `defaults.ts` is stale vs `create3.jsonc` |
 
 ## Builder CLI
 
@@ -34,6 +36,15 @@ bun run --filter @univocity-tools/builder dev -- --help
 bun run --filter @univocity-tools/builder dev -- --version
 bun run --filter @univocity-tools/builder build
 ./apps/builder/dist/cli.js --help
+```
+
+## Deployer CLI
+
+```bash
+bun run --filter @univocity-tools/deployer dev -- --help
+bun run --filter @univocity-tools/deployer dev -- config show
+bun run --filter @univocity-tools/deployer build
+./apps/deployer/dist/cli.js config show
 ```
 
 ## Layout

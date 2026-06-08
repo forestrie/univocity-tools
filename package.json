@@ -6,9 +6,12 @@
   "type": "module",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
+    "sync:create3": "bun scripts/sync-create3-defaults.ts",
+    "prebuild": "bun run sync:create3",
     "build": "bun run --filter '@univocity-tools/*' build",
     "test": "bun test",
     "typecheck": "bun run --filter '@univocity-tools/*' typecheck",
+    "check:create3": "bun run sync:create3 && git diff --exit-code packages/create3-options/src/defaults.ts",
     "check": "prettier --check apps packages",
     "check:subprocess": "bun scripts/check-subprocess-imports.ts",
     "check:cli": "bun scripts/check-cli-imports.ts",

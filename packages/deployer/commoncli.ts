@@ -1,10 +1,11 @@
 import { defineAppCommand, mergeCommandArgs } from "@univocity-tools/cli-kit";
 export { defineCommandRunner } from "@univocity-tools/cli-kit";
+import { create3Args } from "@univocity-tools/create3-options/commoncli";
 import { foundryBinArgs } from "@univocity-tools/foundry-exec/commoncli";
 import { forgeArgs } from "@univocity-tools/forge-options/commoncli";
 import type { ArgsDef, CommandDef } from "citty";
 
-const builderOnlyArgs = {
+const deployerOnlyArgs = {
   verbose: {
     type: "boolean",
     description: "Verbose logging",
@@ -20,32 +21,22 @@ const builderOnlyArgs = {
 } as const satisfies ArgsDef;
 
 /**
- * Flags shared by every builder command and subcommand.
- *
- * Options only — no positional args. citty does not inherit parent flags
- * into child `args`; merge these on each command via `defineBuilderCommand`
- * or `withBuilderArgs`.
+ * Flags shared by every deployer command and subcommand.
  */
 export const commonArgs = {
-  ...builderOnlyArgs,
+  ...deployerOnlyArgs,
   ...forgeArgs,
   ...foundryBinArgs,
+  ...create3Args,
 } as const satisfies ArgsDef;
 
-export type BuilderCommonArgs = {
-  verbose?: boolean;
-  univocityRoot?: string;
-  forgeConfig?: string;
-  foundryOut?: string;
-};
-
-/** Merge builder-wide flags into a command-specific `args` object. */
-export function withBuilderArgs<T extends ArgsDef>(args?: T): ArgsDef & T {
+/** Merge deployer-wide flags into a command-specific `args` object. */
+export function withDeployerArgs<T extends ArgsDef>(args?: T): ArgsDef & T {
   return mergeCommandArgs(commonArgs, args) as ArgsDef & T;
 }
 
-/** `defineCommand` with builder-wide flags merged into `args`. */
-export function defineBuilderCommand<T extends ArgsDef>(
+/** `defineCommand` with deployer-wide flags merged into `args`. */
+export function defineDeployerCommand<T extends ArgsDef>(
   def: CommandDef<T>,
 ): CommandDef<T> {
   return defineAppCommand(commonArgs, def);

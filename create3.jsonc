@@ -1,0 +1,10 @@
+{
+    // Arachnid proxy address, often already deployed on many chains.
+    "proxy": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+    // Raw deployment transaction for Arachnid proxy.
+    "deploy-tx": "0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222",
+    // Signer address for Arachnid proxy deployment, you need to send funds to this account to deploy with the arachnid proxy.
+    "signer": "0x3fAB184622Dc19b6109349B94811493BF2a45362",
+    // CREATE3 factory address - the address the create3 factory will be deployed to.
+    "factory": "0x606A25c0432766B45ece27Dd4e2208A7cE14dC5b"
+}

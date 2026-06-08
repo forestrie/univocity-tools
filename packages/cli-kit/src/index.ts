@@ -9,3 +9,4 @@ export {
   type CommandHandler,
   type OptionsParser,
 } from "./parse-options.js";
+export { findGitRepoRootNamed } from "./find-git-repo-root.js";

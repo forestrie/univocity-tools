@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Create3 defaults snapshot
+        run: bun run check:create3
+
       - name: Prettier check
         run: bun run check
 

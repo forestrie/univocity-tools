@@ -1,0 +1,21 @@
+{
+  "name": "@univocity-tools/create3-options",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mixable Create3 CLI flags and typed options for Arachnid infra",
+  "type": "module",
+  "exports": {
+    ".": "./options.ts",
+    "./commoncli": "./commoncli.ts",
+    "./options": "./options.ts",
+    "./create3-config": "./create3-config.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@univocity-tools/cli-kit": "workspace:*",
+    "citty": "^0.2.2",
+    "jsonc-parser": "^3.3.1"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@univocity-tools/deployer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI for Univocity contract deployment",
+  "type": "module",
+  "bin": {
+    "deployer": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "bun build ./src/cli.ts --outdir dist --target bun",
+    "dev": "bun run ./src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@univocity-tools/deployer-common": "workspace:*",
+    "citty": "^0.2.2"
+  },
+  "files": [
+    "dist"
+  ]
+}

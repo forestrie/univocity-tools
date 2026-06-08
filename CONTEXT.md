@@ -12,8 +12,12 @@ packages for contract build, release, deploy, and ops.
 _Avoid_: univocity repo, contracts repo.
 
 **Tool**:
-A runnable CLI under `apps/` (for example `builder`).
+A runnable CLI under `apps/` (for example `builder`, `deployer`).
 _Avoid_: service, script.
+
+**Deployer (tool)**:
+The `apps/deployer` CLI — contract deployment and infra configuration.
+_Avoid_: conflating with Python deploy scripts in the **contracts repo**.
 
 **Shared package**:
 A library under `packages/` imported by two or more tools.
@@ -53,9 +57,26 @@ _Avoid_: conflating CLI `--forge-config` with the forge binary flag
 
 **Option mixin**:
 Reusable citty `args` schema plus `parse*` helpers merged into an app's
-`commonArgs` (for example `@univocity-tools/forge-options` on builder).
+`commonArgs` (for example `@univocity-tools/forge-options` on builder,
+`@univocity-tools/create3-options` on deployer).
 _Avoid_: duplicating mixin flags only in `commoncli.ts` without a shared
 package.
+
+**Create3 config**:
+JSONC at the **univocity tools repo** root describing shared Arachnid
+proxy and CREATE3 factory addresses for deploy flows. Canonical filename:
+`create3.jsonc`.
+_Avoid_: `arachnid.jsonc` (removed; use `create3.jsonc`).
+
+**Embedded Create3 defaults**:
+Stable Create3 field values compiled into a distributed CLI from
+`create3.jsonc` at build time.
+_Avoid_: hand-maintained duplicate constants in TypeScript.
+
+**Tools repo root**:
+The absolute filesystem path to a **univocity tools repo** checkout.
+Optional dev-time discovery locates repo-root `create3.jsonc`.
+_Avoid_: conflating with **contracts checkout root** (`univocityRoot`).
 
 ## Example dialogue
 
@@ -72,3 +93,10 @@ entries, not Gnosis Safe transactions.
 stays in the **contracts repo**. When we add forge steps, we'll pass the
 **forge config path** to `forge --config-path`, not confuse it with our
 CLI `--forge-config` flag name.
+
+**Ops:** For CREATE3 infra on a new chain, run the **deployer tool**.
+A redistributed binary uses **embedded Create3 defaults**; in a local
+**univocity tools repo** checkout it picks up live `create3.jsonc`
+automatically. Override with `--create3-config` when testing alternate
+addresses — that's separate from **contracts checkout root**, which
+still comes from `--univocity-root`.

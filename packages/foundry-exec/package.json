@@ -1,0 +1,22 @@
+{
+  "name": "@univocity-tools/foundry-exec",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bun.spawn helpers for forge and cast with bin resolution",
+  "type": "module",
+  "exports": {
+    ".": "./spawn.ts",
+    "./commoncli": "./commoncli.ts",
+    "./options": "./options.ts",
+    "./require-bins": "./require-bins.ts",
+    "./resolve-bin": "./resolve-bin.ts",
+    "./spawn": "./spawn.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@univocity-tools/cli-kit": "workspace:*",
+    "citty": "^0.2.2"
+  }
+}

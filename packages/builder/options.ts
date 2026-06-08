@@ -1,4 +1,6 @@
 import type { LooseParsedArgs } from "@univocity-tools/cli-kit";
+import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";
+import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import type { ForgeOptions } from "@univocity-tools/forge-options/options";
 import { parseForgeOptions } from "@univocity-tools/forge-options/options";
 import { resolveContractsCheckoutRootEager } from "./contracts-checkout-root.js";
@@ -8,7 +10,8 @@ export type BuilderCommonOptions = {
   verbose: boolean;
   /** Contracts checkout root — always an absolute path after parsing. */
   univocityRoot: string;
-} & ForgeOptions;
+} & ForgeOptions &
+  FoundryBinOptions;
 
 /** Options for `builder validate batch`. */
 export type ValidateBatchOptions = BuilderCommonOptions & {
@@ -21,6 +24,12 @@ type CommonArgSlice = {
   "univocity-root"?: string | undefined;
   forgeConfig?: string | undefined;
   "forge-config"?: string | undefined;
+  foundryOut?: string | undefined;
+  "foundry-out"?: string | undefined;
+  forgeBin?: string | undefined;
+  "forge-bin"?: string | undefined;
+  castBin?: string | undefined;
+  "cast-bin"?: string | undefined;
 };
 
 export function parseBuilderCommonOptions(
@@ -31,6 +40,7 @@ export function parseBuilderCommonOptions(
     verbose: args.verbose ?? false,
     univocityRoot,
     ...parseForgeOptions(args, univocityRoot),
+    ...parseFoundryBinOptions(args),
   };
 }
 

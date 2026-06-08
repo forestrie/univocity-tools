@@ -1,0 +1,11 @@
+import { defineDeployerCommand } from "@univocity-tools/deployer-common";
+
+export default defineDeployerCommand({
+  meta: {
+    name: "deploy",
+    description: "Deploy Univocity contracts",
+  },
+  subCommands: {
+    create3: () => import("./create3.js").then((m) => m.default),
+  },
+});
