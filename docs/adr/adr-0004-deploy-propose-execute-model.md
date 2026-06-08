@@ -43,10 +43,11 @@ retains `forge script` for deploy and the dual-script split); and the
 official Safe SDK (rejected: heavier dependency, pulls in ethers).
 
 Consequences: the proposal JSON is a stable interface (`deploy propose` →
-`deploy execute`, or → Safe service); root authority bootstrap
-(`publishCheckpoint` / COSE receipt signing) remains out of scope for a
-future `deploy … bootstrap` command. The legacy `PRIVATE_KEY` env is
-dropped in favour of `DEPLOY_KEY` (see CONTEXT.md **Deploy key**).
+`deploy execute` for EOA, or → `deploy approve` for Safe); root authority
+bootstrap (`publishCheckpoint` / COSE receipt signing) remains out of scope
+for a future `deploy … bootstrap` command. The legacy `PRIVATE_KEY` env is
+dropped in favour of `DEPLOY_KEY` (see CONTEXT.md **Deploy key**). Safe
+execution is documented in [ADR-0005](./adr-0005-safe-approve-command.md).
 
 See [ADR-0002](./adr-0002-contracts-checkout-root-discovery.md) for
 parse-time path resolution and

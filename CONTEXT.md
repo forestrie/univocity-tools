@@ -82,15 +82,17 @@ _Avoid_: conflating with **contracts checkout root** (`univocityRoot`).
 The deployer-native JSON artifact emitted by `deploy propose …`
 (`kind: "deploy-imutable"`, version 1) wrapping Safe Transaction
 Builder-shaped transactions plus deploy metadata (`publishMode`, `from`,
-`signerRole`, optional `safe` block). Consumed by `deploy execute`.
+`signerRole`, optional `safe` block). Consumed by `deploy execute`
+(EOA) or `deploy approve` (Safe).
 _Avoid_: conflating with **Safe batch JSON** (the Gnosis export shape) —
 a proposal embeds transactions in that shape but is a superset.
 
 **Propose / execute model**:
-The two-step deploy flow (`deploy propose …` then `deploy execute`) that
-gives the local (non-interactive) and Gnosis Safe multisig paths one
-implementation. `publishMode` (`eoa` | `safe`) selects the path.
-_Avoid_: “deploy command” for the pair; name the step (propose or execute).
+The deploy flow that gives the local (non-interactive) and Gnosis Safe
+multisig paths one implementation. `publishMode` (`eoa` | `safe`) selects
+the path: `eoa` → `deploy execute`; `safe` → `deploy approve`.
+_Avoid_: “deploy command” for the pair; name the step (propose, approve,
+or execute).
 
 **Owner address**:
 The address recorded as the proposal `from` for every transaction
@@ -111,15 +113,24 @@ key** is supplied. Propose-only.
 _Avoid_: using it for execute — execute needs a key, not an address.
 
 **Owner signer**:
-Execute-only private key (`--owner-signer` / `OWNER_SIGNER`) used to sign
-and broadcast a local proposal; preferred over the **deploy key**. Never
-read by propose.
+Execute/approve private key (`--owner-signer` / `OWNER_SIGNER`) used to
+sign and broadcast a local proposal or approve a Safe proposal; preferred
+over the **deploy key**. Never read by propose.
 _Avoid_: conflating with **owner address** (the logical `from`).
+
+**Approve**:
+The `deploy approve` subcommand: Safe-path step after **Safe publish**.
+Consumes a `safe` proposal, signs with **owner signer** (preferred) or
+**deploy key**, POSTs the confirmation to the Transaction Service, and by
+default executes on-chain via Safe `execTransaction`. Use
+`--confirm-only` to post the signature without executing.
+_Avoid_: routing `safe` proposals through `deploy execute`.
 
 **Safe publish**:
 The `--safe-publish` flag on `deploy propose imutable`: sign the SafeTx
 with the **deploy key** and POST it to the Safe Transaction Service,
-producing a `safe` proposal (executed via the Safe, not `deploy execute`).
+producing a `safe` proposal (executed via `deploy approve`, not
+`deploy execute`).
 _Avoid_: expecting `deploy execute` to broadcast a `safe` proposal.
 
 **Bootstrap key / bootstrap alg**:

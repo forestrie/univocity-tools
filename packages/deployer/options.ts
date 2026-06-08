@@ -247,6 +247,15 @@ export type ExecuteProposalOptions = DeployerCommonOptions & {
   rpcUrl?: string;
 };
 
+export type ApproveProposalOptions = DeployerCommonOptions & {
+  proposalFile?: string;
+  signer: ExecuteSigner;
+  rpcUrl: string;
+  safeTxServiceUrl: string;
+  safeTxHash?: Hex;
+  confirmOnly: boolean;
+};
+
 export function parseExecuteProposalOptions(
   args: LooseParsedArgs,
 ): ExecuteProposalOptions {
@@ -262,6 +271,46 @@ export function parseExecuteProposalOptions(
   if (proposalFile !== undefined) options.proposalFile = proposalFile;
   const rpcUrl = resolveOptionalRpcUrl(args as RpcArgSlice);
   if (rpcUrl !== undefined) options.rpcUrl = rpcUrl;
+
+  return options;
+}
+
+export function parseApproveProposalOptions(
+  args: LooseParsedArgs,
+): ApproveProposalOptions {
+  const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const positionals = Array.isArray(args._) ? (args._ as string[]) : [];
+  const proposalFile =
+    typeof args.proposalFile === "string" ? args.proposalFile : positionals[0];
+
+  const rpcUrl = resolveOptionalRpcUrl(args as RpcArgSlice);
+  if (rpcUrl === undefined) {
+    throw new Error("approve requires --rpc-url (or RPC_URL)");
+  }
+
+  const serviceUrl =
+    readOption(args, "safe-tx-service-url", "SAFE_TX_SERVICE_URL") ??
+    DEFAULT_SAFE_TX_SERVICE_URL;
+
+  const options: ApproveProposalOptions = {
+    ...common,
+    signer: resolveExecuteSigner(args),
+    rpcUrl,
+    safeTxServiceUrl: serviceUrl,
+    confirmOnly: Boolean(args["confirm-only"] ?? args.confirmOnly),
+  };
+  if (proposalFile !== undefined) options.proposalFile = proposalFile;
+
+  const safeTxHashRaw = readOption(args, "safe-tx-hash", "SAFE_TX_HASH");
+  if (safeTxHashRaw !== undefined) {
+    const hex = (safeTxHashRaw.startsWith("0x")
+      ? safeTxHashRaw
+      : `0x${safeTxHashRaw}`) as Hex;
+    if (!isHex(hex) || size(hex) !== 32) {
+      throw new Error("--safe-tx-hash must be a 32-byte hex value");
+    }
+    options.safeTxHash = hex;
+  }
 
   return options;
 }

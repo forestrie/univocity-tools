@@ -5,6 +5,7 @@ import { runDeployCreate3 } from "./deploy-create3.js";
 export { runDeployCreate3 } from "./deploy-create3.js";
 export { runProposeImutable } from "./propose-imutable.js";
 export { runExecuteProposal } from "./execute-proposal.js";
+export { runApproveProposal } from "./approve-proposal.js";
 
 /** Print the resolved Create3 config as JSON. */
 export async function runConfigShow(
