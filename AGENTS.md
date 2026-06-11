@@ -12,7 +12,7 @@ always-on rules.
 
 | Path | Purpose |
 |------|---------|
-| `apps/` | CLI tools (`builder` first) |
+| `apps/` | CLI tools (`contract-artefacts` / Cart first) |
 | `packages/<app>/commoncli.ts` | Per-app shared citty flags + `define<App>Command` |
 | `packages/<app>/options.ts` | Typed options + `parse*Options` from citty args |
 | `packages/<app>/main.ts` | `run*(options)` — callable without CLI |
@@ -50,7 +50,7 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 - **Build apps**: `bun run build`
 - **Build binaries (local)**: `bun run build:binary`
 - **Build binaries (Linux x64)**: `bun run build:binary:linux-x64`
-- **Builder dev**: `bun run --filter @univocity-tools/builder dev -- --help`
+- **Cart dev**: `bun run --filter @univocity-tools/contract-artefacts dev -- --help`
 
 ## Gotchas (critical)
 

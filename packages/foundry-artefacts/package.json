@@ -1,0 +1,14 @@
+{
+  "name": "@univocity-tools/foundry-artefacts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Foundry artefact format helpers (build-info source hydration)",
+  "type": "module",
+  "exports": {
+    ".": "./hydrate-sources.ts",
+    "./hydrate-sources": "./hydrate-sources.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

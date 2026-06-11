@@ -1,5 +1,6 @@
 import {
   optionNameToEnvVar,
+  parseCommonOptions,
   readEvaluatedStringOption,
   type LooseParsedArgs,
 } from "@univocity-tools/cli-kit";
@@ -9,7 +10,6 @@ import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import type { ForgeOptions } from "@univocity-tools/forge-options/options";
 import { parseForgeOptions } from "@univocity-tools/forge-options/options";
-import { resolveContractsCheckoutRootEager } from "@univocity-tools/builder-common/contracts-checkout-root";
 import { getAddress, isHex, size, type Address, type Hex } from "viem";
 import type { BootstrapAlg } from "./bootstrap-key.js";
 import {
@@ -30,21 +30,35 @@ import {
   type SignerRole,
 } from "./signer-options.js";
 
+/** Contracts repo checkout — the univocity-specific name for `sourceRoot`. */
+export const UNIVOCITY_GIT_REPO_NAME = "univocity";
+
 /** Flags shared by every deployer command (after parsing). */
 export type DeployerCommonOptions = {
-  /** Contracts checkout root — always an absolute path after parsing. */
+  /** Contracts checkout root — absolute path after parsing. */
   univocityRoot: string;
+  workDir: string;
   create3: Create3Config;
 } & ForgeOptions &
   FoundryBinOptions;
 
 type CommonArgSlice = {
-  univocityRoot?: string | undefined;
-  "univocity-root"?: string | undefined;
+  sourceRoot?: string | undefined;
+  "source-root"?: string | undefined;
+  workDir?: string | undefined;
+  "work-dir"?: string | undefined;
   forgeConfig?: string | undefined;
   "forge-config"?: string | undefined;
+  buildRoot?: string | undefined;
+  "build-root"?: string | undefined;
   foundryOut?: string | undefined;
   "foundry-out"?: string | undefined;
+  foundrySrc?: string | undefined;
+  "foundry-src"?: string | undefined;
+  foundryCache?: string | undefined;
+  "foundry-cache"?: string | undefined;
+  foundryLibs?: string | undefined;
+  "foundry-libs"?: string | undefined;
   create3Config?: string | undefined;
   "create3-config"?: string | undefined;
   forgeBin?: string | undefined;
@@ -56,11 +70,14 @@ type CommonArgSlice = {
 export function parseDeployerCommonOptions(
   args: CommonArgSlice,
 ): DeployerCommonOptions {
-  const univocityRoot = resolveContractsCheckoutRootEager(args);
+  const common = parseCommonOptions(args, {
+    gitRepoName: UNIVOCITY_GIT_REPO_NAME,
+  });
   return {
-    univocityRoot,
+    univocityRoot: common.sourceRoot,
+    workDir: common.workDir,
     create3: parseCreate3Options(args),
-    ...parseForgeOptions(args, univocityRoot),
+    ...parseForgeOptions(args, common.sourceRoot),
     ...parseFoundryBinOptions(args),
   };
 }
@@ -303,9 +320,9 @@ export function parseApproveProposalOptions(
 
   const safeTxHashRaw = readOption(args, "safe-tx-hash", "SAFE_TX_HASH");
   if (safeTxHashRaw !== undefined) {
-    const hex = (safeTxHashRaw.startsWith("0x")
-      ? safeTxHashRaw
-      : `0x${safeTxHashRaw}`) as Hex;
+    const hex = (
+      safeTxHashRaw.startsWith("0x") ? safeTxHashRaw : `0x${safeTxHashRaw}`
+    ) as Hex;
     if (!isHex(hex) || size(hex) !== 32) {
       throw new Error("--safe-tx-hash must be a 32-byte hex value");
     }

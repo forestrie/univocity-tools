@@ -41,7 +41,7 @@ Export `run*` and `parse*` from the companion package so other apps and
 tests invoke commands without citty:
 
 ```typescript
-import { runValidateBatch } from "@univocity-tools/builder-common/main";
+import { runValidateBatch } from "@univocity-tools/contract-artefacts-common/main";
 await runValidateBatch({
   path: "/abs/batch.json",
   verbose: true,
@@ -50,7 +50,7 @@ await runValidateBatch({
 });
 ```
 
-Builder merges the **forge options mixin** — typed options include
+Cart merges the **forge options mixin** — typed options include
 absolute `univocityRoot` (contracts checkout root) and `forgeConfig`.
 
 Full guide: [docs/agents/cli.md](../../docs/agents/cli.md).

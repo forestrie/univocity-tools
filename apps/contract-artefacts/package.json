@@ -1,0 +1,25 @@
+{
+  "name": "@univocity-tools/contract-artefacts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CLI for Univocity contract artefact packaging and validation",
+  "type": "module",
+  "bin": {
+    "contract-artefacts": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "bun build ./src/cli.ts --outdir dist --target bun",
+    "build:binary": "bun ../../scripts/build-binary.ts --app contract-artefacts",
+    "build:binary:linux-x64": "bun ../../scripts/build-binary.ts --app contract-artefacts --target bun-linux-x64",
+    "build:binary:darwin-arm64": "bun ../../scripts/build-binary.ts --app contract-artefacts --target bun-darwin-arm64",
+    "dev": "bun run ./src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@univocity-tools/contract-artefacts-common": "workspace:*",
+    "citty": "^0.2.2"
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -9,14 +9,14 @@
         "typescript": "^5.9.2",
       },
     },
-    "apps/builder": {
-      "name": "@univocity-tools/builder",
+    "apps/contract-artefacts": {
+      "name": "@univocity-tools/contract-artefacts",
       "version": "0.1.0",
       "bin": {
-        "builder": "./dist/cli.js",
+        "contract-artefacts": "./dist/cli.js",
       },
       "dependencies": {
-        "@univocity-tools/builder-common": "workspace:*",
+        "@univocity-tools/contract-artefacts-common": "workspace:*",
         "citty": "^0.2.2",
       },
     },
@@ -31,20 +31,22 @@
         "citty": "^0.2.2",
       },
     },
-    "packages/builder": {
-      "name": "@univocity-tools/builder-common",
-      "version": "0.1.0",
-      "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
-        "@univocity-tools/forge-options": "workspace:*",
-        "@univocity-tools/foundry-exec": "workspace:*",
-        "citty": "^0.2.2",
-      },
-    },
     "packages/cli-kit": {
       "name": "@univocity-tools/cli-kit",
       "version": "0.1.0",
       "dependencies": {
+        "citty": "^0.2.2",
+      },
+    },
+    "packages/contract-artefacts": {
+      "name": "@univocity-tools/contract-artefacts-common",
+      "version": "0.1.0",
+      "dependencies": {
+        "@univocity-tools/cli-kit": "workspace:*",
+        "@univocity-tools/forge-options": "workspace:*",
+        "@univocity-tools/foundry-artefacts": "workspace:*",
+        "@univocity-tools/foundry-exec": "workspace:*",
+        "@univocity-tools/subprocess": "workspace:*",
         "citty": "^0.2.2",
       },
     },
@@ -61,7 +63,6 @@
       "name": "@univocity-tools/deployer-common",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/builder-common": "workspace:*",
         "@univocity-tools/cli-kit": "workspace:*",
         "@univocity-tools/create3-options": "workspace:*",
         "@univocity-tools/forge-options": "workspace:*",
@@ -78,12 +79,24 @@
         "citty": "^0.2.2",
       },
     },
+    "packages/foundry-artefacts": {
+      "name": "@univocity-tools/foundry-artefacts",
+      "version": "0.1.0",
+    },
     "packages/foundry-exec": {
       "name": "@univocity-tools/foundry-exec",
       "version": "0.1.0",
       "dependencies": {
         "@univocity-tools/cli-kit": "workspace:*",
+        "@univocity-tools/subprocess": "workspace:*",
         "citty": "^0.2.2",
+      },
+    },
+    "packages/subprocess": {
+      "name": "@univocity-tools/subprocess",
+      "version": "0.1.0",
+      "dependencies": {
+        "@univocity-tools/cli-kit": "workspace:*",
       },
     },
   },
@@ -106,11 +119,11 @@
 
     "@types/node": ["@types/node@25.9.2", "", { "dependencies": { "undici-types": ">=7.24.0 <7.24.7" } }, "sha512-G05zqtJhcDLb8uslf5EjCxXg9G1KQxiV8OS0R26IC//Eoyitzqe8z37I7cqvnZlrlSfgocQRfSn/AHBZJJFyGw=="],
 
-    "@univocity-tools/builder": ["@univocity-tools/builder@workspace:apps/builder"],
-
-    "@univocity-tools/builder-common": ["@univocity-tools/builder-common@workspace:packages/builder"],
-
     "@univocity-tools/cli-kit": ["@univocity-tools/cli-kit@workspace:packages/cli-kit"],
+
+    "@univocity-tools/contract-artefacts": ["@univocity-tools/contract-artefacts@workspace:apps/contract-artefacts"],
+
+    "@univocity-tools/contract-artefacts-common": ["@univocity-tools/contract-artefacts-common@workspace:packages/contract-artefacts"],
 
     "@univocity-tools/create3-options": ["@univocity-tools/create3-options@workspace:packages/create3-options"],
 
@@ -120,7 +133,11 @@
 
     "@univocity-tools/forge-options": ["@univocity-tools/forge-options@workspace:packages/forge-options"],
 
+    "@univocity-tools/foundry-artefacts": ["@univocity-tools/foundry-artefacts@workspace:packages/foundry-artefacts"],
+
     "@univocity-tools/foundry-exec": ["@univocity-tools/foundry-exec@workspace:packages/foundry-exec"],
+
+    "@univocity-tools/subprocess": ["@univocity-tools/subprocess@workspace:packages/subprocess"],
 
     "abitype": ["abitype@1.2.3", "", { "peerDependencies": { "typescript": ">=5.0.4", "zod": "^3.22.0 || ^4.0.0" }, "optionalPeers": ["typescript", "zod"] }, "sha512-Ofer5QUnuUdTFsBRwARMoWKOH1ND5ehwYhJ3OJ/BQO+StkwQjHw0XyVh4vDttzHB7QOFhPHa/o413PJ82gU/Tg=="],
 

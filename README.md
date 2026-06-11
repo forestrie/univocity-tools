@@ -31,13 +31,13 @@ bun install
 | `bun run sync:create3` | Regenerate embedded Create3 defaults from `create3.jsonc` |
 | `bun run check:create3` | Fail if `defaults.ts` is stale vs `create3.jsonc` |
 
-## Builder CLI
+## Contract-artefacts CLI (Cart)
 
 ```bash
-bun run --filter @univocity-tools/builder dev -- --help
-bun run --filter @univocity-tools/builder dev -- --version
-bun run --filter @univocity-tools/builder build
-./apps/builder/dist/cli.js --help
+bun run --filter @univocity-tools/contract-artefacts dev -- --help
+bun run --filter @univocity-tools/contract-artefacts dev -- --version
+bun run --filter @univocity-tools/contract-artefacts build
+./apps/contract-artefacts/dist/cli.js --help
 ```
 
 ## Deployer CLI
@@ -57,7 +57,7 @@ build a native binary locally:
 ```bash
 bun run build:binary
 ./apps/deployer/dist/deployer --help
-./apps/builder/dist/builder --help
+./apps/contract-artefacts/dist/contract-artefacts --help
 ```
 
 Explicit targets:
@@ -69,7 +69,7 @@ bun run build:binary:linux-x64   # same command CI uses for releases
 
 ## Layout
 
-- `apps/` — runnable CLI tools (`builder` is the first)
+- `apps/` — runnable CLI tools (`contract-artefacts` / Cart is the first)
 - `packages/` — shared libraries (add when two apps need the same code)
 - `docs/adr/` — repo-local decision records
 

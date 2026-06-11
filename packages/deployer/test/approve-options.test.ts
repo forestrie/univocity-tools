@@ -11,7 +11,7 @@ const ENV_KEYS = [
   "RPC_URL",
   "SAFE_TX_HASH",
   "SAFE_TX_SERVICE_URL",
-  "UNIVOCITY_ROOT",
+  "SOURCE_ROOT",
 ];
 
 let saved: Record<string, string | undefined>;
@@ -40,7 +40,7 @@ describe("parseApproveProposalOptions", () => {
       parseApproveProposalOptions({
         _: ["proposal.json"],
         "bootstrap-alg": "es256",
-        "univocity-root": ROOT,
+        "source-root": ROOT,
         "deploy-key": KEY_A,
       }),
     ).toThrow("approve requires --rpc-url");
@@ -50,7 +50,7 @@ describe("parseApproveProposalOptions", () => {
     const options = parseApproveProposalOptions({
       _: ["proposal.json"],
       "bootstrap-alg": "es256",
-      "univocity-root": ROOT,
+      "source-root": ROOT,
       "owner-signer": KEY_A,
       "deploy-key":
         "0x59c6995e998f97a5a0044966f094538e9dcbb4ac836c072693865c7830d11d60",
@@ -66,7 +66,7 @@ describe("parseApproveProposalOptions", () => {
     const options = parseApproveProposalOptions({
       _: ["proposal.json"],
       "bootstrap-alg": "es256",
-      "univocity-root": ROOT,
+      "source-root": ROOT,
       "deploy-key": KEY_A,
       "rpc-url": "http://127.0.0.1:8545",
       "confirm-only": true,

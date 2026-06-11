@@ -15,7 +15,7 @@ form:
 ## Title (first line)
 
 - **Format:** `type(scope): subject` — scope is optional but preferred
-  when the change is localized (e.g. `builder`, `cli-kit`, `docs`).
+  when the change is localized (e.g. `contract-artefacts`, `cli-kit`, `docs`).
 - **Length:** no more than **100** characters.
 - **Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`,
   `build` — use the closest match.
@@ -25,7 +25,7 @@ form:
 Examples:
 
 ```text
-feat(builder): add forge-config mixin and path discovery
+feat(contract-artefacts): add forge-config mixin and path discovery
 docs: document contracts checkout root in ADR-0002
 ci: enforce citty and Bun.spawn policies in workflow
 ```

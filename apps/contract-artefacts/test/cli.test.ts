@@ -30,12 +30,12 @@ async function withStubbedExit<T>(
   }
 }
 
-describe("builder CLI", () => {
+describe("contract-artefacts CLI", () => {
   test("--help", async () => {
     const { logs } = await withStubbedExit(() =>
       runMain(command, { rawArgs: ["--help"] }),
     );
-    expect(logs.join("\n")).toContain("builder");
+    expect(logs.join("\n")).toContain("contract-artefacts");
     expect(logs.join("\n")).toContain("validate");
   });
 

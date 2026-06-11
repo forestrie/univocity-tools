@@ -17,6 +17,23 @@ export {
   type OptionSourceContext,
 } from "./evaluate-option-value.js";
 export {
+  resolveSourceGitRootEager,
+  type ResolveSourceGitRootOptions,
+  type SourceGitRootArgSlice,
+} from "./source-git-root.js";
+export {
+  DEFAULT_WORK_DIR,
+  resolveWorkDir,
+  type WorkDirArgSlice,
+} from "./work-dir.js";
+export {
+  commonOptionArgs,
+  parseCommonOptions,
+  type CommonOptions,
+  type CommonOptionsArgSlice,
+  type ParseCommonOptionsConfig,
+} from "./common-options.js";
+export {
   createCaptureOut,
   createNullOut,
   createOut,

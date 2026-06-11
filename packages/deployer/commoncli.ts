@@ -1,4 +1,8 @@
-import { defineAppCommand, mergeCommandArgs } from "@univocity-tools/cli-kit";
+import {
+  commonOptionArgs,
+  defineAppCommand,
+  mergeCommandArgs,
+} from "@univocity-tools/cli-kit";
 export { defineCommandRunner } from "@univocity-tools/cli-kit";
 import { verbosityArgs } from "@univocity-tools/cli-kit/reporting";
 import { create3Args } from "@univocity-tools/create3-options/commoncli";
@@ -8,13 +12,6 @@ import type { ArgsDef, CommandDef } from "citty";
 import { signerArgs } from "./signer-options.js";
 
 const deployerOnlyArgs = {
-  "univocity-root": {
-    type: "string",
-    description:
-      "Path to the contracts repo checkout (overrides UNIVOCITY_ROOT; " +
-      "otherwise discovered from a git repo named univocity, else cwd)",
-    valueHint: "path",
-  },
   "rpc-url": {
     type: "string",
     description: "RPC endpoint (default: RPC_URL env)",
@@ -27,6 +24,7 @@ const deployerOnlyArgs = {
  */
 export const commonArgs = {
   ...verbosityArgs,
+  ...commonOptionArgs,
   ...deployerOnlyArgs,
   ...signerArgs,
   ...forgeArgs,

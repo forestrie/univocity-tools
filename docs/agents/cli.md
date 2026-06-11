@@ -20,11 +20,11 @@ packages/<name>/options.ts      → <Command>Options types, parse* functions
 packages/<name>/main.ts         → run*(options) — callable without citty
 ```
 
-| Layer | Must | Must not |
-|-------|------|----------|
-| `apps/…/commands/*.ts` | Declare citty `args`; call `parse*` then `run*` | `Bun.spawn`, business logic, heavy I/O |
-| `packages/…/options.ts` | Map `ParsedArgs` → typed options | Side effects |
-| `packages/…/main.ts` | Accept typed options; implement behavior | citty imports, `process.argv` |
+| Layer                   | Must                                            | Must not                               |
+| ----------------------- | ----------------------------------------------- | -------------------------------------- |
+| `apps/…/commands/*.ts`  | Declare citty `args`; call `parse*` then `run*` | `Bun.spawn`, business logic, heavy I/O |
+| `packages/…/options.ts` | Map `ParsedArgs` → typed options                | Side effects                           |
+| `packages/…/main.ts`    | Accept typed options; implement behavior        | citty imports, `process.argv`          |
 
 Other apps and unit tests call **`run*`** from `@univocity-tools/<name>-common/main`
 with a typed options object — no CLI required.
@@ -36,19 +36,19 @@ Use **`defineCommandRunner(parse, execute)`** from `@univocity-tools/<name>-comm
 
 Each app in `apps/<name>/`:
 
-| Path | Role |
-|------|------|
-| `src/cli.ts` | Entry: `runMain(command)` |
+| Path             | Role                                      |
+| ---------------- | ----------------------------------------- |
+| `src/cli.ts`     | Entry: `runMain(command)`                 |
 | `src/command.ts` | Root citty command (`define<App>Command`) |
-| `src/commands/` | Subcommand modules — parsing wiring only |
+| `src/commands/`  | Subcommand modules — parsing wiring only  |
 
 Each app has a **companion package** `@univocity-tools/<name>-common`:
 
-| Path | Role |
-|------|------|
+| Path           | Role                                                                |
+| -------------- | ------------------------------------------------------------------- |
 | `commoncli.ts` | `commonArgs`, `define<App>Command`, re-export `defineCommandRunner` |
-| `options.ts` | Per-command `*Options` types and `parse*Options(args)` |
-| `main.ts` | Per-command `run*(options: *Options)` implementations |
+| `options.ts`   | Per-command `*Options` types and `parse*Options(args)`              |
+| `main.ts`      | Per-command `run*(options: *Options)` implementations               |
 
 Shared merge helpers: **`@univocity-tools/cli-kit`**.
 
@@ -84,12 +84,12 @@ Helpers: **`optionNameToEnvVar`** (`forge-config` → `FORGE_CONFIG`),
 
 ### Syntax (whole-value templates only)
 
-| Value | Resolves to |
-|-------|-------------|
-| `${env:VAR}` | `process.env.VAR` |
-| `${env}` | `process.env.<OPTION_ENV>` where option env is derived from the flag name (`--forge-config` → `FORGE_CONFIG`) |
-| `\${env}` / `\${env:VAR}` | Literal `${env}` / `${env:VAR}` (backslash escapes evaluation) |
-| Any other string | Unchanged |
+| Value                     | Resolves to                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `${env:VAR}`              | `process.env.VAR`                                                                                             |
+| `${env}`                  | `process.env.<OPTION_ENV>` where option env is derived from the flag name (`--forge-config` → `FORGE_CONFIG`) |
+| `\${env}` / `\${env:VAR}` | Literal `${env}` / `${env:VAR}` (backslash escapes evaluation)                                                |
+| Any other string          | Unchanged                                                                                                     |
 
 If the referenced environment variable is unset or empty,
 `evaluateOptionValue` returns **`undefined`** so existing downstream
@@ -106,22 +106,33 @@ Reusable flag sets live in cross-app packages (for example
 **`@univocity-tools/forge-options`**) and merge into an app's
 `commonArgs`. Each mixin exports citty `args` and `parse*` helpers.
 
-Builder always merges **forge options** (`--forge-config`, default
+Cart always merges **forge options** (`--forge-config`, default
 `foundry.toml`). Parsed options include:
 
-| Field | Meaning |
-|-------|---------|
-| `univocityRoot` | Absolute **contracts checkout root** (see ADR-0002) |
-| `forgeConfig` | Absolute **forge config path** (`foundry.toml` or override) |
+| Field                                        | Meaning                                                                                                          |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `univocityRoot`                              | Absolute **contracts checkout root** (see ADR-0002)                                                              |
+| `workDir`                                    | Absolute **work dir** (`--work-dir`, default `.work` under `univocityRoot`)                                      |
+| `forgeConfig`                                | Absolute **forge config path** (`foundry.toml` or override)                                                      |
+| `buildRoot`                                  | Absolute **build root** (`--build-root`, default: the forge config dir)                                          |
+| `outDir` / `srcDir` / `cacheDir` / `libsDir` | Forge artifact dirs (`--foundry-out/src/cache/libs`, defaults `out`/`src`/`cache`/`lib`) relative to `buildRoot` |
 
-Relative `--forge-config` resolves against `univocityRoot`. When spawning
+Relative `--forge-config` resolves against `univocityRoot`. The artifact
+dirs resolve against `buildRoot` (no `foundry.toml` parsing). When spawning
 forge, pass `--config-path` with `options.forgeConfig` — not `--forge-config`.
+
+`--source-root` and `--work-dir` are the tool-wide **common options**
+(`commonOptionArgs` / `parseCommonOptions` in `@univocity-tools/cli-kit`),
+spread into both Cart and deployer `commonArgs`. Parsed app options
+map cli-kit `sourceRoot` to `univocityRoot` (the **contracts checkout
+root**); Cart and deployer pass `gitRepoName: "univocity"` for git
+discovery.
 
 Deployer merges **create3 options** (`--create3-config`, no citty
 default path). Parsed options include:
 
-| Field | Meaning |
-|-------|---------|
+| Field     | Meaning                                                         |
+| --------- | --------------------------------------------------------------- |
 | `create3` | Resolved **Create3 config** (proxy, deploy-tx, signer, factory) |
 
 Resolution order at parse time:
@@ -139,17 +150,17 @@ omitting the flag uses embedded stable values (or discovery in a checkout).
 ### Output and verbosity
 
 `@univocity-tools/cli-kit/reporting` centralizes CLI output. Merge
-**`verbosityArgs`** into each app's `commonArgs` (deployer and builder already
+**`verbosityArgs`** into each app's `commonArgs` (deployer and Cart already
 do). **`defineCommandRunner`** resolves verbosity from citty args, builds an
 **`Out`** instance, and passes it as the **first** argument to every
 `run*(out, options)` handler.
 
-| Method | Stream | Shown when |
-|--------|--------|------------|
-| `out.out(…)` | stdout | always (pipeable content) |
-| `out.print(…)` | stderr | verbosity ≥ 0 |
-| `out.warn(…)` | stderr | verbosity ≥ 0 |
-| `out.log(…)` | stderr | verbosity > 2 (trace) |
+| Method         | Stream | Shown when                |
+| -------------- | ------ | ------------------------- |
+| `out.out(…)`   | stdout | always (pipeable content) |
+| `out.print(…)` | stderr | verbosity ≥ 0             |
+| `out.warn(…)`  | stderr | verbosity ≥ 0             |
+| `out.log(…)`   | stderr | verbosity > 2 (trace)     |
 
 **`--verbosity` / `-v`:** default `0`. `-1` silences stderr feedback
 (`.print`, `.warn`, `.log`); stdout `.out()` still works. Repeat standalone
@@ -159,25 +170,29 @@ wins over repeat counting.
 Do not use raw `console.log` / `console.error` in `packages/<app>/main.ts`.
 Pass **`Out`** into subprocess helpers (for example `FoundryExecContext.out`).
 
-### Contracts checkout root resolution
+### Source root resolution (cli-kit)
 
-At parse time, in order:
+`resolveSourceGitRootEager` lives in `@univocity-tools/cli-kit`
+(wrapped by `parseCommonOptions`). At parse time, in order:
 
-1. `--univocity-root` / `UNIVOCITY_ROOT` → `path.resolve(cwd, value)`
-2. Git walk: first `.git` ancestor whose directory name is `univocity`
+1. `--source-root` / `SOURCE_ROOT` → `path.resolve(cwd, value)`
+2. When the caller passes `gitRepoName` (Cart and deployer use
+   `"univocity"`): git walk for a `.git` ancestor with that folder name
 3. Fallback → absolute `process.cwd()`
 
-Direct API callers must supply absolute `univocityRoot` and `forgeConfig`;
+`--work-dir` (default `.work`) resolves against the resolved source root.
+App `parse*` functions map `sourceRoot` → `univocityRoot`. Direct API
+callers must supply absolute `univocityRoot`, `workDir`, and `forgeConfig`;
 discovery runs only in `parse*` functions.
 
 ## Example: root + nested command
 
 ```typescript
-// apps/builder/src/command.ts
-import { defineBuilderCommand } from "@univocity-tools/builder-common";
+// apps/contract-artefacts/src/command.ts
+import { defineCartCommand } from "@univocity-tools/contract-artefacts-common";
 
-export default defineBuilderCommand({
-  meta: { name: "builder", version: "0.1.0", description: "…" },
+export default defineCartCommand({
+  meta: { name: "contract-artefacts", version: "0.1.0", description: "…" },
   subCommands: {
     validate: () => import("./commands/validate.js").then((m) => m.default),
   },
@@ -185,15 +200,15 @@ export default defineBuilderCommand({
 ```
 
 ```typescript
-// apps/builder/src/commands/validate/batch.ts  — citty only
+// apps/contract-artefacts/src/commands/validate/batch.ts  — citty only
 import {
-  defineBuilderCommand,
+  defineCartCommand,
   defineCommandRunner,
-} from "@univocity-tools/builder-common";
-import { runValidateBatch } from "@univocity-tools/builder-common/main";
-import { parseValidateBatchOptions } from "@univocity-tools/builder-common/options";
+} from "@univocity-tools/contract-artefacts-common";
+import { runValidateBatch } from "@univocity-tools/contract-artefacts-common/main";
+import { parseValidateBatchOptions } from "@univocity-tools/contract-artefacts-common/options";
 
-export default defineBuilderCommand({
+export default defineCartCommand({
   meta: { name: "batch", description: "Validate Safe batch JSON" },
   args: {
     path: { type: "positional", description: "Batch file", required: true },
@@ -203,18 +218,18 @@ export default defineBuilderCommand({
 ```
 
 ```typescript
-// packages/builder/options.ts
-export type ValidateBatchOptions = BuilderCommonOptions & { path: string };
+// packages/contract-artefacts/options.ts
+export type ValidateBatchOptions = CartCommonOptions & { path: string };
 
 export function parseValidateBatchOptions(
   args: ParsedArgs<ValidateBatchArgsDef>,
 ): ValidateBatchOptions {
-  return { ...parseBuilderCommonOptions(args), path: args.path! };
+  return { ...parseCartCommonOptions(args), path: args.path! };
 }
 ```
 
 ```typescript
-// packages/builder/main.ts — no citty
+// packages/contract-artefacts/main.ts — no citty
 import type { Out } from "@univocity-tools/cli-kit/reporting";
 
 export async function runValidateBatch(
@@ -229,7 +244,7 @@ export async function runValidateBatch(
 ```typescript
 // Another app or test — direct call (absolute paths)
 import { createOut } from "@univocity-tools/cli-kit/reporting";
-import { runValidateBatch } from "@univocity-tools/builder-common/main";
+import { runValidateBatch } from "@univocity-tools/contract-artefacts-common/main";
 
 await runValidateBatch(createOut(0), {
   path: "/abs/batch.json",
@@ -239,7 +254,7 @@ await runValidateBatch(createOut(0), {
 ```
 
 ```typescript
-// apps/builder/src/cli.ts
+// apps/contract-artefacts/src/cli.ts
 import command from "./command.js";
 import { runMain } from "citty";
 
@@ -274,24 +289,70 @@ Implement **`Bun.spawn`** only in `packages/<app>/main.ts` — see
 
 ## Forbidden in `apps/`
 
-| Do not use | Use instead |
-|------------|-------------|
-| Business logic in citty `run` | `packages/<app>/main.ts` |
-| Manual `process.argv` loops | citty + `defineCommandRunner` |
-| Duplicated global flags | `packages/<app>/commoncli.ts` |
-| `commander`, `yargs`, etc. | citty |
+| Do not use                    | Use instead                   |
+| ----------------------------- | ----------------------------- |
+| Business logic in citty `run` | `packages/<app>/main.ts`      |
+| Manual `process.argv` loops   | citty + `defineCommandRunner` |
+| Duplicated global flags       | `packages/<app>/commoncli.ts` |
+| `commander`, `yargs`, etc.    | citty                         |
 
 ## Dependencies
 
 - **`citty`** on each app.
 - **`@univocity-tools/cli-kit`** on each companion package only.
 - **`@univocity-tools/forge-options`** on apps that merge forge flags
-  (builder via `@univocity-tools/builder-common`).
+  (Cart via `@univocity-tools/contract-artefacts-common`).
 - **`@univocity-tools/create3-options`** on apps that merge create3 flags
   (deployer via `@univocity-tools/deployer-common`).
 - **`@univocity-tools/foundry-exec`** on apps that spawn forge/cast
-  (deployer, builder).
+  (deployer, Cart).
 - App → **`@univocity-tools/<name>-common`** (parse/run via subpath exports).
+
+## Contract-artefacts commands (Cart)
+
+```text
+contract-artefacts
+├── archive                # Package forge build outputs into a tar.gz
+├── archive-extract        # Extract a build archive and hydrate sources
+│   [archive]              #   archive path relative to --work-dir
+└── validate
+    └── batch [path]       # Validate a Safe batch JSON file
+```
+
+### Archive (build archive)
+
+`contract-artefacts archive` packages an already-completed `forge build` into a
+**build archive** (`tar.gz`) so downstream consumers deploy, verify, and
+generate bindings without the foundry toolchain (see
+[ADR-0006](../adr/adr-0006-build-archive-decouples-deploy.md)).
+
+- Stages `<workDir>/build/out` from the forge `outDir`
+  (`rsync -a --delete`, includes `out/build-info`) and copies
+  `<cacheDir>/solidity-files-cache.json` to `<workDir>/build/cache`.
+- Tars `<workDir>/build` to `<workDir>/<archive-name>.tar.gz`
+  (`--archive-name`, default `build`); the archive path is written to
+  stdout via `out.out`.
+- Never invokes forge; errors if `out/` or `solidity-files-cache.json` is
+  missing ("run forge build first"). Sources are not shipped — materialize
+  them from `solidity-files-cache.json` + `out/build-info`.
+- CI builds each `foundry.toml` project independently and distinguishes
+  the archives by `--archive-name`.
+
+### Archive extract
+
+`contract-artefacts archive-extract` unpacks a **build archive** into a **release
+root** and performs **source hydration** from `out/build-info` (see
+[ADR-0006](../adr/adr-0006-build-archive-decouples-deploy.md)).
+
+- Positional `archive` — path to the tarball, relative to `--work-dir`.
+- `--release-root` (default `${env:RELEASE_ROOT}`, else cwd) — extract
+  and hydrate target; written to stdout via `out.out`.
+- Extracts with `tar --strip-components=1` so `out/` and `cache/` land
+  directly under the release root (matches `RELEASE_ROOT/out/` layout).
+- Hydration logic lives in `@univocity-tools/foundry-artefacts`
+  (`hydrateSources`); skips existing source paths; warns on malformed
+  build-info JSON.
+- Never invokes forge; errors if the archive file is missing.
 
 ## Deployer commands
 
@@ -316,7 +377,7 @@ one implementation.
 
 - **propose imutable** builds the `ImutableUnivocity` deployment data
   (`forge build` → creation code + `abi.encode(int64 bootstrapAlg, bytes
-  bootstrapKey)`), then emits a deployer-native proposal JSON
+bootstrapKey)`), then emits a deployer-native proposal JSON
   (`kind: "deploy-imutable"`).
   - Without `--safe-publish`: `publishMode: "eoa"`, one contract-create
     transaction (`to: null`); the proposal is pipeable to `deploy execute`.
@@ -335,12 +396,12 @@ one implementation.
 
 Signer resolution (shared deploy-suite flags):
 
-| Flag (env) | propose | approve | execute |
-|------------|---------|---------|---------|
-| `--owner-address` (`OWNER_ADDRESS`) | proposal `from` (wins) | — | — |
-| `--deploy-key` (`DEPLOY_KEY`) | derives `from` (pre-empts `--deploy-address`); signs `--safe-publish` | signing key (fallback) | signing key (fallback) |
-| `--deploy-address` (`DEPLOY_ADDRESS`) | `from` fallback | — | — |
-| `--owner-signer` (`OWNER_SIGNER`) | — | signing key (preferred) | signing key (preferred) |
+| Flag (env)                            | propose                                                               | approve                 | execute                 |
+| ------------------------------------- | --------------------------------------------------------------------- | ----------------------- | ----------------------- |
+| `--owner-address` (`OWNER_ADDRESS`)   | proposal `from` (wins)                                                | —                       | —                       |
+| `--deploy-key` (`DEPLOY_KEY`)         | derives `from` (pre-empts `--deploy-address`); signs `--safe-publish` | signing key (fallback)  | signing key (fallback)  |
+| `--deploy-address` (`DEPLOY_ADDRESS`) | `from` fallback                                                       | —                       | —                       |
+| `--owner-signer` (`OWNER_SIGNER`)     | —                                                                     | signing key (preferred) | signing key (preferred) |
 
 Additional **approve** flags: `--rpc-url` (`RPC_URL`, required),
 `--safe-tx-service-url` (`SAFE_TX_SERVICE_URL`),

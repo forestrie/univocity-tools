@@ -14,7 +14,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@univocity-tools/builder-common": "workspace:*",
     "@univocity-tools/cli-kit": "workspace:*",
     "@univocity-tools/create3-options": "workspace:*",
     "@univocity-tools/foundry-exec": "workspace:*",

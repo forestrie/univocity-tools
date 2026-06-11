@@ -54,7 +54,7 @@ afterEach(() => {
 describe("parseProposeImutableOptions", () => {
   test("ks256 with deploy-key derives from + defaults", () => {
     const options = parseProposeImutableOptions({
-      "univocity-root": ROOT,
+      "source-root": ROOT,
       "bootstrap-alg": "ks256",
       "bootstrap-ks256-signer": OWNER,
       "deploy-key": KEY_A,
@@ -71,7 +71,7 @@ describe("parseProposeImutableOptions", () => {
 
   test("owner-address wins for from; safe-publish flag", () => {
     const options = parseProposeImutableOptions({
-      "univocity-root": ROOT,
+      "source-root": ROOT,
       "bootstrap-alg": "es256",
       "bootstrap-es256-x": `0x${"aa".repeat(32)}`,
       "bootstrap-es256-y": `0x${"bb".repeat(32)}`,
@@ -88,7 +88,7 @@ describe("parseProposeImutableOptions", () => {
   test("throws when bootstrap-alg missing", () => {
     expect(() =>
       parseProposeImutableOptions({
-        "univocity-root": ROOT,
+        "source-root": ROOT,
         "deploy-key": KEY_A,
       }),
     ).toThrow("bootstrap-alg");
@@ -97,7 +97,7 @@ describe("parseProposeImutableOptions", () => {
   test("rejects non-32-byte salt", () => {
     expect(() =>
       parseProposeImutableOptions({
-        "univocity-root": ROOT,
+        "source-root": ROOT,
         "bootstrap-alg": "ks256",
         "bootstrap-ks256-signer": OWNER,
         "deploy-key": KEY_A,
@@ -111,7 +111,7 @@ describe("parseExecuteProposalOptions", () => {
   test("reads positional proposal file + deploy-key signer", () => {
     const options = parseExecuteProposalOptions({
       _: ["proposal.json"],
-      "univocity-root": ROOT,
+      "source-root": ROOT,
       "deploy-key": KEY_A,
     });
     expect(options.proposalFile).toBe("proposal.json");
@@ -120,7 +120,7 @@ describe("parseExecuteProposalOptions", () => {
 
   test("owner-signer preferred; no positional means stdin (undefined file)", () => {
     const options = parseExecuteProposalOptions({
-      "univocity-root": ROOT,
+      "source-root": ROOT,
       "owner-signer": KEY_A,
     });
     expect(options.proposalFile).toBeUndefined();

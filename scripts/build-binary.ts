@@ -6,10 +6,10 @@ import path from "node:path";
 const ROOT = path.resolve(new URL("..", import.meta.url).pathname);
 
 const APPS = {
-  builder: {
-    entrypoint: path.join(ROOT, "apps/builder/src/cli.ts"),
-    binaryName: "builder",
-    outdir: path.join(ROOT, "apps/builder/dist"),
+  "contract-artefacts": {
+    entrypoint: path.join(ROOT, "apps/contract-artefacts/src/cli.ts"),
+    binaryName: "contract-artefacts",
+    outdir: path.join(ROOT, "apps/contract-artefacts/dist"),
   },
   deployer: {
     entrypoint: path.join(ROOT, "apps/deployer/src/cli.ts"),

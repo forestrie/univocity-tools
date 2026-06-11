@@ -1,11 +1,11 @@
 import {
-  defineBuilderCommand,
+  defineCartCommand,
   defineCommandRunner,
-} from "@univocity-tools/builder-common";
-import { runValidateBatch } from "@univocity-tools/builder-common/main";
-import { parseValidateBatchOptions } from "@univocity-tools/builder-common/options";
+} from "@univocity-tools/contract-artefacts-common";
+import { runValidateBatch } from "@univocity-tools/contract-artefacts-common/main";
+import { parseValidateBatchOptions } from "@univocity-tools/contract-artefacts-common/options";
 
-export default defineBuilderCommand({
+export default defineCartCommand({
   meta: {
     name: "batch",
     description: "Validate a Safe batch JSON file",

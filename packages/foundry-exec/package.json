@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@univocity-tools/cli-kit": "workspace:*",
+    "@univocity-tools/subprocess": "workspace:*",
     "citty": "^0.2.2"
   }
 }

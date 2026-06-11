@@ -3,11 +3,27 @@ import {
   DEFAULT_FORGE_CONFIG,
   DEFAULT_FORGE_OUT,
   parseForgeOptions,
+  resolveBuildRoot,
+  resolveBuildRootDir,
   resolveForgeConfigPath,
-  resolveForgeOutDir,
+  type ForgeOptions,
 } from "../options.js";
 
 const ROOT = "/tmp/univocity";
+
+/** Expected ForgeOptions for a given config dir (build root). */
+function expectedForge(configRel: string): ForgeOptions {
+  const forgeConfig = `${ROOT}/${configRel}`;
+  const buildRoot = forgeConfig.slice(0, forgeConfig.lastIndexOf("/"));
+  return {
+    forgeConfig,
+    buildRoot,
+    outDir: `${buildRoot}/out`,
+    srcDir: `${buildRoot}/src`,
+    cacheDir: `${buildRoot}/cache`,
+    libsDir: `${buildRoot}/lib`,
+  };
+}
 
 describe("resolveForgeConfigPath", () => {
   test("default foundry.toml under root", () => {
@@ -29,26 +45,41 @@ describe("resolveForgeConfigPath", () => {
   });
 });
 
-describe("resolveForgeOutDir", () => {
-  test("default out under forge config directory", () => {
-    expect(resolveForgeOutDir(undefined, `${ROOT}/foundry.toml`)).toBe(
+describe("resolveBuildRoot", () => {
+  test("defaults to the forge config directory", () => {
+    expect(resolveBuildRoot(undefined, `${ROOT}/foundry.toml`)).toBe(ROOT);
+  });
+
+  test("relative build root under the forge config directory", () => {
+    expect(resolveBuildRoot("nested", `${ROOT}/script/foundry.toml`)).toBe(
+      `${ROOT}/script/nested`,
+    );
+  });
+
+  test("absolute build root unchanged", () => {
+    expect(resolveBuildRoot("/var/build", `${ROOT}/foundry.toml`)).toBe(
+      "/var/build",
+    );
+  });
+});
+
+describe("resolveBuildRootDir", () => {
+  test("default fallback under the build root", () => {
+    expect(resolveBuildRootDir(undefined, ROOT, DEFAULT_FORGE_OUT)).toBe(
       `${ROOT}/${DEFAULT_FORGE_OUT}`,
     );
   });
 
-  test("relative path under forge config directory", () => {
-    expect(
-      resolveForgeOutDir(
-        "custom-out",
-        `${ROOT}/script/create3-factory/foundry.toml`,
-      ),
-    ).toBe(`${ROOT}/script/create3-factory/custom-out`);
+  test("relative dir under the build root", () => {
+    expect(resolveBuildRootDir("custom-out", ROOT, DEFAULT_FORGE_OUT)).toBe(
+      `${ROOT}/custom-out`,
+    );
   });
 
-  test("absolute path unchanged", () => {
-    expect(resolveForgeOutDir("/var/forge-out", `${ROOT}/foundry.toml`)).toBe(
-      "/var/forge-out",
-    );
+  test("absolute dir unchanged", () => {
+    expect(
+      resolveBuildRootDir("/var/forge-out", ROOT, DEFAULT_FORGE_OUT),
+    ).toBe("/var/forge-out");
   });
 });
 
@@ -59,24 +90,17 @@ describe("parseForgeOptions", () => {
         { "forge-config": "script/create3-factory/foundry.toml" },
         ROOT,
       ),
-    ).toEqual({
-      forgeConfig: `${ROOT}/script/create3-factory/foundry.toml`,
-      outDir: `${ROOT}/script/create3-factory/out`,
-    });
+    ).toEqual(expectedForge("script/create3-factory/foundry.toml"));
   });
 
   test("reads camelCase forgeConfig", () => {
-    expect(parseForgeOptions({ forgeConfig: "foundry.toml" }, ROOT)).toEqual({
-      forgeConfig: `${ROOT}/foundry.toml`,
-      outDir: `${ROOT}/out`,
-    });
+    expect(parseForgeOptions({ forgeConfig: "foundry.toml" }, ROOT)).toEqual(
+      expectedForge("foundry.toml"),
+    );
   });
 
   test("default outDir", () => {
-    expect(parseForgeOptions({}, ROOT)).toEqual({
-      forgeConfig: `${ROOT}/foundry.toml`,
-      outDir: `${ROOT}/out`,
-    });
+    expect(parseForgeOptions({}, ROOT)).toEqual(expectedForge("foundry.toml"));
   });
 
   test("reads foundry-out kebab flag", () => {
@@ -89,15 +113,36 @@ describe("parseForgeOptions", () => {
         ROOT,
       ),
     ).toEqual({
-      forgeConfig: `${ROOT}/script/create3-factory/foundry.toml`,
+      ...expectedForge("script/create3-factory/foundry.toml"),
       outDir: `${ROOT}/script/create3-factory/custom-out`,
     });
   });
 
   test("reads camelCase foundryOut", () => {
     expect(parseForgeOptions({ foundryOut: "build-out" }, ROOT)).toEqual({
-      forgeConfig: `${ROOT}/foundry.toml`,
+      ...expectedForge("foundry.toml"),
       outDir: `${ROOT}/build-out`,
+    });
+  });
+
+  test("reads foundry-src/cache/libs and build-root flags", () => {
+    expect(
+      parseForgeOptions(
+        {
+          "build-root": "artifacts",
+          "foundry-src": "contracts",
+          "foundry-cache": "fcache",
+          "foundry-libs": "vendor",
+        },
+        ROOT,
+      ),
+    ).toEqual({
+      forgeConfig: `${ROOT}/foundry.toml`,
+      buildRoot: `${ROOT}/artifacts`,
+      outDir: `${ROOT}/artifacts/out`,
+      srcDir: `${ROOT}/artifacts/contracts`,
+      cacheDir: `${ROOT}/artifacts/fcache`,
+      libsDir: `${ROOT}/artifacts/vendor`,
     });
   });
 
@@ -107,10 +152,7 @@ describe("parseForgeOptions", () => {
     try {
       expect(
         parseForgeOptions({ "forge-config": "${env:MY_FORGE_CONFIG}" }, ROOT),
-      ).toEqual({
-        forgeConfig: `${ROOT}/script/create3-factory/foundry.toml`,
-        outDir: `${ROOT}/script/create3-factory/out`,
-      });
+      ).toEqual(expectedForge("script/create3-factory/foundry.toml"));
     } finally {
       if (prev === undefined) {
         delete process.env.MY_FORGE_CONFIG;
@@ -124,10 +166,9 @@ describe("parseForgeOptions", () => {
     const prev = process.env.FORGE_CONFIG;
     process.env.FORGE_CONFIG = "custom/foundry.toml";
     try {
-      expect(parseForgeOptions({ "forge-config": "${env}" }, ROOT)).toEqual({
-        forgeConfig: `${ROOT}/custom/foundry.toml`,
-        outDir: `${ROOT}/custom/out`,
-      });
+      expect(parseForgeOptions({ "forge-config": "${env}" }, ROOT)).toEqual(
+        expectedForge("custom/foundry.toml"),
+      );
     } finally {
       if (prev === undefined) {
         delete process.env.FORGE_CONFIG;

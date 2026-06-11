@@ -14,7 +14,7 @@ describe("parseDeployCreate3Options", () => {
 
     try {
       const options = parseDeployCreate3Options({
-        "univocity-root": ROOT,
+        "source-root": ROOT,
       });
       expect(options.create3Salt).toBe(DEFAULT_CREATE3_SALT);
       expect(options.rpcUrl).toBe("http://127.0.0.1:8545");
@@ -38,7 +38,7 @@ describe("parseDeployCreate3Options", () => {
     process.env.RPC_URL = "http://env-host:8545";
     try {
       const options = parseDeployCreate3Options({
-        "univocity-root": ROOT,
+        "source-root": ROOT,
         "rpc-url": "${env}",
         "deploy-key": "0x01",
       });
@@ -54,7 +54,7 @@ describe("parseDeployCreate3Options", () => {
 
   test("reads explicit flags", () => {
     const options = parseDeployCreate3Options({
-      "univocity-root": ROOT,
+      "source-root": ROOT,
       "rpc-url": "http://example:8545",
       "deploy-key": "abc123",
       "create3-salt": "test/salt/0",
@@ -70,7 +70,7 @@ describe("parseDeployCreate3Options", () => {
     try {
       expect(() =>
         parseDeployCreate3Options({
-          "univocity-root": ROOT,
+          "source-root": ROOT,
           "deploy-key": "0x01",
         }),
       ).toThrow("RPC URL is required");

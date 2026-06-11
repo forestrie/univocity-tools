@@ -1,35 +1,27 @@
+import {
+  formatProcessFailure,
+  runProcess,
+  type RunProcessResult,
+} from "@univocity-tools/subprocess";
 import type { FoundryExecContext } from "./require-bins.js";
 
-export type SpawnResult = {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-};
+export type SpawnResult = RunProcessResult;
 
 async function runBin(
   ctx: FoundryExecContext,
   bin: string,
   argv: string[],
 ): Promise<SpawnResult> {
-  const proc = Bun.spawn([bin, ...argv], {
+  const result = await runProcess([bin, ...argv], {
     cwd: ctx.cwd ?? process.cwd(),
     env: process.env,
-    stdin: "ignore",
-    stdout: "pipe",
-    stderr: "pipe",
   });
 
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-    proc.exited,
-  ]);
-
-  if (stderr.length > 0) {
-    ctx.out.log("%s", stderr);
+  if (result.stderr.length > 0) {
+    ctx.out.log("%s", result.stderr);
   }
 
-  return { stdout, stderr, exitCode };
+  return result;
 }
 
 function throwOnFailure(
@@ -40,9 +32,7 @@ function throwOnFailure(
   if (result.exitCode === 0) {
     return;
   }
-  const cmd = `${tool} ${argv.join(" ")}`;
-  const detail = result.stderr.trim() || result.stdout.trim() || "failed";
-  throw new Error(`${cmd} failed (${result.exitCode}): ${detail}`);
+  throw new Error(formatProcessFailure(`${tool} ${argv.join(" ")}`, result));
 }
 
 export async function runForge(

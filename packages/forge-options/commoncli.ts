@@ -10,12 +10,35 @@ export const forgeArgs = {
     valueHint: "path",
     default: "foundry.toml",
   },
-  "foundry-out": {
+  "build-root": {
     type: "string",
     description:
-      "Forge artifact output directory (relative to the forge config directory)",
+      "Base directory for forge artifact dirs (defaults to the forge config directory)",
+    valueHint: "path",
+  },
+  "foundry-out": {
+    type: "string",
+    description: "Forge artifact output directory (relative to --build-root)",
     valueHint: "path",
     default: "out",
+  },
+  "foundry-src": {
+    type: "string",
+    description: "Forge sources directory (relative to --build-root)",
+    valueHint: "path",
+    default: "src",
+  },
+  "foundry-cache": {
+    type: "string",
+    description: "Forge cache directory (relative to --build-root)",
+    valueHint: "path",
+    default: "cache",
+  },
+  "foundry-libs": {
+    type: "string",
+    description: "Forge libraries directory (relative to --build-root)",
+    valueHint: "path",
+    default: "lib",
   },
 } as const satisfies ArgsDef;
 

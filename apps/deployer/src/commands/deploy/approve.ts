@@ -34,8 +34,7 @@ export default defineDeployerCommand({
     },
     "confirm-only": {
       type: "boolean",
-      description:
-        "Post the owner confirmation only; do not execute on-chain",
+      description: "Post the owner confirmation only; do not execute on-chain",
       default: false,
     },
   }),

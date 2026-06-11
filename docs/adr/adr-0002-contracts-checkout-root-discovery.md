@@ -1,7 +1,7 @@
 # Contracts checkout root discovery
 
 ADR-0001 accepts explicit cross-repo paths such as `UNIVOCITY_ROOT`. The
-builder tool also needs sensible defaults when developers run commands
+`contract-artefacts` tool also needs sensible defaults when developers run commands
 from sibling checkouts without exporting env vars every time.
 
 We resolve the **contracts checkout root** eagerly at parse time to an

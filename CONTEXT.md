@@ -12,7 +12,7 @@ packages for contract build, release, deploy, and ops.
 _Avoid_: univocity repo, contracts repo.
 
 **Tool**:
-A runnable CLI under `apps/` (for example `builder`, `deployer`).
+A runnable CLI under `apps/` (for example `contract-artefacts`, `deployer`).
 _Avoid_: service, script.
 
 **Deployer (tool)**:
@@ -23,12 +23,15 @@ _Avoid_: conflating with Python deploy scripts in the **contracts repo**.
 A library under `packages/` imported by two or more tools.
 _Avoid_: util, common (without scope).
 
-**Builder (tool)**:
-The `apps/builder` CLI — future home for artifact generation (Safe
-batches, deploy manifests).
+**Cart (tool)**:
+The contract artefact CLI — binary `contract-artefacts`, package
+`apps/contract-artefacts`; TypeScript helpers use `Cart*` names
+(`defineCartCommand`, `CartCommonOptions`). Packages build archives,
+extract them, and validate Safe batch JSON.
 _Avoid_: **log builder** (platform: off-chain sequencing worker),
 **Safe Transaction Builder** (Gnosis Safe UI — use **Safe batch JSON**
-for the export artifact).
+for the export artifact), **contracts repo** (Solidity checkout),
+**`foundry-artefacts`** (format library, not the CLI).
 
 **Safe batch JSON**:
 Gnosis Safe Transaction Builder export consumed by univocity deploy
@@ -41,9 +44,10 @@ sources, `forge script`, Python proposers.
 _Avoid_: on-chain repo.
 
 **Contracts checkout root**:
-The absolute filesystem path to a **contracts repo** checkout. Builder
-commands resolve it from `--univocity-root`, `UNIVOCITY_ROOT`, git
-discovery, or cwd. TypeScript field: `univocityRoot`.
+The absolute filesystem path to a **contracts repo** checkout. Cart
+and deployer commands resolve it from `--source-root`, `SOURCE_ROOT`,
+git discovery for the `univocity` repo, or cwd. TypeScript field in app
+code: `univocityRoot` (maps from cli-kit `sourceRoot`).
 _Avoid_: “Univocity root” alone — collides with platform **Univocity
 root bootstrap** (on-chain `rootLogId` transaction).
 
@@ -55,9 +59,48 @@ field: `forgeConfig`.
 _Avoid_: conflating CLI `--forge-config` with the forge binary flag
 `--config-path`.
 
+**Build root**:
+The base directory the forge artifact directories (`out`, `src`,
+`cache`, `lib`) resolve against; defaults to the **forge config path**
+directory. CLI `--build-root`; TypeScript field: `buildRoot`.
+_Avoid_: conflating with **contracts checkout root** or **work dir**.
+
+**Work dir**:
+The directory for generated build/deploy artifacts, default `.work`
+resolved under the **contracts checkout root**. CLI `--work-dir`;
+TypeScript field: `workDir`.
+_Avoid_: temp dir, output dir.
+
+**Build archive**:
+The `tar.gz` produced by `contract-artefacts archive` — the forge
+`out/` tree (including `out/build-info`) plus
+`cache/solidity-files-cache.json` — that lets consumers deploy, verify,
+and generate bindings without the foundry toolchain. Default base name
+`build` (`build.tar.gz`), set via `--archive-name`. Sources are not
+shipped; they can be materialized via **archive extract** and **source
+hydration**. Consumed by `contract-artefacts archive-extract`.
+_Avoid_: build bundle, artifact tarball.
+
+**Archive extract**:
+The inverse of **build archive** packaging: unpack a `tar.gz` into a
+**release root** and **hydrate sources**. CLI
+`contract-artefacts archive-extract`.
+_Avoid_: extract bundle, unpack.
+
+**Release root**:
+The directory where an **archive extract** places forge artefacts
+(`out/`, `cache/`) and materialized Solidity sources. CLI
+`--release-root`; env `RELEASE_ROOT`.
+_Avoid_: work dir, contracts checkout root.
+
+**Source hydration**:
+Writing Solidity source files from forge `out/build-info` embedded
+content into a **release root**. Skips paths that already exist.
+_Avoid_: source restore, cache replay.
+
 **Option mixin**:
 Reusable citty `args` schema plus `parse*` helpers merged into an app's
-`commonArgs` (for example `@univocity-tools/forge-options` on builder,
+`commonArgs` (for example `@univocity-tools/forge-options` on Cart,
 `@univocity-tools/create3-options` on deployer).
 _Avoid_: duplicating mixin flags only in `commoncli.ts` without a shared
 package.
@@ -135,9 +178,9 @@ _Avoid_: expecting `deploy execute` to broadcast a `safe` proposal.
 
 **Bootstrap key / bootstrap alg**:
 The `ImutableUnivocity` constructor key fixed at deploy: `bootstrapAlg`
-is `es256` (ALG_ES256 −7; key = 64-byte P-256 `x||y`) or `ks256`
+is `es256` (ALG*ES256 −7; key = 64-byte P-256 `x||y`) or `ks256`
 (ALG_KS256 −65799; key = 20-byte address). Resolved by `bootstrap-key.ts`.
-_Avoid_: conflating with the platform **root bootstrap** checkpoint
+\_Avoid*: conflating with the platform **root bootstrap** checkpoint
 (out of scope here).
 
 ## Example dialogue
@@ -145,9 +188,10 @@ _Avoid_: conflating with the platform **root bootstrap** checkpoint
 **Dev:** We need to regenerate the deploy Safe batch before proposing on
 Base Sepolia.
 
-**Ops:** Run the **builder tool** from **univocity-tools** with
-`--univocity-root` pointing at the **contracts repo**, or `cd` into that
-checkout so discovery finds it — then emit fresh **Safe batch JSON**.
+**Ops:** Run **Cart** (`contract-artefacts`) from **univocity-tools** with
+`--source-root` pointing at the **contracts repo**, or `cd` into that
+checkout so discovery finds the `univocity` git repo — then emit fresh
+**Safe batch JSON**.
 The canopy **log builder** is unrelated; that sequences transparency log
 entries, not Gnosis Safe transactions.
 
@@ -161,4 +205,4 @@ A redistributed binary uses **embedded Create3 defaults**; in a local
 **univocity tools repo** checkout it picks up live `create3.jsonc`
 automatically. Override with `--create3-config` when testing alternate
 addresses — that's separate from **contracts checkout root**, which
-still comes from `--univocity-root`.
+still comes from `--source-root` (or git discovery for `univocity`).

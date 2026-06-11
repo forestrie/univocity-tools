@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release
-          for app in builder deployer; do
+          for app in contract-artefacts deployer; do
             binary="apps/${app}/dist/${app}-linux-x64"
             cp "${binary}" "release/${app}-linux-x64"
             shasum -a 256 "release/${app}-linux-x64" > "release/${app}-linux-x64.sha256"
@@ -46,7 +46,7 @@ jobs:
         with:
           generate_release_notes: true
           files: |
-            release/builder-linux-x64
-            release/builder-linux-x64.sha256
+            release/contract-artefacts-linux-x64
+            release/contract-artefacts-linux-x64.sha256
             release/deployer-linux-x64
             release/deployer-linux-x64.sha256

@@ -55,9 +55,17 @@ if (exitCode !== 0) {
 
 ## Shared wrapper
 
-When two tools share spawn logic, add a small helper in **`packages/`**
-(for example reading `UNIVOCITY_ROOT`, mapping exit codes, teeing
-stderr). Keep argv arrays at the call site when behavior differs.
+Use **`@univocity-tools/subprocess`** instead of duplicating spawn logic.
+
+| Export | When to use |
+|--------|-------------|
+| `runProcess(argv, options?)` | Capture stdout/stderr/exit code; caller handles failure (e.g. `foundry-exec` `runForge` / `runCast`) |
+| `runChecked(out, argv, options?)` | Log stderr via `Out`, throw on non-zero exit (e.g. `tar`, `rsync` in contract-artefacts archive commands) |
+| `formatProcessFailure(command, result)` | Build consistent `"cmd failed (N): detail"` messages |
+
+Keep argv arrays at the call site when behavior differs. Domain-specific
+wrappers (forge/cast bin resolution) belong in packages like
+`foundry-exec`, not in `subprocess`.
 
 ## Tests
 

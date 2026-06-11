@@ -250,14 +250,19 @@ function asServiceAddress(value: unknown, label: string): Address {
   return getAddress(value);
 }
 
-function parseServiceTransaction(json: Record<string, unknown>): SafeServiceTransaction {
+function parseServiceTransaction(
+  json: Record<string, unknown>,
+): SafeServiceTransaction {
   const confirmationsRaw = Array.isArray(json.confirmations)
     ? json.confirmations
     : [];
   const confirmations: SafeConfirmation[] = confirmationsRaw.map(
     (entry, index) => {
       const row = entry as Record<string, unknown>;
-      const owner = asServiceAddress(row.owner, `confirmations[${index}].owner`);
+      const owner = asServiceAddress(
+        row.owner,
+        `confirmations[${index}].owner`,
+      );
       const signature = asServiceHex(
         row.signature,
         `confirmations[${index}].signature`,
@@ -285,8 +290,7 @@ function parseServiceTransaction(json: Record<string, unknown>): SafeServiceTran
   );
 
   const executionTxHash =
-    typeof json.transactionHash === "string" &&
-    isHex(json.transactionHash)
+    typeof json.transactionHash === "string" && isHex(json.transactionHash)
       ? json.transactionHash
       : undefined;
 
@@ -327,8 +331,7 @@ export async function postSafeConfirmation(
   signature: Hex,
 ): Promise<void> {
   const base = serviceBaseUrl(serviceUrl);
-  const url =
-    `${base}/api/v1/multisig-transactions/${safeTxHash}/confirmations/`;
+  const url = `${base}/api/v1/multisig-transactions/${safeTxHash}/confirmations/`;
   const response = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -379,7 +382,9 @@ function hasOwnerConfirmation(
   owner: Address,
 ): boolean {
   const normalized = owner.toLowerCase();
-  return confirmations.some((entry) => entry.owner.toLowerCase() === normalized);
+  return confirmations.some(
+    (entry) => entry.owner.toLowerCase() === normalized,
+  );
 }
 
 /** Poll the Transaction Service until threshold confirmations are collected. */
@@ -393,10 +398,7 @@ export async function waitForSafeConfirmations(
   const delayMs = options?.delayMs ?? 1500;
   for (let attempt = 0; attempt < attempts; attempt++) {
     const tx = await fetchSafeTransaction(serviceUrl, safeTxHash);
-    if (
-      tx.confirmations.length >= confirmationsRequired ||
-      tx.isExecuted
-    ) {
+    if (tx.confirmations.length >= confirmationsRequired || tx.isExecuted) {
       return tx;
     }
     await Bun.sleep(delayMs);
@@ -490,18 +492,17 @@ export async function approveSafeTransaction(
     );
   }
 
-  let serviceTx = await fetchSafeTransaction(input.serviceUrl, input.safeTxHash);
+  let serviceTx = await fetchSafeTransaction(
+    input.serviceUrl,
+    input.safeTxHash,
+  );
   if (serviceTx.isExecuted) {
     return { executionTxHash: serviceTx.executionTxHash, serviceTx };
   }
 
   const signature = await signSafeTxHash(input.signerKey, input.safeTxHash);
   if (!hasOwnerConfirmation(serviceTx.confirmations, input.signerAddress)) {
-    await postSafeConfirmation(
-      input.serviceUrl,
-      input.safeTxHash,
-      signature,
-    );
+    await postSafeConfirmation(input.serviceUrl, input.safeTxHash, signature);
     serviceTx = await fetchSafeTransaction(input.serviceUrl, input.safeTxHash);
   }
 

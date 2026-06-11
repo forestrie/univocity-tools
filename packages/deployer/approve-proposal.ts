@@ -57,7 +57,9 @@ function safeTxFieldsFromProposal(proposal: Proposal): SafeTxFields {
   }
   const tx = proposal.transactions[0] as ProposalTransaction | undefined;
   if (tx === undefined || tx.to === null) {
-    throw new Error("safe proposals require a CALL transaction with a to address");
+    throw new Error(
+      "safe proposals require a CALL transaction with a to address",
+    );
   }
   return buildSafeTxFields({
     to: tx.to,

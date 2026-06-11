@@ -1,6 +1,6 @@
-import { defineBuilderCommand } from "@univocity-tools/builder-common";
+import { defineCartCommand } from "@univocity-tools/contract-artefacts-common";
 
-export default defineBuilderCommand({
+export default defineCartCommand({
   meta: {
     name: "validate",
     description: "Validate Univocity deploy and build artifacts",
