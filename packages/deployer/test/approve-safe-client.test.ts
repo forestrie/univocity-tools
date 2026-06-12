@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import type { Hex } from "viem";
 import {
   packSafeSignatures,
   postSafeConfirmation,
@@ -39,7 +40,7 @@ describe("postSafeConfirmation", () => {
       return new Response("{}", { status: 201 });
     }) as unknown as typeof fetch;
 
-    const safeTxHash = `0x${"ab".repeat(32)}`;
+    const safeTxHash: Hex = `0x${"ab".repeat(32)}`;
     await postSafeConfirmation(
       "https://safe-transaction-base-sepolia.safe.global/",
       safeTxHash,

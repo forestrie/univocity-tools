@@ -6,5 +6,5 @@
     // Signer address for Arachnid proxy deployment, you need to send funds to this account to deploy with the arachnid proxy.
     "signer": "0x3fAB184622Dc19b6109349B94811493BF2a45362",
     // CREATE3 factory address - the address the create3 factory will be deployed to.
-    "factory": "0x606A25c0432766B45ece27Dd4e2208A7cE14dC5b"
+    "factory": "0x988e1Ef32F200E84197266eC0Fd36cC9a1d849dF"
 }

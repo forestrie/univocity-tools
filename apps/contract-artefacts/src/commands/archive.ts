@@ -19,6 +19,13 @@ export default defineCartCommand({
       valueHint: "name",
       default: "build",
     },
+    "release-id": {
+      type: "string",
+      description:
+        "Append a release id to the archive base name " +
+        "(<name>-<release-id>); pass an empty value to derive it from git",
+      valueHint: "id",
+    },
   },
   run: defineCommandRunner(parseArchiveOptions, runArchive),
 });

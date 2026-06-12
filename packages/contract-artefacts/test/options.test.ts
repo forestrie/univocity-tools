@@ -4,6 +4,7 @@ import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import {
   parseArchiveExtractOptions,
   parseArchiveOptions,
+  parseReleaseIdOptions,
   parseValidateBatchOptions,
 } from "../options.js";
 
@@ -63,6 +64,7 @@ describe("parseArchiveOptions", () => {
     expect(options).toEqual({
       ...commonExpected(univocityRoot),
       archiveName: "build",
+      autoReleaseId: false,
     });
   });
 
@@ -74,6 +76,89 @@ describe("parseArchiveOptions", () => {
     });
     expect(options.workDir).toBe(path.resolve("/tmp/univocity", "build-out"));
     expect(options.archiveName).toBe("factory");
+  });
+
+  test("omits release id when --release-id is absent", () => {
+    const options = parseArchiveOptions({ "source-root": "/tmp/univocity" });
+    expect(options.releaseId).toBeUndefined();
+    expect(options.autoReleaseId).toBe(false);
+  });
+
+  test("uses an explicit --release-id value", () => {
+    const options = parseArchiveOptions({
+      "source-root": "/tmp/univocity",
+      "release-id": "v0.1.1+260612-0594a39e",
+    });
+    expect(options.releaseId).toBe("v0.1.1+260612-0594a39e");
+    expect(options.autoReleaseId).toBe(false);
+  });
+
+  test("auto-derives when --release-id is present but empty", () => {
+    const options = parseArchiveOptions({
+      "source-root": "/tmp/univocity",
+      "release-id": "",
+    });
+    expect(options.releaseId).toBeUndefined();
+    expect(options.autoReleaseId).toBe(true);
+  });
+});
+
+describe("parseReleaseIdOptions", () => {
+  test("defaults to no bump and full release id", () => {
+    const options = parseReleaseIdOptions({ "source-root": "/tmp/univocity" });
+    expect(options.bump).toBeUndefined();
+    expect(options.semverOnly).toBe(false);
+  });
+
+  test("maps each --next-* flag to a bump level", () => {
+    expect(
+      parseReleaseIdOptions({
+        "source-root": "/tmp/univocity",
+        "next-major": true,
+      }).bump,
+    ).toBe("major");
+    expect(
+      parseReleaseIdOptions({
+        "source-root": "/tmp/univocity",
+        "next-patch": true,
+      }).bump,
+    ).toBe("patch");
+  });
+
+  test("--next aliases --next-minor", () => {
+    expect(
+      parseReleaseIdOptions({ "source-root": "/tmp/univocity", next: true })
+        .bump,
+    ).toBe("minor");
+  });
+
+  test("--next and --next-minor together are not a conflict", () => {
+    expect(
+      parseReleaseIdOptions({
+        "source-root": "/tmp/univocity",
+        next: true,
+        "next-minor": true,
+      }).bump,
+    ).toBe("minor");
+  });
+
+  test("throws when distinct bump levels conflict", () => {
+    expect(() =>
+      parseReleaseIdOptions({
+        "source-root": "/tmp/univocity",
+        "next-minor": true,
+        "next-patch": true,
+      }),
+    ).toThrow("--next-* flags are mutually exclusive");
+  });
+
+  test("reads --semver", () => {
+    expect(
+      parseReleaseIdOptions({
+        "source-root": "/tmp/univocity",
+        semver: true,
+      }).semverOnly,
+    ).toBe(true);
   });
 });
 

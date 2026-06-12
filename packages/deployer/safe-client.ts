@@ -229,7 +229,7 @@ export type SafeServiceTransaction = {
   confirmations: SafeConfirmation[];
   confirmationsRequired: number;
   isExecuted: boolean;
-  executionTxHash?: Hex;
+  executionTxHash?: Hex | undefined;
 };
 
 function serviceBaseUrl(serviceUrl: string): string {
@@ -477,7 +477,10 @@ export type ApproveSafeTransactionInput = {
  */
 export async function approveSafeTransaction(
   input: ApproveSafeTransactionInput,
-): Promise<{ executionTxHash?: Hex; serviceTx: SafeServiceTransaction }> {
+): Promise<{
+  executionTxHash?: Hex | undefined;
+  serviceTx: SafeServiceTransaction;
+}> {
   await assertSafeOwner(input.rpcUrl, input.safe, input.signerAddress);
 
   const expectedHash = computeSafeTxHash(

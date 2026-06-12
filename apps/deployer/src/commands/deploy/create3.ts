@@ -16,7 +16,7 @@ export default defineDeployerCommand({
     "create3-salt": {
       type: "string",
       description:
-        "CREATE3 factory salt string (default: univocity-create3/1 or CREATE3_SALT env)",
+        "CREATE3 factory salt string (default: forestrie.eth/univocity/CREATE3Factory/0 or CREATE3_SALT env)",
       valueHint: "string",
     },
   }),

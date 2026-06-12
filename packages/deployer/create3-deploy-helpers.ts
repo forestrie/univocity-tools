@@ -1,7 +1,7 @@
 import { evaluateOptionValue } from "@univocity-tools/cli-kit";
 import { keccak256, toBytes, type Hex } from "viem";
 
-export const DEFAULT_CREATE3_SALT = "univocity-create3/1";
+export const DEFAULT_CREATE3_SALT = "forestrie.eth/univocity/CREATE3Factory/0";
 
 /** keccak256(bytes(saltString)) — matches cast keccak and Solidity. */
 export function hashCreate3SaltString(saltString: string): Hex {

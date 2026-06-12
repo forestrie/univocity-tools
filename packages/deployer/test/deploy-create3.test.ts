@@ -54,7 +54,7 @@ describe("normalizePrivateKey", () => {
 });
 
 describe("resolveCreate3Salt", () => {
-  test("defaults to univocity-create3/1", () => {
+  test("defaults to forestrie.eth/univocity/CREATE3Factory/0", () => {
     expect(resolveCreate3Salt({})).toBe(DEFAULT_CREATE3_SALT);
   });
 

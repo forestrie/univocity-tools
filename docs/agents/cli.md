@@ -315,6 +315,7 @@ contract-artefacts
 ├── archive                # Package forge build outputs into a tar.gz
 ├── archive-extract        # Extract a build archive and hydrate sources
 │   [archive]              #   archive path relative to --work-dir
+├── release-id             # Derive the release id (version+build-id) from git
 └── validate
     └── batch [path]       # Validate a Safe batch JSON file
 ```
@@ -332,6 +333,9 @@ generate bindings without the foundry toolchain (see
 - Tars `<workDir>/build` to `<workDir>/<archive-name>.tar.gz`
   (`--archive-name`, default `build`); the archive path is written to
   stdout via `out.out`.
+- `--release-id` appends a **release id** to the base name
+  (`<archive-name>-<release-id>`): pass an explicit value, or an empty
+  value to derive it from git like `release-id`.
 - Never invokes forge; errors if `out/` or `solidity-files-cache.json` is
   missing ("run forge build first"). Sources are not shipped — materialize
   them from `solidity-files-cache.json` + `out/build-info`.
@@ -353,6 +357,24 @@ root** and performs **source hydration** from `out/build-info` (see
   (`hydrateSources`); skips existing source paths; warns on malformed
   build-info JSON.
 - Never invokes forge; errors if the archive file is missing.
+
+### Release id
+
+`contract-artefacts release-id` derives the **release id** from the contracts
+checkout's git tags and HEAD (see
+[ADR-0007](../adr/adr-0007-release-id-format.md)).
+
+- Selects the most recent semver-shaped tag (`git tag --sort=-creatordate`,
+  optional leading `v`) as the **release tag**; falls back to `v0.0.0`.
+- `--next-major` / `--next-minor` / `--next-patch` bump the version (resetting
+  lower levels); `--next` aliases `--next-minor`; the flags are mutually
+  exclusive.
+- Appends a **build id** `YYMMDD-<short-commit>` (current UTC date +
+  `git rev-parse --short HEAD`) to produce `v0.1.1+260612-<hash>`, written to
+  stdout via `out.out`.
+- `--semver` prints only the release tag (no build id).
+- Errors when `--source-root` is not a git repository (parse-time discovery
+  otherwise falls back to the working directory).
 
 ## Deployer commands
 

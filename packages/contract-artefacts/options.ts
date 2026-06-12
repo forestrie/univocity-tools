@@ -28,6 +28,21 @@ export type ValidateBatchOptions = CartCommonOptions & {
 /** Options for `contract-artefacts archive`. */
 export type ArchiveOptions = CartCommonOptions & {
   archiveName: string;
+  /** Explicit release id to append to the archive base name, if provided. */
+  releaseId?: string | undefined;
+  /** When true (flag passed without a value), derive the release id from git. */
+  autoReleaseId: boolean;
+};
+
+/** Semver level to increment when deriving the release id. */
+export type BumpLevel = "major" | "minor" | "patch";
+
+/** Options for `contract-artefacts release-id`. */
+export type ReleaseIdOptions = CartCommonOptions & {
+  /** Optional bump applied to the most recent semver tag. */
+  bump?: BumpLevel | undefined;
+  /** When true, print only the semver version (no build id). */
+  semverOnly: boolean;
 };
 
 /** Options for `contract-artefacts archive-extract`. */
@@ -83,9 +98,56 @@ export function parseArchiveOptions(args: LooseParsedArgs): ArchiveOptions {
     typeof rawName === "string" && rawName.trim().length > 0
       ? rawName.trim()
       : DEFAULT_ARCHIVE_NAME;
+
+  const releaseIdPresent = "release-id" in args || "releaseId" in args;
+  const releaseIdValue = readEvaluatedStringOption(
+    args as Record<string, unknown>,
+    "release-id",
+  )?.trim();
+  const hasExplicitReleaseId =
+    releaseIdValue !== undefined && releaseIdValue.length > 0;
+
   return {
     ...parseCartCommonOptions(args as CommonArgSlice),
     archiveName,
+    releaseId: hasExplicitReleaseId ? releaseIdValue : undefined,
+    autoReleaseId: releaseIdPresent && !hasExplicitReleaseId,
+  };
+}
+
+function booleanFlag(
+  args: LooseParsedArgs,
+  kebab: string,
+  camel: string,
+): boolean {
+  return args[kebab] === true || args[camel] === true;
+}
+
+export function parseReleaseIdOptions(
+  args: LooseParsedArgs,
+): ReleaseIdOptions {
+  const levels = new Set<BumpLevel>();
+  if (booleanFlag(args, "next-major", "nextMajor")) {
+    levels.add("major");
+  }
+  if (
+    booleanFlag(args, "next-minor", "nextMinor") ||
+    booleanFlag(args, "next", "next")
+  ) {
+    levels.add("minor");
+  }
+  if (booleanFlag(args, "next-patch", "nextPatch")) {
+    levels.add("patch");
+  }
+  if (levels.size > 1) {
+    throw new Error("--next-* flags are mutually exclusive");
+  }
+
+  const [bump] = levels;
+  return {
+    ...parseCartCommonOptions(args as CommonArgSlice),
+    bump,
+    semverOnly: booleanFlag(args, "semver", "semver"),
   };
 }
 

@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { ArchiveOptions } from "./options.js";
+import { resolveReleaseId } from "./release-id.js";
 
 /** Foundry file cache that lets consumers materialize sources without forge. */
 export const SOLIDITY_FILES_CACHE = "solidity-files-cache.json";
@@ -25,10 +26,17 @@ export async function runArchive(
   const buildOut = path.join(buildDir, "out");
   const buildCacheDir = path.join(buildDir, "cache");
   const cacheFile = path.join(options.cacheDir, SOLIDITY_FILES_CACHE);
-  const archivePath = path.join(
-    options.workDir,
-    `${options.archiveName}.tar.gz`,
-  );
+
+  let baseName = options.archiveName;
+  if (options.releaseId) {
+    baseName = `${options.archiveName}-${options.releaseId}`;
+  } else if (options.autoReleaseId) {
+    const { releaseId } = await resolveReleaseId(out, {
+      repoRoot: options.univocityRoot,
+    });
+    baseName = `${options.archiveName}-${releaseId}`;
+  }
+  const archivePath = path.join(options.workDir, `${baseName}.tar.gz`);
 
   if (!existsSync(options.outDir)) {
     throw new Error(

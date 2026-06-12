@@ -98,6 +98,31 @@ Writing Solidity source files from forge `out/build-info` embedded
 content into a **release root**. Skips paths that already exist.
 _Avoid_: source restore, cache replay.
 
+**Release tag**:
+The semver version portion of a **release id**, e.g. `v0.1.1`. Resolved
+as the most recent semver-shaped git tag (by creation date) in the
+**contracts checkout**, optionally bumped (`--next-major` /
+`--next-minor` / `--next-patch`; `--next` aliases `--next-minor`);
+falls back to `v0.0.0` when no semver tag exists. Emitted by
+`contract-artefacts release-id --semver`.
+_Avoid_: conflating with the combined **release id**. (Matches the
+prototype taskfile `release-tag` task, which is also semver-only.)
+
+**Build id**:
+The `YYMMDD-<short-commit>` suffix of a **release id**, e.g.
+`260612-21c98ad`: the current UTC date (compact, no separators) and
+`git rev-parse --short HEAD` of the **contracts checkout**.
+_Avoid_: the prototype taskfile `YYYY-MM-DD` date form — Cart uses the
+compact two-digit-year date.
+
+**Release id**:
+The combined `release-tag+build-id`, e.g. `v0.1.1+260612-21c98ad`.
+Default output of `contract-artefacts release-id`; appended to a **build
+archive** base name via `archive --release-id` (`<name>-<release-id>`),
+deriving the value from git when the flag is passed empty.
+_Avoid_: build tag, version string. (Matches the prototype taskfile
+`release-id` task; only the date format differs — see **Build id**.)
+
 **Option mixin**:
 Reusable citty `args` schema plus `parse*` helpers merged into an app's
 `commonArgs` (for example `@univocity-tools/forge-options` on Cart,

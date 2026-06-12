@@ -5,7 +5,7 @@ import { parseDeployCreate3Options } from "../options.js";
 const ROOT = "/tmp/univocity";
 
 describe("parseDeployCreate3Options", () => {
-  test("defaults create3Salt to univocity-create3/1", () => {
+  test("defaults create3Salt to forestrie.eth/univocity/CREATE3Factory/0", () => {
     const prevRpc = process.env.RPC_URL;
     const prevKey = process.env.DEPLOY_KEY;
     process.env.RPC_URL = "http://127.0.0.1:8545";

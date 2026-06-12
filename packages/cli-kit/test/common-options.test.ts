@@ -51,9 +51,11 @@ describe("resolveSourceGitRootEager", () => {
       const prev = process.cwd();
       process.chdir(nestedDir);
       try {
+        const expected = findGitRepoRootNamed("univocity", process.cwd());
+        expect(expected).not.toBeUndefined();
         expect(
           resolveSourceGitRootEager({}, { gitRepoName: "univocity" }),
-        ).toBe(findGitRepoRootNamed("univocity", process.cwd()));
+        ).toBe(expected!);
       } finally {
         process.chdir(prev);
       }
