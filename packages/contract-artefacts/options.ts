@@ -55,6 +55,12 @@ export type ArchiveExtractOptions = CartCommonOptions & {
   releaseRoot: string;
 };
 
+/** Options for `contract-artefacts archive-validate`. */
+export type ArchiveValidateOptions = CartCommonOptions & {
+  /** Absolute path to the release root to validate. */
+  releaseRoot: string;
+};
+
 /** Options for `contract-artefacts fetch-release`. */
 export type FetchReleaseOptions = {
   univocityRoot: string;
@@ -189,6 +195,21 @@ export function parseArchiveExtractOptions(
   return {
     ...common,
     archive: path.resolve(common.workDir, rawArchive),
+    releaseRoot: path.resolve(rawReleaseRoot ?? process.cwd()),
+  };
+}
+
+export function parseArchiveValidateOptions(
+  args: LooseParsedArgs,
+): ArchiveValidateOptions {
+  const common = parseCartCommonOptions(args as CommonArgSlice);
+  const rawReleaseRoot = readEvaluatedStringOption(
+    args as Record<string, unknown>,
+    "release-root",
+  );
+
+  return {
+    ...common,
     releaseRoot: path.resolve(rawReleaseRoot ?? process.cwd()),
   };
 }

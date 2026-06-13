@@ -14,6 +14,8 @@ export default defineCartCommand({
     archive: () => import("./commands/archive.js").then((m) => m.default),
     "archive-extract": () =>
       import("./commands/archive-extract.js").then((m) => m.default),
+    "archive-validate": () =>
+      import("./commands/archive-validate.js").then((m) => m.default),
     "fetch-release": () =>
       import("./commands/fetch-release.js").then((m) => m.default),
     "fetch-run": () =>

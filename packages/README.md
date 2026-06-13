@@ -13,6 +13,7 @@ packages/contract-artefacts/commoncli.ts     → commonArgs, defineCartCommand
 packages/contract-artefacts/options.ts       → ArchiveOptions, parseArchiveExtractOptions, …
 packages/contract-artefacts/archive.ts       → runArchive
 packages/contract-artefacts/archive-extract.ts → runArchiveExtract
+packages/contract-artefacts/archive-validate.ts → runArchiveValidate
 packages/contract-artefacts/validate-batch.ts  → runValidateBatch
 packages/contract-artefacts/main.ts          → re-export barrel
 ```

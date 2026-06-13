@@ -87,6 +87,13 @@ The inverse of **build archive** packaging: unpack a `tar.gz` into a
 `contract-artefacts archive-extract`.
 _Avoid_: extract bundle, unpack.
 
+**Archive validate**:
+Checks a **release root** (after **archive extract**) matches the forge
+`out/` and `cache/solidity-files-cache.json` in the **contracts checkout**,
+and that **hydrated sources** match the checkout. CLI
+`contract-artefacts archive-validate`.
+_Avoid_: conflating with `validate batch` (Safe batch JSON).
+
 **Release root**:
 The directory where an **archive extract** places forge artefacts
 (`out/`, `cache/`) and materialized Solidity sources. CLI

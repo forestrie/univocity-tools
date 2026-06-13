@@ -36,7 +36,7 @@ describe("contract-artefacts CLI", () => {
       runMain(command, { rawArgs: ["--help"] }),
     );
     expect(logs.join("\n")).toContain("contract-artefacts");
-    expect(logs.join("\n")).toContain("validate");
+    expect(logs.join("\n")).toContain("archive-validate");
     expect(logs.join("\n")).toContain("fetch-release");
     expect(logs.join("\n")).toContain("fetch-run");
   });

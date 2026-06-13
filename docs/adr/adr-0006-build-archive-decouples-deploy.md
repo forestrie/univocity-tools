@@ -59,3 +59,6 @@ build-info).
 See [ADR-0002](./adr-0002-contracts-checkout-root-discovery.md) for parse-time
 root resolution and [ADR-0004](./adr-0004-deploy-propose-execute-model.md) for
 the propose/execute deploy model.
+
+Contracts release CI round-trips each **build archive** with
+`archive-extract` then `archive-validate` before publish.

@@ -319,6 +319,7 @@ contract-artefacts
 ├── archive                # Package forge build outputs into a tar.gz
 ├── archive-extract        # Extract a build archive and hydrate sources
 │   [archive]              #   archive path relative to --work-dir
+├── archive-validate       # Validate a release root against forge build tree
 ├── fetch-release          # Fetch build archives from a GitHub release
 ├── fetch-run              # Fetch build archives from a workflow run
 ├── release-id             # Derive the release id (version+build-id) from git
@@ -363,6 +364,21 @@ root** and performs **source hydration** from `out/build-info` (see
   (`hydrateSources`); skips existing source paths; warns on malformed
   build-info JSON.
 - Never invokes forge; errors if the archive file is missing.
+
+### Archive validate
+
+`contract-artefacts archive-validate` checks a **release root** after
+**archive extract** against the forge build tree in the **contracts checkout**
+(see [ADR-0006](../adr/adr-0006-build-archive-decouples-deploy.md)).
+
+- Assumes `archive-extract` has already run; does not read the tarball.
+- `--release-root` (default `${env:RELEASE_ROOT}`, else cwd) — directory to
+  validate; written to stdout via `out.out` on success.
+- Uses forge mixin flags (`--source-root`, `--forge-config`, etc.) to locate
+  the reference `outDir` and `cacheDir` in the contracts checkout.
+- Compares `<releaseRoot>/out/` to the reference `out/` (`diff -rq`), byte-
+  compares `cache/solidity-files-cache.json`, and checks each hydrated source
+  path from `out/build-info` matches the checkout.
 
 ### Release id
 
