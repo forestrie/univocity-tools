@@ -8,6 +8,8 @@ import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import type { ForgeOptions } from "@univocity-tools/forge-options/options";
 import { parseForgeOptions } from "@univocity-tools/forge-options/options";
+import type { GitOptions } from "@univocity-tools/git-options/options";
+import { parseGitOptions } from "@univocity-tools/git-options/options";
 
 /** Contracts repo checkout — the univocity-specific name for `sourceRoot`. */
 export const UNIVOCITY_GIT_REPO_NAME = "univocity";
@@ -52,6 +54,25 @@ export type ArchiveExtractOptions = CartCommonOptions & {
   /** Absolute path to extract and hydrate into. */
   releaseRoot: string;
 };
+
+/** Options for `contract-artefacts fetch-release`. */
+export type FetchReleaseOptions = {
+  univocityRoot: string;
+  workDir: string;
+} & GitOptions & {
+    artefact?: string | undefined;
+    releaseTag?: string | undefined;
+  };
+
+/** Options for `contract-artefacts fetch-run`. */
+export type FetchRunOptions = {
+  univocityRoot: string;
+  workDir: string;
+} & GitOptions & {
+    artefact?: string | undefined;
+    runId?: string | undefined;
+    branch?: string | undefined;
+  };
 
 type CommonArgSlice = {
   sourceRoot?: string | undefined;
@@ -182,5 +203,61 @@ export function parseValidateBatchOptions(
   return {
     ...parseCartCommonOptions(args as CommonArgSlice),
     path: rawPath,
+  };
+}
+
+type FetchCommonArgSlice = {
+  sourceRoot?: string | undefined;
+  "source-root"?: string | undefined;
+  workDir?: string | undefined;
+  "work-dir"?: string | undefined;
+  org?: string | undefined;
+  repo?: string | undefined;
+  workflow?: string | undefined;
+  authKind?: string | undefined;
+  "auth-kind"?: string | undefined;
+  artefact?: string | undefined;
+};
+
+function parseFetchCommonOptions(
+  args: FetchCommonArgSlice,
+): { univocityRoot: string; workDir: string } & GitOptions {
+  const common = parseCommonOptions(args, {
+    gitRepoName: UNIVOCITY_GIT_REPO_NAME,
+  });
+  return {
+    univocityRoot: common.sourceRoot,
+    workDir: common.workDir,
+    ...parseGitOptions(args),
+  };
+}
+
+function optionalTrimmed(
+  args: LooseParsedArgs,
+  optionName: string,
+): string | undefined {
+  const raw = readEvaluatedStringOption(
+    args as Record<string, unknown>,
+    optionName,
+  )?.trim();
+  return raw !== undefined && raw.length > 0 ? raw : undefined;
+}
+
+export function parseFetchReleaseOptions(
+  args: LooseParsedArgs,
+): FetchReleaseOptions {
+  return {
+    ...parseFetchCommonOptions(args as FetchCommonArgSlice),
+    artefact: optionalTrimmed(args, "artefact"),
+    releaseTag: optionalTrimmed(args, "release"),
+  };
+}
+
+export function parseFetchRunOptions(args: LooseParsedArgs): FetchRunOptions {
+  return {
+    ...parseFetchCommonOptions(args as FetchCommonArgSlice),
+    artefact: optionalTrimmed(args, "artefact"),
+    runId: optionalTrimmed(args, "run-id"),
+    branch: optionalTrimmed(args, "branch"),
   };
 }

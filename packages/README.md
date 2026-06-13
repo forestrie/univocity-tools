@@ -33,6 +33,14 @@ or more tools** need the same types, validation, or client logic.
 flags and typed parse helpers. Cart (`contract-artefacts`) is the first consumer; shared
 early so future forge CLIs reuse the same mixin.
 
+**`@univocity-tools/git-options`** — mixable `--org`, `--repo`,
+`--workflow`, and `--auth-kind` citty flags for GitHub-targeting commands.
+Used by `fetch-release` and `fetch-run`.
+
+**`@univocity-tools/github-api`** — GitHub REST client for releases and
+workflow run artefacts. Token resolution via `gh auth token` or env vars;
+used by Cart fetch commands.
+
 **`@univocity-tools/create3-options`** — mixable `--create3-config`
 citty flags and typed parse helpers for Arachnid/CREATE3 infra defaults.
 Source of truth: repo-root `create3.jsonc`; build-time snapshot in

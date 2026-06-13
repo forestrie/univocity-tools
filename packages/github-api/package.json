@@ -1,0 +1,28 @@
+{
+  "name": "@univocity-tools/github-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub REST API client for releases and workflow run artefacts",
+  "type": "module",
+  "exports": {
+    ".": "./main.ts",
+    "./main": "./main.ts",
+    "./auth/auth-kind": "./auth/auth-kind.ts",
+    "./auth/resolve-token": "./auth/resolve-token.ts",
+    "./client": "./client.ts",
+    "./releases/release": "./releases/release.ts",
+    "./releases/get-release": "./releases/get-release.ts",
+    "./runs/workflow-run": "./runs/workflow-run.ts",
+    "./runs/artifact": "./runs/artifact.ts",
+    "./runs/get-run": "./runs/get-run.ts",
+    "./runs/list-artifacts": "./runs/list-artifacts.ts",
+    "./download/download-artifact-zip": "./download/download-artifact-zip.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@univocity-tools/cli-kit": "workspace:*",
+    "@univocity-tools/subprocess": "workspace:*"
+  }
+}

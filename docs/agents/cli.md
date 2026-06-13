@@ -302,6 +302,10 @@ Implement **`Bun.spawn`** only in `packages/<app>/main.ts` — see
 - **`@univocity-tools/cli-kit`** on each companion package only.
 - **`@univocity-tools/forge-options`** on apps that merge forge flags
   (Cart via `@univocity-tools/contract-artefacts-common`).
+- **`@univocity-tools/git-options`** on apps that merge GitHub targeting flags
+  (Cart fetch commands via `@univocity-tools/contract-artefacts-common`).
+- **`@univocity-tools/github-api`** on packages that call the GitHub REST API
+  (Cart fetch commands via `@univocity-tools/contract-artefacts-common`).
 - **`@univocity-tools/create3-options`** on apps that merge create3 flags
   (deployer via `@univocity-tools/deployer-common`).
 - **`@univocity-tools/foundry-exec`** on apps that spawn forge/cast
@@ -315,6 +319,8 @@ contract-artefacts
 ├── archive                # Package forge build outputs into a tar.gz
 ├── archive-extract        # Extract a build archive and hydrate sources
 │   [archive]              #   archive path relative to --work-dir
+├── fetch-release          # Fetch build archives from a GitHub release
+├── fetch-run              # Fetch build archives from a workflow run
 ├── release-id             # Derive the release id (version+build-id) from git
 └── validate
     └── batch [path]       # Validate a Safe batch JSON file
@@ -375,6 +381,38 @@ checkout's git tags and HEAD (see
 - `--semver` prints only the release tag (no build id).
 - Errors when `--source-root` is not a git repository (parse-time discovery
   otherwise falls back to the working directory).
+
+### Fetch release
+
+`contract-artefacts fetch-release` downloads contract build archives from a
+GitHub release (see
+[ADR-0008](../adr/adr-0008-fetch-release-and-run.md)).
+
+- `--org` / `--repo` (defaults `forestrie` / `univocity`) select the target
+  repository.
+- `--release <tag>` fetches a specific release; omit for the latest release.
+- `--artefact` filters by base name or full file name; omit to fetch all
+  `.tar.gz` assets (ignores "Source code" archives and checksum sidecars).
+- Saves each file to `workDir/<base>/<full-name>` and prints each path on
+  stdout.
+- `--auth-kind gh-cli` (default) uses `gh auth token`; `env` reads
+  `GITHUB_TOKEN` / `GH_TOKEN`.
+
+### Fetch run
+
+`contract-artefacts fetch-run` downloads contract build archives produced by a
+workflow run (see
+[ADR-0008](../adr/adr-0008-fetch-release-and-run.md)).
+
+- `--workflow` (default `release.yml`) selects the workflow file.
+- `--run-id` fetches a specific run; omit for the latest successful run.
+- `--branch` optionally filters the latest-run lookup.
+- `--artefact` filters by workflow artefact name, base name, or full tarball
+  name inside the artefact zip; omit to fetch all.
+- Saves each tarball to `workDir/<base>/<full-name>` and prints each path on
+  stdout.
+- Primary use case: `release.yml` on a branch (workflow artefacts uploaded per
+  archive base).
 
 ## Deployer commands
 

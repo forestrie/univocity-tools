@@ -46,6 +46,8 @@
         "@univocity-tools/forge-options": "workspace:*",
         "@univocity-tools/foundry-artefacts": "workspace:*",
         "@univocity-tools/foundry-exec": "workspace:*",
+        "@univocity-tools/git-options": "workspace:*",
+        "@univocity-tools/github-api": "workspace:*",
         "@univocity-tools/subprocess": "workspace:*",
         "citty": "^0.2.2",
       },
@@ -92,6 +94,22 @@
         "citty": "^0.2.2",
       },
     },
+    "packages/git-options": {
+      "name": "@univocity-tools/git-options",
+      "version": "0.1.0",
+      "dependencies": {
+        "@univocity-tools/cli-kit": "workspace:*",
+        "citty": "^0.2.2",
+      },
+    },
+    "packages/github-api": {
+      "name": "@univocity-tools/github-api",
+      "version": "0.1.0",
+      "dependencies": {
+        "@univocity-tools/cli-kit": "workspace:*",
+        "@univocity-tools/subprocess": "workspace:*",
+      },
+    },
     "packages/subprocess": {
       "name": "@univocity-tools/subprocess",
       "version": "0.1.0",
@@ -136,6 +154,10 @@
     "@univocity-tools/foundry-artefacts": ["@univocity-tools/foundry-artefacts@workspace:packages/foundry-artefacts"],
 
     "@univocity-tools/foundry-exec": ["@univocity-tools/foundry-exec@workspace:packages/foundry-exec"],
+
+    "@univocity-tools/git-options": ["@univocity-tools/git-options@workspace:packages/git-options"],
+
+    "@univocity-tools/github-api": ["@univocity-tools/github-api@workspace:packages/github-api"],
 
     "@univocity-tools/subprocess": ["@univocity-tools/subprocess@workspace:packages/subprocess"],
 

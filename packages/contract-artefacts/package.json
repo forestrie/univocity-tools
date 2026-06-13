@@ -17,6 +17,8 @@
     "@univocity-tools/cli-kit": "workspace:*",
     "@univocity-tools/foundry-artefacts": "workspace:*",
     "@univocity-tools/foundry-exec": "workspace:*",
+    "@univocity-tools/github-api": "workspace:*",
+    "@univocity-tools/git-options": "workspace:*",
     "@univocity-tools/subprocess": "workspace:*",
     "@univocity-tools/forge-options": "workspace:*",
     "citty": "^0.2.2"

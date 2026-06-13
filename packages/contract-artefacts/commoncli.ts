@@ -7,6 +7,7 @@ export { defineCommandRunner } from "@univocity-tools/cli-kit";
 import { verbosityArgs } from "@univocity-tools/cli-kit/reporting";
 import { foundryBinArgs } from "@univocity-tools/foundry-exec/commoncli";
 import { forgeArgs } from "@univocity-tools/forge-options/commoncli";
+import { gitArgs } from "@univocity-tools/git-options/commoncli";
 import type { ArgsDef, CommandDef } from "citty";
 
 /**
@@ -46,3 +47,41 @@ export function defineCartCommand<T extends ArgsDef>(
 ): CommandDef<T> {
   return defineAppCommand(commonArgs, def);
 }
+
+/** Citty flags for `fetch-release` (git options + release selector). */
+export const fetchReleaseArgs = {
+  ...gitArgs,
+  release: {
+    type: "string",
+    description: "Git tag for the release to fetch (default: latest release)",
+    valueHint: "tag",
+  },
+  artefact: {
+    type: "string",
+    description:
+      "Artefact base name or full file name to fetch (default: all)",
+    valueHint: "name",
+  },
+} as const satisfies ArgsDef;
+
+/** Citty flags for `fetch-run` (git options + run selector). */
+export const fetchRunArgs = {
+  ...gitArgs,
+  "run-id": {
+    type: "string",
+    description:
+      "Workflow run database id to fetch (default: latest successful run)",
+    valueHint: "id",
+  },
+  branch: {
+    type: "string",
+    description: "Branch filter when resolving the latest workflow run",
+    valueHint: "name",
+  },
+  artefact: {
+    type: "string",
+    description:
+      "Artefact base name or full file name to fetch (default: all)",
+    valueHint: "name",
+  },
+} as const satisfies ArgsDef;
