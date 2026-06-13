@@ -2,6 +2,7 @@ import type { LooseParsedArgs } from "@univocity-tools/cli-kit";
 import {
   parseCommonOptions,
   readEvaluatedStringOption,
+  resolveReleaseRoot,
 } from "@univocity-tools/cli-kit";
 import path from "node:path";
 import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";
@@ -187,15 +188,11 @@ export function parseArchiveExtractOptions(
   }
 
   const common = parseCartCommonOptions(args as CommonArgSlice);
-  const rawReleaseRoot = readEvaluatedStringOption(
-    args as Record<string, unknown>,
-    "release-root",
-  );
 
   return {
     ...common,
     archive: path.resolve(common.workDir, rawArchive),
-    releaseRoot: path.resolve(rawReleaseRoot ?? process.cwd()),
+    releaseRoot: resolveReleaseRoot(args) ?? process.cwd(),
   };
 }
 
@@ -203,14 +200,10 @@ export function parseArchiveValidateOptions(
   args: LooseParsedArgs,
 ): ArchiveValidateOptions {
   const common = parseCartCommonOptions(args as CommonArgSlice);
-  const rawReleaseRoot = readEvaluatedStringOption(
-    args as Record<string, unknown>,
-    "release-root",
-  );
 
   return {
     ...common,
-    releaseRoot: path.resolve(rawReleaseRoot ?? process.cwd()),
+    releaseRoot: resolveReleaseRoot(args) ?? process.cwd(),
   };
 }
 

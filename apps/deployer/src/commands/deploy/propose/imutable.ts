@@ -87,6 +87,15 @@ export default defineDeployerCommand({
       description: "Write the proposal JSON to this path (default: stdout)",
       valueHint: "path",
     },
+    "release-root": {
+      type: "string",
+      description:
+        "Extracted build archive root (from archive-extract; reads " +
+        "<release-root>/out/ImutableUnivocity.json instead of forge build; " +
+        "env: RELEASE_ROOT)",
+      valueHint: "path",
+      default: "${env:RELEASE_ROOT}",
+    },
   }),
   run: defineCommandRunner(parseProposeImutableOptions, runProposeImutable),
 });

@@ -27,6 +27,10 @@ export {
   type WorkDirArgSlice,
 } from "./work-dir.js";
 export {
+  resolveReleaseRoot,
+  type ReleaseRootArgSlice,
+} from "./release-root.js";
+export {
   commonOptionArgs,
   parseCommonOptions,
   type CommonOptions,

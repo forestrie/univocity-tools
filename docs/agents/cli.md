@@ -452,9 +452,14 @@ step so the local (non-interactive) and Gnosis Safe multisig flows share
 one implementation.
 
 - **propose imutable** builds the `ImutableUnivocity` deployment data
-  (`forge build` → creation code + `abi.encode(int64 bootstrapAlg, bytes
-bootstrapKey)`), then emits a deployer-native proposal JSON
+  (default: `forge build` → creation code + `abi.encode(int64 bootstrapAlg,
+  bytes bootstrapKey)`; with `--release-root`, reads prebuilt bytecode from
+  `<release-root>/out/ImutableUnivocity.sol/ImutableUnivocity.json` and skips
+  `forge build`), then emits a deployer-native proposal JSON
   (`kind: "deploy-imutable"`).
+  - Composable release path:
+    `contract-artefacts fetch-release` → `archive-extract --release-root R`
+    → `deploy propose imutable --release-root R` → `deploy approve`.
   - Without `--safe-publish`: `publishMode: "eoa"`, one contract-create
     transaction (`to: null`); the proposal is pipeable to `deploy execute`.
   - With `--safe-publish`: `publishMode: "safe"`, a
@@ -482,6 +487,17 @@ Signer resolution (shared deploy-suite flags):
 Additional **approve** flags: `--rpc-url` (`RPC_URL`, required),
 `--safe-tx-service-url` (`SAFE_TX_SERVICE_URL`),
 `--safe-tx-hash` (`SAFE_TX_HASH`), `--confirm-only`.
+
+**propose imutable** flags (in addition to deploy-suite common flags):
+
+| Flag (env) | Purpose |
+| ---------- | ------- |
+| `--release-root` (`RELEASE_ROOT`) | Extracted build archive root; reads `<release-root>/out/ImutableUnivocity.json` instead of `forge build`. Omit to build from `--source-root`. |
+| `--bootstrap-alg` (`BOOTSTRAP_ALG`) | `es256` or `ks256` (required). |
+| `--safe-publish` | POST SafeTx to Transaction Service (default: EOA proposal). |
+| `--salt` (`SAFE_BATCH_SALT`) | CREATE2 salt (bytes32); Safe path. |
+| `--rpc-url` (`RPC_URL`) | Required with `--safe-publish`. |
+| `--out` (`DEPLOY_PROPOSAL_OUT`) | Write proposal JSON to path (default: stdout). |
 
 Bootstrap crypto is ported to TypeScript (viem + WebCrypto), so the deploy
 step no longer needs the Solidity deploy/batch scripts; `forge` is used only

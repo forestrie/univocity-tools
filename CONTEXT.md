@@ -97,7 +97,9 @@ _Avoid_: conflating with `validate batch` (Safe batch JSON).
 **Release root**:
 The directory where an **archive extract** places forge artefacts
 (`out/`, `cache/`) and materialized Solidity sources. CLI
-`--release-root`; env `RELEASE_ROOT`.
+`--release-root`; env `RELEASE_ROOT`. Also accepted by
+`deploy propose imutable` to read prebuilt bytecode from
+`<release-root>/out/` without Foundry.
 _Avoid_: work dir, contracts checkout root.
 
 **Source hydration**:

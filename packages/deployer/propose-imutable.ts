@@ -12,7 +12,11 @@ import {
   type BootstrapKeyInput,
 } from "./bootstrap-key.js";
 import { DEFAULT_CHAIN_ID } from "./deploy-constants.js";
-import { buildImutableArtifact } from "./imutable-artifact.js";
+import {
+  buildImutableArtifact,
+  imutableArtifactPath,
+  readImutableBytecode,
+} from "./imutable-artifact.js";
 import {
   buildImutableDeploymentData,
   defaultSafeBatchSalt,
@@ -34,6 +38,7 @@ import {
   signSafeTxHash,
 } from "./safe-client.js";
 import { privateKeyToAccount } from "viem/accounts";
+import path from "node:path";
 
 function bootstrapKeyInput(
   options: ProposeImutableOptions,
@@ -98,22 +103,33 @@ export async function runProposeImutable(
   out: Out,
   options: ProposeImutableOptions,
 ): Promise<void> {
-  requireForgeBin(options);
+  if (options.releaseRoot === undefined) {
+    requireForgeBin(options);
+  }
   requireCastBin(options);
+  const execCwd =
+    options.releaseRoot !== undefined ? process.cwd() : options.univocityRoot;
   const ctx = toFoundryExecContext({
     forgeBin: options.forgeBin,
     castBin: options.castBin,
     out,
-    cwd: options.univocityRoot,
+    cwd: execCwd,
   });
 
   const bootstrap = await resolveBootstrapKey(bootstrapKeyInput(options));
-  out.print("Building ImutableUnivocity artifact...");
-  const artifact = await buildImutableArtifact(
-    ctx,
-    options.forgeConfig,
-    options.outDir,
-  );
+  const artifact =
+    options.releaseRoot !== undefined
+      ? await readImutableBytecode(
+          imutableArtifactPath(path.join(options.releaseRoot, "out")),
+        )
+      : await (async () => {
+          out.print("Building ImutableUnivocity artifact...");
+          return buildImutableArtifact(
+            ctx,
+            options.forgeConfig,
+            options.outDir,
+          );
+        })();
   const deploymentData = buildImutableDeploymentData(
     artifact.bytecode,
     bootstrap.algId,

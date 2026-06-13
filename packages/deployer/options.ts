@@ -2,6 +2,7 @@ import {
   optionNameToEnvVar,
   parseCommonOptions,
   readEvaluatedStringOption,
+  resolveReleaseRoot,
   type LooseParsedArgs,
 } from "@univocity-tools/cli-kit";
 import type { Create3Config } from "@univocity-tools/create3-options/create3-config";
@@ -197,6 +198,8 @@ export type ProposeImutableOptions = DeployerCommonOptions & {
   rpcUrl?: string;
   safeTxServiceUrl: string;
   outPath?: string;
+  /** Extracted build archive root (from archive-extract --release-root). */
+  releaseRoot?: string;
 };
 
 export function parseProposeImutableOptions(
@@ -254,6 +257,9 @@ export function parseProposeImutableOptions(
   if (rpcUrl !== undefined) options.rpcUrl = rpcUrl;
   const outPath = readOption(args, "out", "DEPLOY_PROPOSAL_OUT");
   if (outPath !== undefined) options.outPath = outPath;
+
+  const releaseRoot = resolveReleaseRoot(args);
+  if (releaseRoot !== undefined) options.releaseRoot = releaseRoot;
 
   return options;
 }
