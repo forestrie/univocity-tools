@@ -44,12 +44,40 @@ export default defineDeployerCommand({
       description: "ES256 P-256 y coordinate (env: ES256_Y)",
       valueHint: "hex",
     },
+    "bootstrap-es256-generate": {
+      type: "boolean",
+      description:
+        "Generate an ephemeral P-256 ES256 bootstrap keypair (requires " +
+        "--bootstrap-es256-pem-out)",
+      default: false,
+    },
+    "bootstrap-es256-pem-out": {
+      type: "string",
+      description:
+        "Write generated ES256 bootstrap PKCS#8 PEM to this path " +
+        "(with --bootstrap-es256-generate)",
+      valueHint: "path",
+    },
     "bootstrap-ks256-signer": {
       type: "string",
       description:
         "KS256 bootstrap signer address; defaults to the Safe when " +
         "--safe-publish (env: KS256_SIGNER)",
       valueHint: "address",
+    },
+    "bootstrap-ks256-generate": {
+      type: "boolean",
+      description:
+        "Generate an ephemeral secp256k1 KS256 bootstrap EOA (requires " +
+        "--bootstrap-ks256-key-out)",
+      default: false,
+    },
+    "bootstrap-ks256-key-out": {
+      type: "string",
+      description:
+        "Write generated KS256 bootstrap private key hex to this path " +
+        "(with --bootstrap-ks256-generate)",
+      valueHint: "path",
     },
     "safe-publish": {
       type: "boolean",

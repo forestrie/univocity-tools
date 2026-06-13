@@ -183,10 +183,14 @@ function parseChainIdOption(args: LooseParsedArgs): number | undefined {
 
 export type ProposeImutableOptions = DeployerCommonOptions & {
   bootstrapAlg: BootstrapAlg;
+  es256Generate: boolean;
+  es256PemOut?: string;
   es256Pem?: string;
   es256Pub64?: string;
   es256X?: string;
   es256Y?: string;
+  ks256Generate: boolean;
+  ks256KeyOut?: string;
   ks256Signer?: string;
   safePublish: boolean;
   from: Address;
@@ -217,12 +221,23 @@ export function parseProposeImutableOptions(
   const options: ProposeImutableOptions = {
     ...common,
     bootstrapAlg: parseBootstrapAlg(args),
+    es256Generate: Boolean(
+      args["bootstrap-es256-generate"] ?? args.bootstrapEs256Generate,
+    ),
+    ks256Generate: Boolean(
+      args["bootstrap-ks256-generate"] ?? args.bootstrapKs256Generate,
+    ),
     safePublish: Boolean(args["safe-publish"] ?? args.safePublish),
     from,
     signerRole: role,
     createCallAddress: getAddress(createCallRaw),
     safeTxServiceUrl: serviceUrl,
   };
+
+  const es256PemOut = readOption(args, "bootstrap-es256-pem-out");
+  if (es256PemOut !== undefined) options.es256PemOut = es256PemOut;
+  const ks256KeyOut = readOption(args, "bootstrap-ks256-key-out");
+  if (ks256KeyOut !== undefined) options.ks256KeyOut = ks256KeyOut;
 
   const es256Pem = readOption(
     args,
@@ -246,6 +261,46 @@ export function parseProposeImutableOptions(
     "KS256_SIGNER",
   );
   if (ks256Signer !== undefined) options.ks256Signer = ks256Signer;
+
+  if (options.es256Generate && options.bootstrapAlg !== "es256") {
+    throw new Error(
+      "--bootstrap-es256-generate requires --bootstrap-alg es256",
+    );
+  }
+  if (options.ks256Generate && options.bootstrapAlg !== "ks256") {
+    throw new Error(
+      "--bootstrap-ks256-generate requires --bootstrap-alg ks256",
+    );
+  }
+  if (options.es256Generate) {
+    if (options.es256PemOut === undefined) {
+      throw new Error(
+        "--bootstrap-es256-generate requires --bootstrap-es256-pem-out",
+      );
+    }
+    const hasExplicitEs256 =
+      options.es256Pem !== undefined ||
+      options.es256Pub64 !== undefined ||
+      options.es256X !== undefined ||
+      options.es256Y !== undefined;
+    if (hasExplicitEs256) {
+      throw new Error(
+        "--bootstrap-es256-generate is mutually exclusive with explicit ES256 bootstrap material",
+      );
+    }
+  }
+  if (options.ks256Generate) {
+    if (options.ks256KeyOut === undefined) {
+      throw new Error(
+        "--bootstrap-ks256-generate requires --bootstrap-ks256-key-out",
+      );
+    }
+    if (options.ks256Signer !== undefined) {
+      throw new Error(
+        "--bootstrap-ks256-generate is mutually exclusive with --bootstrap-ks256-signer",
+      );
+    }
+  }
 
   const deployKey = optionalDeployKey(args);
   if (deployKey !== undefined) options.deployKey = deployKey;

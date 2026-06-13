@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { size } from "viem";
 import {
+  derToPem,
   es256CoordsToKey,
+  generateEs256BootstrapKey,
+  generateKs256BootstrapKey,
   ks256AddressToKey,
   parseEs256Pem,
   parseEs256Pub64,
@@ -9,11 +12,8 @@ import {
 } from "../bootstrap-key.js";
 import { ALG_ES256, ALG_KS256 } from "../deploy-constants.js";
 
-function derToPem(der: ArrayBuffer | Uint8Array, label: string): string {
-  const bytes = der instanceof Uint8Array ? der : new Uint8Array(der);
-  const b64 = Buffer.from(bytes).toString("base64");
-  const lines = b64.match(/.{1,64}/g) ?? [];
-  return `-----BEGIN ${label}-----\n${lines.join("\n")}\n-----END ${label}-----\n`;
+function localDerToPem(der: ArrayBuffer | Uint8Array, label: string): string {
+  return derToPem(der, label);
 }
 
 describe("parseEs256Pem", () => {
@@ -25,7 +25,7 @@ describe("parseEs256Pem", () => {
     );
     const pkcs8 = await crypto.subtle.exportKey("pkcs8", kp.privateKey);
     const jwk = await crypto.subtle.exportKey("jwk", kp.publicKey);
-    const pem = derToPem(pkcs8, "PRIVATE KEY");
+    const pem = localDerToPem(pkcs8, "PRIVATE KEY");
 
     const coords = await parseEs256Pem(pem);
     expect(coords.x).toBe(
@@ -43,7 +43,7 @@ describe("parseEs256Pem", () => {
       ["sign", "verify"],
     );
     const spki = await crypto.subtle.exportKey("spki", kp.publicKey);
-    const pem = derToPem(spki, "PUBLIC KEY");
+    const pem = localDerToPem(spki, "PUBLIC KEY");
     const coords = await parseEs256Pem(pem);
     expect(size(coords.x)).toBe(32);
     expect(size(coords.y)).toBe(32);
@@ -140,7 +140,7 @@ describe("resolveBootstrapKey", () => {
       "3077020101042081ab232efca39fe9141ac96e8129c99447b4e583b22abb34e82fd4c70d3e7243a00a06082a8648ce3d030107a14403420004" +
       "823df30642534844c4b8ea9f60a53b2545d634b69b36d87d126baa8c760d930b" +
       "88e47bdd430434321aabe07ac8a6aeb103df294c984c35147340a11d894e43c6";
-    const pem = derToPem(Buffer.from(derHex, "hex"), "EC PRIVATE KEY");
+    const pem = localDerToPem(Buffer.from(derHex, "hex"), "EC PRIVATE KEY");
     const result = await resolveBootstrapKey({ alg: "es256", pem });
     expect(result.key).toBe(`0x${derHex.slice(-128)}`);
   });
@@ -176,5 +176,32 @@ describe("resolveBootstrapKey", () => {
     await expect(
       resolveBootstrapKey({ alg: "ks256", signer: "" }),
     ).rejects.toThrow("KS256 bootstrap requires");
+  });
+});
+
+describe("generateEs256BootstrapKey", () => {
+  test("round-trips through parseEs256Pem and resolveBootstrapKey", async () => {
+    const generated = await generateEs256BootstrapKey();
+    expect(generated.pem).toContain("BEGIN PRIVATE KEY");
+    const coords = await parseEs256Pem(generated.pem);
+    expect(coords.x).toBe(generated.x);
+    expect(coords.y).toBe(generated.y);
+    const result = await resolveBootstrapKey({
+      alg: "es256",
+      x: generated.x,
+      y: generated.y,
+    });
+    expect(result.algId).toBe(ALG_ES256);
+    expect(size(result.key)).toBe(64);
+  });
+});
+
+describe("generateKs256BootstrapKey", () => {
+  test("yields a 20-byte bootstrap address", () => {
+    const generated = generateKs256BootstrapKey();
+    expect(generated.privateKey.startsWith("0x")).toBe(true);
+    expect(generated.address.startsWith("0x")).toBe(true);
+    const result = ks256AddressToKey(generated.address);
+    expect(size(result)).toBe(20);
   });
 });

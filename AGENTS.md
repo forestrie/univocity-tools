@@ -50,6 +50,7 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 - **Build apps**: `bun run build`
 - **Build binaries (local)**: `bun run build:binary`
 - **Build binaries (Linux x64)**: `bun run build:binary:linux-x64`
+- **Install task**: `task install:darwin:DIR` / `task install:linux:DIR` (see README)
 - **Cart dev**: `bun run --filter @univocity-tools/contract-artefacts dev -- --help`
 
 ## Gotchas (critical)

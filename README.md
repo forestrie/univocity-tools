@@ -28,6 +28,8 @@ bun install
 | `bun run build` | Build all `@univocity-tools/*` apps |
 | `bun run build:binary` | Compile standalone binaries for the current platform |
 | `bun run build:binary:linux-x64` | Cross-compile Linux x64 binaries (CI release) |
+| `task install:darwin:DIR` | Build native binaries and copy to DIR (see **Install task**) |
+| `task install:linux:DIR` | Cross-compile Linux x64 binaries and copy to DIR |
 | `bun run sync:create3` | Regenerate embedded Create3 defaults from `create3.jsonc` |
 | `bun run check:create3` | Fail if `defaults.ts` is stale vs `create3.jsonc` |
 
@@ -66,6 +68,26 @@ Explicit targets:
 bun run --filter @univocity-tools/deployer build:binary:darwin-arm64
 bun run build:binary:linux-x64   # same command CI uses for releases
 ```
+
+## Install task
+
+Build both CLIs and copy them to an install directory under canonical names
+(`deployer`, `contract-artefacts`). Relative `INSTALL_DIR` paths resolve
+against your **current working directory** (`USER_WORKING_DIR`).
+
+```bash
+# Native macOS binaries into ~/.local/bin
+task install:darwin:.local/bin
+
+# Linux x64 cross-compile (from macOS or Linux)
+task install:linux:/opt/forestrie/bin
+
+# From another repo (e.g. canopy)
+task -t ../univocity-tools/Taskfile.dist.yml install:darwin:.cache/univocity-tools
+```
+
+Supported targets: **`linux`**, **`darwin`** only. Darwin builds require a
+macOS host.
 
 ## Layout
 

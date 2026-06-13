@@ -7,6 +7,7 @@ import {
   type Address,
   type Hex,
 } from "viem";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { ALG_ES256, ALG_KS256 } from "./deploy-constants.js";
 
 export type BootstrapAlg = "es256" | "ks256";
@@ -59,6 +60,17 @@ export function parseEs256Pub64(raw: string): { x: Hex; y: Hex } {
     x: `0x${hex.slice(2, 66)}` as Hex,
     y: `0x${hex.slice(66, 130)}` as Hex,
   };
+}
+
+/** Wrap DER bytes in a PEM label (PKCS#8 / SPKI / etc.). */
+export function derToPem(
+  der: ArrayBuffer | Uint8Array,
+  label: string,
+): string {
+  const bytes = der instanceof Uint8Array ? der : new Uint8Array(der);
+  const b64 = Buffer.from(bytes).toString("base64");
+  const lines = b64.match(/.{1,64}/g) ?? [];
+  return `-----BEGIN ${label}-----\n${lines.join("\n")}\n-----END ${label}-----\n`;
 }
 
 function pemBodyToDer(pem: string): ArrayBuffer {
@@ -178,6 +190,39 @@ async function resolveEs256Coords(
 /** 20-byte address bytes for a KS256 bootstrap signer. */
 export function ks256AddressToKey(signer: string): Hex {
   return getAddress(signer).toLowerCase() as Hex;
+}
+
+/** Generate an ephemeral P-256 ES256 bootstrap keypair (PKCS#8 PEM + public x/y). */
+export async function generateEs256BootstrapKey(): Promise<{
+  pem: string;
+  x: Hex;
+  y: Hex;
+}> {
+  const kp = await crypto.subtle.generateKey(
+    { name: "ECDSA", namedCurve: "P-256" },
+    true,
+    ["sign", "verify"],
+  );
+  const pkcs8 = await crypto.subtle.exportKey("pkcs8", kp.privateKey);
+  const jwk = await crypto.subtle.exportKey("jwk", kp.publicKey);
+  if (jwk.x === undefined || jwk.y === undefined) {
+    throw new Error("generated ES256 key did not yield P-256 x/y coordinates");
+  }
+  return {
+    pem: derToPem(pkcs8, "PRIVATE KEY"),
+    x: `0x${Buffer.from(jwk.x, "base64url").toString("hex")}` as Hex,
+    y: `0x${Buffer.from(jwk.y, "base64url").toString("hex")}` as Hex,
+  };
+}
+
+/** Generate an ephemeral secp256k1 KS256 bootstrap EOA. */
+export function generateKs256BootstrapKey(): {
+  privateKey: Hex;
+  address: Address;
+} {
+  const privateKey = generatePrivateKey();
+  const address = privateKeyToAccount(privateKey).address;
+  return { privateKey, address };
 }
 
 /** Resolve the bootstrap alg + opaque key bytes for the constructor. */
