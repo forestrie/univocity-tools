@@ -8,6 +8,8 @@ import {
 import { runCast } from "@univocity-tools/foundry-exec/spawn";
 import { getContractAddress, type Address, type Hex } from "viem";
 import {
+  generateEs256BootstrapKey,
+  generateKs256BootstrapKey,
   resolveBootstrapKey,
   type BootstrapKeyInput,
 } from "./bootstrap-key.js";
@@ -54,6 +56,32 @@ function bootstrapKeyInput(
   const signer =
     options.ks256Signer ?? (options.safePublish ? options.from : undefined);
   return { alg: "ks256", signer: signer ?? "" };
+}
+
+async function applyGeneratedBootstrapMaterial(
+  out: Out,
+  options: ProposeImutableOptions,
+): Promise<ProposeImutableOptions> {
+  if (options.es256Generate) {
+    const generated = await generateEs256BootstrapKey();
+    await Bun.write(options.es256PemOut!, generated.pem);
+    out.print("Wrote ES256 bootstrap PEM to %s", options.es256PemOut);
+    return {
+      ...options,
+      es256X: generated.x,
+      es256Y: generated.y,
+    };
+  }
+  if (options.ks256Generate) {
+    const generated = generateKs256BootstrapKey();
+    await Bun.write(options.ks256KeyOut!, `${generated.privateKey}\n`);
+    out.print("Wrote KS256 bootstrap key to %s", options.ks256KeyOut);
+    return {
+      ...options,
+      ks256Signer: generated.address,
+    };
+  }
+  return options;
 }
 
 async function resolveChainId(
@@ -116,7 +144,10 @@ export async function runProposeImutable(
     cwd: execCwd,
   });
 
-  const bootstrap = await resolveBootstrapKey(bootstrapKeyInput(options));
+  const resolvedOptions = await applyGeneratedBootstrapMaterial(out, options);
+  const bootstrap = await resolveBootstrapKey(
+    bootstrapKeyInput(resolvedOptions),
+  );
   const artifact =
     options.releaseRoot !== undefined
       ? await readImutableBytecode(
@@ -144,7 +175,7 @@ export async function runProposeImutable(
       data: deploymentData,
       operation: 0,
     };
-    const predicted = await predictEoaAddress(ctx, options);
+    const predicted = await predictEoaAddress(ctx, resolvedOptions);
     const proposal: Proposal = {
       kind: "deploy-imutable",
       version: 1,
@@ -153,8 +184,8 @@ export async function runProposeImutable(
       bootstrapKey: bootstrap.key,
       imutableUnivocity: predicted,
       publishMode: "eoa",
-      from: options.from,
-      signerRole: options.signerRole,
+      from: resolvedOptions.from,
+      signerRole: resolvedOptions.signerRole,
       transactions: [tx],
     };
     await emitProposal(out, options, proposal);
@@ -163,7 +194,7 @@ export async function runProposeImutable(
 
   await proposeSafe(
     out,
-    options,
+    resolvedOptions,
     chainId,
     deploymentData,
     bootstrap.alg,

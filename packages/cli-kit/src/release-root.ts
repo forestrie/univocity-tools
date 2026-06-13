@@ -8,11 +8,8 @@ export type ReleaseRootArgSlice = {
 
 /** Resolve --release-root (env RELEASE_ROOT) to an absolute path, or undefined. */
 export function resolveReleaseRoot(
-  args: ReleaseRootArgSlice,
+  args: Record<string, unknown>,
 ): string | undefined {
-  const raw = readEvaluatedStringOption(
-    args as Record<string, unknown>,
-    "release-root",
-  );
+  const raw = readEvaluatedStringOption(args, "release-root");
   return raw === undefined ? undefined : path.resolve(raw);
 }

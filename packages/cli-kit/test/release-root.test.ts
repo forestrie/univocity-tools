@@ -18,9 +18,9 @@ describe("resolveReleaseRoot", () => {
   });
 
   test("resolves explicit --release-root to an absolute path", () => {
-    expect(
-      resolveReleaseRoot({ "release-root": "/tmp/release" }),
-    ).toBe(path.resolve("/tmp/release"));
+    expect(resolveReleaseRoot({ "release-root": "/tmp/release" })).toBe(
+      path.resolve("/tmp/release"),
+    );
   });
 
   test("resolves ${env:RELEASE_ROOT}", () => {

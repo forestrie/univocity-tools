@@ -39,7 +39,7 @@ export function createGithubClient(
         ...(init?.headers ?? {}),
       },
     });
-    if (!response.ok) {
+    if (!response.ok && response.status !== 302 && response.status !== 307) {
       const body = await response.text();
       throw new Error(
         `GitHub API ${response.status} ${response.statusText}: ${body}`,
