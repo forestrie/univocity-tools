@@ -1,17 +1,13 @@
 import type { Out } from "@univocity-tools/cli-kit/reporting";
-import {
-  requireCastBin,
-  requireForgeBin,
-  toFoundryExecContext,
-  type FoundryExecContext,
-} from "@univocity-tools/foundry-exec/require-bins";
-import { runCast } from "@univocity-tools/foundry-exec/spawn";
+import { getAddress, type Address, type Hex } from "viem";
 import type { ExecuteProposalOptions } from "./options.js";
 import {
   parseProposal,
+  serializeProposal,
   type Proposal,
   type ProposalTransaction,
 } from "./proposal.js";
+import { createRpcClients } from "./rpc-client.js";
 
 async function readProposalSource(
   options: ExecuteProposalOptions,
@@ -28,96 +24,92 @@ async function readProposalSource(
   return stdin;
 }
 
-function castSendArgs(
-  options: ExecuteProposalOptions,
-  rpcUrl: string,
-  tx: ProposalTransaction,
-): string[] {
-  if (tx.operation !== 0) {
-    throw new Error(
-      "execute can only broadcast CALL transactions (operation 0); " +
-        "operation 1 (delegatecall) must go through a Safe",
-    );
-  }
-  const wallet = [
-    "--private-key",
-    options.signer.key,
-    "--rpc-url",
-    rpcUrl,
-    "--json",
-  ];
-  if (tx.to === null) {
-    // cast send --create: wallet flags must precede --create (Foundry 1.5+).
-    return ["send", ...wallet, "--create", tx.data];
-  }
-  const value = tx.value && tx.value !== "0" ? ["--value", tx.value] : [];
-  return ["send", tx.to, tx.data, ...value, ...wallet];
-}
-
-function parseReceipt(stdout: string): {
-  contractAddress?: string;
-  status?: unknown;
-  transactionHash?: string;
-} {
-  try {
-    const parsed: unknown = JSON.parse(stdout);
-    if (parsed !== null && typeof parsed === "object") {
-      return parsed as Record<string, never>;
-    }
-  } catch {
-    /* fall through */
-  }
-  return {};
-}
-
-function assertReceiptSuccess(stdout: string): void {
-  const receipt = parseReceipt(stdout);
-  const status = receipt.status;
-  if (
-    status !== undefined &&
-    status !== "0x1" &&
-    status !== 1 &&
-    status !== "1" &&
-    status !== "success"
-  ) {
-    throw new Error(`transaction failed: ${stdout}`);
+function assertReceiptSuccess(status: string): void {
+  if (status !== "success") {
+    throw new Error("transaction failed");
   }
 }
 
 async function broadcast(
-  ctx: FoundryExecContext,
   out: Out,
   options: ExecuteProposalOptions,
   rpcUrl: string,
   proposal: Proposal,
-): Promise<void> {
+): Promise<Address | undefined> {
+  const { publicClient, walletClient, account } = createRpcClients(
+    rpcUrl,
+    options.signer.key,
+  );
+
+  let deployed: Address | undefined;
   for (let i = 0; i < proposal.transactions.length; i++) {
     const tx = proposal.transactions[i] as ProposalTransaction;
+    if (tx.operation !== 0) {
+      throw new Error(
+        "execute can only broadcast CALL transactions (operation 0); " +
+          "operation 1 (delegatecall) must go through a Safe",
+      );
+    }
+
     out.print(
       "Broadcasting tx %d/%d (%s)...",
       i + 1,
       proposal.transactions.length,
       tx.to === null ? "contract-create" : tx.to,
     );
-    const { stdout } = await runCast(ctx, castSendArgs(options, rpcUrl, tx));
-    assertReceiptSuccess(stdout);
-    const receipt = parseReceipt(stdout);
-    if (tx.to === null && typeof receipt.contractAddress === "string") {
-      out.out("ImutableUnivocity deployed at: %s", receipt.contractAddress);
-    } else if (typeof receipt.transactionHash === "string") {
-      out.print("  tx: %s", receipt.transactionHash);
+
+    const value = BigInt(tx.value);
+    let hash: Hex;
+
+    if (tx.to === null) {
+      hash = await walletClient.sendTransaction({
+        account,
+        chain: null,
+        data: tx.data,
+        value,
+      });
+    } else {
+      hash = await walletClient.sendTransaction({
+        account,
+        chain: null,
+        to: tx.to,
+        data: tx.data,
+        value,
+      });
+    }
+
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+    assertReceiptSuccess(receipt.status);
+
+    if (tx.to === null && receipt.contractAddress !== undefined) {
+      deployed = getAddress(receipt.contractAddress);
+      out.out("ImutableUnivocity deployed at: %s", deployed);
+    } else {
+      out.print("  tx: %s", hash);
     }
   }
+  return deployed;
 }
 
-/** Execute a deploy proposal locally (EOA broadcast via cast send). */
+async function persistDeployedAddress(
+  out: Out,
+  options: ExecuteProposalOptions,
+  proposal: Proposal,
+  deployed: Address,
+): Promise<void> {
+  if (options.proposalFile === undefined) {
+    return;
+  }
+  const updated: Proposal = { ...proposal, imutableUnivocity: deployed };
+  await Bun.write(options.proposalFile, `${serializeProposal(updated)}\n`);
+  out.print("Updated proposal imutableUnivocity to %s", deployed);
+}
+
+/** Execute a deploy proposal locally (EOA broadcast via viem). */
 export async function runExecuteProposal(
   out: Out,
   options: ExecuteProposalOptions,
 ): Promise<void> {
-  requireForgeBin(options);
-  requireCastBin(options);
-
   const proposal = parseProposal(await readProposalSource(options));
 
   if (proposal.publishMode === "safe") {
@@ -138,12 +130,13 @@ export async function runExecuteProposal(
     throw new Error("execute requires --rpc-url (or RPC_URL)");
   }
 
-  const ctx = toFoundryExecContext({
-    forgeBin: options.forgeBin,
-    castBin: options.castBin,
+  const deployed = await broadcast(
     out,
-    cwd: options.univocityRoot,
-  });
-
-  await broadcast(ctx, out, options, options.rpcUrl, proposal);
+    options,
+    options.rpcUrl,
+    proposal,
+  );
+  if (deployed !== undefined) {
+    await persistDeployedAddress(out, options, proposal, deployed);
+  }
 }
