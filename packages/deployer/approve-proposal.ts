@@ -1,10 +1,4 @@
 import type { Out } from "@univocity-tools/cli-kit/reporting";
-import { runCast } from "@univocity-tools/foundry-exec/spawn";
-import {
-  requireCastBin,
-  requireForgeBin,
-  toFoundryExecContext,
-} from "@univocity-tools/foundry-exec/require-bins";
 import type { Hex } from "viem";
 import type { ApproveProposalOptions } from "./options.js";
 import {
@@ -12,12 +6,14 @@ import {
   type Proposal,
   type ProposalTransaction,
 } from "./proposal.js";
+import { hasBytecodeAt } from "./rpc-client.js";
 import {
   approveSafeTransaction,
   buildSafeTxFields,
   safeDashboardUrl,
   type SafeTxFields,
 } from "./safe-client.js";
+import { createPublicClient, http } from "viem";
 
 async function readProposalSource(
   options: ApproveProposalOptions,
@@ -71,24 +67,12 @@ function safeTxFieldsFromProposal(proposal: Proposal): SafeTxFields {
 }
 
 async function assertContractDeployed(
-  out: Out,
-  options: ApproveProposalOptions,
+  rpcUrl: string,
   address: string,
 ): Promise<void> {
-  const ctx = toFoundryExecContext({
-    forgeBin: options.forgeBin,
-    castBin: options.castBin,
-    out,
-    cwd: options.univocityRoot,
-  });
-  const { stdout } = await runCast(ctx, [
-    "code",
-    address,
-    "--rpc-url",
-    options.rpcUrl,
-  ]);
-  const code = stdout.trim();
-  if (code === "0x" || code.length === 0) {
+  const client = createPublicClient({ transport: http(rpcUrl) });
+  const deployed = await hasBytecodeAt(client, address as `0x${string}`);
+  if (!deployed) {
     throw new Error(`no contract code at ${address} after Safe execution`);
   }
 }
@@ -98,9 +82,6 @@ export async function runApproveProposal(
   out: Out,
   options: ApproveProposalOptions,
 ): Promise<void> {
-  requireForgeBin(options);
-  requireCastBin(options);
-
   const proposal = parseProposal(await readProposalSource(options));
   if (proposal.publishMode !== "safe") {
     throw new Error(
@@ -138,7 +119,7 @@ export async function runApproveProposal(
 
   const target = proposal.imutableUnivocity;
   if (target !== null) {
-    await assertContractDeployed(out, options, target);
+    await assertContractDeployed(options.rpcUrl, target);
     out.out("ImutableUnivocity deployed at: %s", target);
   }
 }
