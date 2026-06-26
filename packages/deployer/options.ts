@@ -100,6 +100,8 @@ export type DeployCreate3Options = DeployerCommonOptions & {
   rpcUrl: string;
   deployKey: Hex;
   create3Salt: string;
+  /** Extracted create3-factory release root (skips forge build). */
+  releaseRoot?: string;
 };
 
 type DeployCreate3ArgSlice = CommonArgSlice & {
@@ -120,6 +122,9 @@ export function parseDeployCreate3Options(
     rpcUrl: resolveRpcUrl(slice),
     deployKey: resolveDeployKey(slice),
     create3Salt: resolveCreate3Salt(slice),
+    ...(resolveReleaseRoot(args) !== undefined
+      ? { releaseRoot: resolveReleaseRoot(args) }
+      : {}),
   };
 }
 
@@ -324,6 +329,30 @@ export function parseProposeImutableOptions(
     throw new Error("--release-root and --from-manifest are mutually exclusive");
   }
 
+  return options;
+}
+
+export type DeployImutableFromReleaseOptions = ProposeImutableOptions & {
+  fromRelease: string;
+  deploymentManifestOut?: string;
+};
+
+export function parseDeployImutableFromReleaseOptions(
+  args: LooseParsedArgs,
+): DeployImutableFromReleaseOptions {
+  const base = parseProposeImutableOptions(args);
+  const fromRelease = readOption(args, "from-release", "FROM_RELEASE");
+  if (fromRelease === undefined) {
+    throw new Error("--from-release (or FROM_RELEASE) is required");
+  }
+  const options: DeployImutableFromReleaseOptions = {
+    ...base,
+    fromRelease,
+  };
+  const manifestOut = readOption(args, "deployment-manifest-out");
+  if (manifestOut !== undefined) {
+    options.deploymentManifestOut = manifestOut;
+  }
   return options;
 }
 

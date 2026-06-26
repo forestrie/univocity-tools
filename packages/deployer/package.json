@@ -15,9 +15,12 @@
   },
   "dependencies": {
     "@univocity-tools/cli-kit": "workspace:*",
+    "@univocity-tools/contract-artefacts-common": "workspace:*",
     "@univocity-tools/create3-options": "workspace:*",
     "@univocity-tools/foundry-exec": "workspace:*",
     "@univocity-tools/forge-options": "workspace:*",
+    "@univocity-tools/github-api": "workspace:*",
+    "@univocity-tools/git-options": "workspace:*",
     "viem": "^2.31.0",
     "citty": "^0.2.2"
   }
