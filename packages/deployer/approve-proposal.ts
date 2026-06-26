@@ -77,6 +77,14 @@ async function assertContractDeployed(
   }
 }
 
+/** Test and tooling hook: assert bytecode exists at an address via RPC. */
+export async function assertContractDeployedAt(
+  rpcUrl: string,
+  address: string,
+): Promise<void> {
+  return assertContractDeployed(rpcUrl, address);
+}
+
 /** Approve and optionally execute a Safe deploy-imutable proposal. */
 export async function runApproveProposal(
   out: Out,

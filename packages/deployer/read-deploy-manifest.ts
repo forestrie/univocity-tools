@@ -1,9 +1,15 @@
 import { toBytes, type Hex } from "viem";
+import { verifyFileSha256Sidecar } from "./file-sha256.js";
 import {
   parseDeployManifest,
   type DeployManifest,
 } from "./deploy-manifest.js";
 import type { ImutableArtifact } from "./imutable-artifact.js";
+
+export type LoadDeployManifestOptions = {
+  /** Allow http:// URLs and skip TLS concerns (local dev only). */
+  insecure?: boolean;
+};
 
 async function sha256Hex(data: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(data));
@@ -33,8 +39,14 @@ async function assertBytecodeSha256(
 /** Load manifest JSON from a local path or http(s) URL. */
 export async function loadDeployManifestSource(
   source: string,
+  options?: LoadDeployManifestOptions,
 ): Promise<string> {
   if (/^https?:\/\//i.test(source)) {
+    if (source.startsWith("http://") && !options?.insecure) {
+      throw new Error(
+        "deploy-manifest http:// URLs require --insecure (use https or a local file)",
+      );
+    }
     const response = await fetch(source);
     if (!response.ok) {
       throw new Error(
@@ -49,8 +61,11 @@ export async function loadDeployManifestSource(
 /** Read and verify a deploy-manifest; returns the ImutableUnivocity artifact. */
 export async function readImutableFromDeployManifest(
   source: string,
+  options?: LoadDeployManifestOptions,
 ): Promise<{ manifest: DeployManifest; artifact: ImutableArtifact }> {
-  const manifest = parseDeployManifest(await loadDeployManifestSource(source));
+  const manifest = parseDeployManifest(
+    await loadDeployManifestSource(source, options),
+  );
   const entry = manifest.contracts.ImutableUnivocity;
   await assertBytecodeSha256(
     entry.contractName,
@@ -80,4 +95,12 @@ export async function verifyDeployManifestDigests(
       factory.bytecodeSha256,
     );
   }
+}
+
+/** Verify a local manifest file against its shasum sidecar. */
+export async function verifyDeployManifestSidecar(
+  manifestPath: string,
+  sidecarPath: string,
+): Promise<void> {
+  await verifyFileSha256Sidecar(manifestPath, sidecarPath);
 }

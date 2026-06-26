@@ -57,6 +57,25 @@ The Univocity release workflow generates the manifest from forge `out/` after
 `--from-manifest` is mutually exclusive with `--release-root`. Both paths skip
 `forge`/`cast` on propose.
 
+`deploy imutable --from-release` downloads the manifest asset when present and
+**must** verify the published `deploy-manifest-<id>.json.sha256` sidecar before
+parsing (fail-closed). Pass `--insecure` to skip sidecar verification and to
+allow `http://` manifest URLs (local dev only).
+
+## Security considerations / trust model
+
+- The embedded `bytecodeSha256` field detects **corruption** (truncated download,
+  bad copy) but not **tampering** on its own — an attacker who replaces the JSON
+  can update the digest to match malicious bytecode.
+- The practical trust anchor is the **GitHub release over TLS** plus verification
+  of the **`.sha256` sidecar** published alongside the manifest in the same
+  release. Consumers fail closed when the sidecar is missing or mismatched.
+- For the security-critical immutable `ImutableUnivocity` contract, operators
+  should compare the manifest `bytecodeSha256` against an out-of-band reference
+  (audit report, prior release, or independent build) before broadcasting.
+- **Future:** GitHub build-provenance attestation or cosign signing of release
+  assets would strengthen authenticity beyond TLS + sidecar.
+
 ## Relation to build archives
 
 Build archives remain the source of truth for verify/bindings workflows that

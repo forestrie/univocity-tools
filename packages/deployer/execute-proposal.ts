@@ -7,7 +7,11 @@ import {
   type Proposal,
   type ProposalTransaction,
 } from "./proposal.js";
-import { createRpcClients } from "./rpc-client.js";
+import { createRpcClients, type RpcClients } from "./rpc-client.js";
+
+export type ExecuteProposalRunDeps = {
+  clients?: RpcClients;
+};
 
 async function readProposalSource(
   options: ExecuteProposalOptions,
@@ -35,11 +39,9 @@ async function broadcast(
   options: ExecuteProposalOptions,
   rpcUrl: string,
   proposal: Proposal,
+  clients: RpcClients,
 ): Promise<Address | undefined> {
-  const { publicClient, walletClient, account } = createRpcClients(
-    rpcUrl,
-    options.signer.key,
-  );
+  const { publicClient, walletClient, account } = clients;
 
   let deployed: Address | undefined;
   for (let i = 0; i < proposal.transactions.length; i++) {
@@ -109,6 +111,7 @@ async function persistDeployedAddress(
 export async function runExecuteProposal(
   out: Out,
   options: ExecuteProposalOptions,
+  deps?: ExecuteProposalRunDeps,
 ): Promise<void> {
   const proposal = parseProposal(await readProposalSource(options));
 
@@ -130,7 +133,15 @@ export async function runExecuteProposal(
     throw new Error("execute requires --rpc-url (or RPC_URL)");
   }
 
-  const deployed = await broadcast(out, options, options.rpcUrl, proposal);
+  const clients =
+    deps?.clients ?? createRpcClients(options.rpcUrl, options.signer.key);
+  const deployed = await broadcast(
+    out,
+    options,
+    options.rpcUrl,
+    proposal,
+    clients,
+  );
   if (deployed !== undefined) {
     await persistDeployedAddress(out, options, proposal, deployed);
   }

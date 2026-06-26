@@ -13,8 +13,8 @@ import {
   http,
   keccak256,
   type Hex,
+  type PublicClient,
 } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
 import {
   buildDeployCalldata,
   hashCreate3SaltString,
@@ -26,14 +26,29 @@ import {
   create3FactoryReleaseArtifactPath,
 } from "./create3-factory-paths.js";
 import type { DeployCreate3Options } from "./options.js";
-import { createRpcClients, hasBytecodeAt } from "./rpc-client.js";
+import {
+  createRpcClients,
+  hasBytecodeAt,
+  type RpcClients,
+} from "./rpc-client.js";
 import { readFactoryBytecode } from "./read-factory-bytecode.js";
 
 const PROXY_POLL_MS = 500;
 const PROXY_POLL_MAX = 60;
 
-async function getCode(rpcUrl: string, address: string): Promise<string> {
-  const client = createPublicClient({ transport: http(rpcUrl) });
+export type DeployCreate3RunDeps = {
+  clients?: RpcClients;
+  /** Override public client for proxy raw-tx and bytecode reads. */
+  publicClient?: PublicClient;
+};
+
+async function getCode(
+  rpcUrl: string,
+  address: string,
+  publicClient?: PublicClient,
+): Promise<string> {
+  const client =
+    publicClient ?? createPublicClient({ transport: http(rpcUrl) });
   const code = await client.getBytecode({ address: address as `0x${string}` });
   return code ?? "0x";
 }
@@ -56,14 +71,17 @@ async function ensureArachnidProxy(
   out: Out,
   options: DeployCreate3Options,
   create3: Create3Config,
+  publicClient?: PublicClient,
 ): Promise<void> {
-  const proxyCode = await getCode(options.rpcUrl, create3.proxy);
+  const readClient =
+    publicClient ?? createPublicClient({ transport: http(options.rpcUrl) });
+  const proxyCode = await getCode(options.rpcUrl, create3.proxy, readClient);
   if (hasContractCode(proxyCode)) {
     out.log("Arachnid proxy already at %s", create3.proxy);
     return;
   }
 
-  const client = createPublicClient({ transport: http(options.rpcUrl) });
+  const client = readClient;
   const balance = await client.getBalance({ address: create3.signer });
   if (balance === 0n) {
     throw new Error(
@@ -79,7 +97,7 @@ async function ensureArachnidProxy(
   out.print("Arachnid proxy deploy tx: %s", hash);
 
   for (let attempt = 0; attempt < PROXY_POLL_MAX; attempt++) {
-    const code = await getCode(options.rpcUrl, create3.proxy);
+    const code = await getCode(options.rpcUrl, create3.proxy, readClient);
     if (hasContractCode(code)) {
       out.print("Arachnid proxy deployed at %s", create3.proxy);
       return;
@@ -120,11 +138,9 @@ async function deployCreate3Factory(
   options: DeployCreate3Options,
   create3: Create3Config,
   bytecode: Hex,
+  clients: RpcClients,
 ): Promise<void> {
-  const { publicClient, walletClient, account } = createRpcClients(
-    options.rpcUrl,
-    options.deployKey,
-  );
+  const { publicClient, walletClient, account } = clients;
   const balance = await publicClient.getBalance({ address: account.address });
   if (balance === 0n) {
     throw new Error(
@@ -159,6 +175,7 @@ async function deployCreate3Factory(
 export async function runDeployCreate3(
   out: Out,
   options: DeployCreate3Options,
+  deps?: DeployCreate3RunDeps,
 ): Promise<void> {
   if (options.releaseRoot === undefined) {
     requireForgeBin(options);
@@ -166,8 +183,17 @@ export async function runDeployCreate3(
   }
 
   const create3 = options.create3;
+  const readClient =
+    deps?.publicClient ??
+    createPublicClient({ transport: http(options.rpcUrl) });
+  const clients =
+    deps?.clients ?? createRpcClients(options.rpcUrl, options.deployKey);
 
-  const factoryCode = await getCode(options.rpcUrl, create3.factory);
+  const factoryCode = await getCode(
+    options.rpcUrl,
+    create3.factory,
+    readClient,
+  );
   if (hasContractCode(factoryCode)) {
     out.out("CREATE3 factory already deployed at %s", create3.factory);
     return;
@@ -185,13 +211,16 @@ export async function runDeployCreate3(
           );
         })();
 
-  await ensureArachnidProxy(out, options, create3);
-  await deployCreate3Factory(out, options, create3, artifact.bytecode);
-
-  const deployed = await hasBytecodeAt(
-    createPublicClient({ transport: http(options.rpcUrl) }),
-    create3.factory,
+  await ensureArachnidProxy(out, options, create3, readClient);
+  await deployCreate3Factory(
+    out,
+    options,
+    create3,
+    artifact.bytecode,
+    clients,
   );
+
+  const deployed = await hasBytecodeAt(readClient, create3.factory);
   if (!deployed) {
     throw new Error(
       `CREATE3 factory still has no code at ${create3.factory} after deployment`,

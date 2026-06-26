@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -13,6 +13,7 @@ import {
 import { parseProposeImutableOptions } from "../options.js";
 import { runProposeImutable } from "../propose-imutable.js";
 import { parseProposal } from "../proposal.js";
+import { startJsonRpcStub } from "./helpers/json-rpc-stub.js";
 
 const ROOT = "/tmp/univocity";
 const KEY_A =
@@ -105,6 +106,30 @@ describe("propose imutable from release root", () => {
       expect(proposal.imutableUnivocity).toBeNull();
       expect(proposal.publishMode).toBe("eoa");
     } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
+  test("uses viem chain-id from rpc stub when rpc-url is set", async () => {
+    const base = mkdtempSync(path.join(tmpdir(), "univocity-tools-propose-"));
+    const releaseRoot = path.join(base, "release");
+    writeReleaseRootFixture(releaseRoot);
+    const stub = startJsonRpcStub({ chainId: 42_161 });
+    const out = createCaptureOut();
+    try {
+      const options = parseProposeImutableOptions({
+        "source-root": ROOT,
+        "bootstrap-alg": "ks256",
+        "bootstrap-ks256-signer": OWNER,
+        "deploy-key": KEY_A,
+        "release-root": releaseRoot,
+        "rpc-url": stub.url,
+      });
+      await runProposeImutable(out, options);
+      const proposal = parseProposal(out.lines[0]!.text);
+      expect(proposal.chainId).toBe(42_161);
+    } finally {
+      stub.stop();
       rmSync(base, { recursive: true, force: true });
     }
   });

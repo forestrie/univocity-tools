@@ -466,7 +466,9 @@ one implementation.
     `deploy propose imutable --from-manifest deploy-manifest-v0.4.0.json`.
   - One-shot EOA path:
     `deploy imutable --from-release v0.4.0` (fetch manifest or archive,
-    propose, execute, write deployment manifest).
+    verify the published `.sha256` sidecar, propose, execute, write
+    deployment manifest). Use `--insecure` only for local dev (skips
+    sidecar verification and permits `http://` manifest URLs).
   - Without `--safe-publish`: `publishMode: "eoa"`, one contract-create
     transaction (`to: null`); the proposal is pipeable to `deploy execute`.
   - With `--safe-publish`: `publishMode: "safe"`, a

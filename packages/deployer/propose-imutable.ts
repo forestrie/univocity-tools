@@ -149,7 +149,12 @@ export async function runProposeImutable(
   );
   const artifact =
     options.fromManifest !== undefined
-      ? (await readImutableFromDeployManifest(options.fromManifest)).artifact
+      ? (
+          await readImutableFromDeployManifest(
+            options.fromManifest,
+            options.insecure ? { insecure: true } : undefined,
+          )
+        ).artifact
       : options.releaseRoot !== undefined
         ? await readImutableBytecode(
             imutableArtifactPath(path.join(options.releaseRoot, "out")),

@@ -5,6 +5,7 @@ import {
   DEFAULT_AUTH_KIND,
   getReleaseByTag,
   resolveGithubToken,
+  type GithubClient,
   type ReleaseAsset,
 } from "@univocity-tools/github-api/main";
 import {
@@ -15,7 +16,11 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { privateKeyToAccount } from "viem/accounts";
-import { runExecuteProposal } from "./execute-proposal.js";
+import {
+  runExecuteProposal,
+  type ExecuteProposalRunDeps,
+} from "./execute-proposal.js";
+import { verifyDeployManifestSidecar } from "./read-deploy-manifest.js";
 import type {
   DeployImutableFromReleaseOptions,
   ProposeImutableOptions,
@@ -35,6 +40,22 @@ function findManifestAsset(
   return assets.find((asset) => asset.name.startsWith("deploy-manifest-"));
 }
 
+function findManifestSidecarAsset(
+  assets: ReleaseAsset[],
+  manifestName: string,
+): ReleaseAsset | undefined {
+  const exact = `${manifestName}.sha256`;
+  const found = assets.find((asset) => asset.name === exact);
+  if (found !== undefined) {
+    return found;
+  }
+  return assets.find(
+    (asset) =>
+      asset.name.startsWith("deploy-manifest-") &&
+      asset.name.endsWith(".sha256"),
+  );
+}
+
 function findUnivocityArchive(
   assets: ReleaseAsset[],
   releaseTag: string,
@@ -50,31 +71,54 @@ function findUnivocityArchive(
   );
 }
 
-async function downloadReleaseAsset(
-  client: ReturnType<typeof createGithubClient>,
-  asset: ReleaseAsset,
-  destPath: string,
-): Promise<void> {
-  await client.downloadToFile(asset.url, destPath);
-}
-
-type ResolvedReleaseInputs = {
+export type ResolvedReleaseInputs = {
   fromManifest?: string;
   releaseRoot?: string;
 };
 
-async function resolveReleaseInputs(
+async function verifyManifestSidecarOrThrow(
+  out: Out,
+  options: DeployImutableFromReleaseOptions,
+  client: GithubClient,
+  manifestPath: string,
+  manifestAsset: ReleaseAsset,
+  assets: ReleaseAsset[],
+): Promise<void> {
+  if (options.insecure) {
+    out.warn(
+      "WARNING: --insecure skips deploy-manifest sha256 sidecar verification",
+    );
+    return;
+  }
+
+  const sidecarAsset = findManifestSidecarAsset(assets, manifestAsset.name);
+  if (sidecarAsset === undefined) {
+    throw new Error(
+      `release is missing deploy-manifest sidecar ${manifestAsset.name}.sha256; ` +
+        "refusing to proceed (pass --insecure to override)",
+    );
+  }
+
+  const sidecarPath = `${manifestPath}.sha256`;
+  await client.downloadToFile(sidecarAsset.url, sidecarPath);
+  await verifyDeployManifestSidecar(manifestPath, sidecarPath);
+  out.print("Verified deploy-manifest sidecar %s", sidecarAsset.name);
+}
+
+export async function resolveReleaseInputs(
   out: Out,
   releaseTag: string,
   options: DeployImutableFromReleaseOptions,
+  client?: GithubClient,
 ): Promise<ResolvedReleaseInputs> {
-  const token = await resolveGithubToken(out, DEFAULT_AUTH_KIND);
-  const client = createGithubClient({
-    org: DEFAULT_GITHUB_ORG,
-    repo: DEFAULT_GITHUB_REPO,
-    token,
-  });
-  const release = await getReleaseByTag(client, releaseTag);
+  const githubClient =
+    client ??
+    createGithubClient({
+      org: DEFAULT_GITHUB_ORG,
+      repo: DEFAULT_GITHUB_REPO,
+      token: await resolveGithubToken(out, DEFAULT_AUTH_KIND),
+    });
+  const release = await getReleaseByTag(githubClient, releaseTag);
   out.print("Resolved release %s", release.tag_name);
 
   const tempDir = await fs.mkdtemp(
@@ -83,7 +127,15 @@ async function resolveReleaseInputs(
   const manifestAsset = findManifestAsset(release.assets, release.tag_name);
   if (manifestAsset !== undefined) {
     const manifestPath = path.join(tempDir, manifestAsset.name);
-    await client.downloadToFile(manifestAsset.url, manifestPath);
+    await githubClient.downloadToFile(manifestAsset.url, manifestPath);
+    await verifyManifestSidecarOrThrow(
+      out,
+      options,
+      githubClient,
+      manifestPath,
+      manifestAsset,
+      release.assets,
+    );
     out.print("Using deploy-manifest asset %s", manifestAsset.name);
     return { fromManifest: manifestPath };
   }
@@ -96,7 +148,7 @@ async function resolveReleaseInputs(
   }
 
   const archivePath = path.join(options.workDir, archiveAsset.name);
-  await downloadReleaseAsset(client, archiveAsset, archivePath);
+  await githubClient.downloadToFile(archiveAsset.url, archivePath);
   const releaseRoot = path.join(
     options.workDir,
     "release-root",
@@ -132,10 +184,18 @@ export type ImutableDeploymentManifest = {
   releaseTag: string;
 };
 
+export type DeployImutableFromReleaseDeps = {
+  resolveRelease?: typeof resolveReleaseInputs;
+  propose?: typeof runProposeImutable;
+  execute?: typeof runExecuteProposal;
+  executeDeps?: ExecuteProposalRunDeps;
+};
+
 /** One-shot EOA deploy: fetch release assets, propose, execute, write manifest. */
 export async function runDeployImutableFromRelease(
   out: Out,
   options: DeployImutableFromReleaseOptions,
+  deps?: DeployImutableFromReleaseDeps,
 ): Promise<void> {
   if (options.safePublish) {
     throw new Error(
@@ -149,11 +209,11 @@ export async function runDeployImutableFromRelease(
     throw new Error("--from-release requires --deploy-key (or DEPLOY_KEY)");
   }
 
-  const resolved = await resolveReleaseInputs(
-    out,
-    options.fromRelease,
-    options,
-  );
+  const resolveRelease = deps?.resolveRelease ?? resolveReleaseInputs;
+  const propose = deps?.propose ?? runProposeImutable;
+  const execute = deps?.execute ?? runExecuteProposal;
+
+  const resolved = await resolveRelease(out, options.fromRelease, options);
   const proposalPath = path.join(
     options.workDir,
     `proposal-${options.fromRelease}.json`,
@@ -167,7 +227,7 @@ export async function runDeployImutableFromRelease(
   } else if (resolved.releaseRoot !== undefined) {
     proposeOptions.releaseRoot = resolved.releaseRoot;
   }
-  await runProposeImutable(out, proposeOptions);
+  await propose(out, proposeOptions);
 
   const executeOptions = {
     ...options,
@@ -177,7 +237,7 @@ export async function runDeployImutableFromRelease(
       address: privateKeyToAccount(options.deployKey).address,
     },
   };
-  await runExecuteProposal(out, executeOptions);
+  await execute(out, executeOptions, deps?.executeDeps);
 
   const proposal = parseProposal(await Bun.file(proposalPath).text());
   if (proposal.imutableUnivocity === null) {

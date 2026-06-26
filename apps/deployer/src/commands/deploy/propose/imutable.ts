@@ -132,6 +132,13 @@ export default defineDeployerCommand({
       valueHint: "path|url",
       default: "${env:DEPLOY_MANIFEST}",
     },
+    insecure: {
+      type: "boolean",
+      description:
+        "Allow http:// manifest URLs (local dev only; does not affect " +
+        "local files)",
+      default: false,
+    },
   }),
   run: defineCommandRunner(parseProposeImutableOptions, runProposeImutable),
 });

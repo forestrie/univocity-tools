@@ -1,17 +1,19 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
 import { runExecuteProposal } from "../execute-proposal.js";
 import { parseExecuteProposalOptions } from "../options.js";
 import { serializeProposal, type Proposal } from "../proposal.js";
+import { createFakeRpcClients } from "./helpers/fake-rpc-clients.js";
 
 const ROOT = "/tmp/univocity";
 const KEY_A =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const ADDR_A = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 const OTHER = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
+const DEPLOYED = "0x1111111111111111111111111111111111111111";
 
 const EOA_PROPOSAL: Proposal = {
   kind: "deploy-imutable",
@@ -25,6 +27,11 @@ const EOA_PROPOSAL: Proposal = {
   signerRole: "deploy-key",
   transactions: [{ to: null, value: "0", data: "0x6001", operation: 0 }],
 };
+
+function withEmptyPath(name: string): { PATH: string } {
+  const empty = mkdtempSync(path.join(tmpdir(), `no-forge-${name}-`));
+  return { PATH: empty };
+}
 
 describe("runExecuteProposal", () => {
   test("refuses Safe proposals", async () => {
@@ -101,6 +108,75 @@ describe("runExecuteProposal", () => {
         "execute requires --rpc-url",
       );
     } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("happy path persists contract address from receipt", async () => {
+    const out = createCaptureOut();
+    const dir = mkdtempSync(path.join(tmpdir(), "execute-proposal-"));
+    const file = path.join(dir, "proposal.json");
+    writeFileSync(file, serializeProposal(EOA_PROPOSAL));
+    const clients = createFakeRpcClients({
+      contractAddress: DEPLOYED,
+      receiptStatus: "success",
+    });
+    try {
+      const options = parseExecuteProposalOptions({
+        _: [file],
+        "source-root": ROOT,
+        "deploy-key": KEY_A,
+        "rpc-url": "http://127.0.0.1:8545",
+      });
+      await runExecuteProposal(out, options, { clients });
+      const updated = JSON.parse(readFileSync(file, "utf8")) as Proposal;
+      expect(updated.imutableUnivocity?.toLowerCase()).toBe(
+        DEPLOYED.toLowerCase(),
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("rejects reverted receipt", async () => {
+    const out = createCaptureOut();
+    const dir = mkdtempSync(path.join(tmpdir(), "execute-proposal-"));
+    const file = path.join(dir, "proposal.json");
+    writeFileSync(file, serializeProposal(EOA_PROPOSAL));
+    const clients = createFakeRpcClients({ receiptStatus: "reverted" });
+    try {
+      const options = parseExecuteProposalOptions({
+        _: [file],
+        "source-root": ROOT,
+        "deploy-key": KEY_A,
+        "rpc-url": "http://127.0.0.1:8545",
+      });
+      await expect(
+        runExecuteProposal(out, options, { clients }),
+      ).rejects.toThrow("transaction failed");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("does not require forge or cast on PATH", async () => {
+    const out = createCaptureOut();
+    const dir = mkdtempSync(path.join(tmpdir(), "execute-proposal-"));
+    const file = path.join(dir, "proposal.json");
+    writeFileSync(file, serializeProposal(EOA_PROPOSAL));
+    const clients = createFakeRpcClients({ contractAddress: DEPLOYED });
+    const savedPath = process.env.PATH;
+    Object.assign(process.env, withEmptyPath("execute"));
+    try {
+      const options = parseExecuteProposalOptions({
+        _: [file],
+        "source-root": ROOT,
+        "deploy-key": KEY_A,
+        "rpc-url": "http://127.0.0.1:8545",
+      });
+      await runExecuteProposal(out, options, { clients });
+    } finally {
+      process.env.PATH = savedPath;
       rmSync(dir, { recursive: true, force: true });
     }
   });

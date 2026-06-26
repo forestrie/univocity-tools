@@ -213,6 +213,8 @@ export type ProposeImutableOptions = DeployerCommonOptions & {
   releaseRoot?: string;
   /** Deploy manifest file or URL (from Univocity release). */
   fromManifest?: string;
+  /** Allow http:// manifest URLs and skip sidecar verification (local dev). */
+  insecure?: boolean;
 };
 
 export function parseProposeImutableOptions(
@@ -327,6 +329,9 @@ export function parseProposeImutableOptions(
 
   const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
   if (fromManifest !== undefined) options.fromManifest = fromManifest;
+  if (Boolean(args.insecure)) {
+    options.insecure = true;
+  }
   if (
     options.releaseRoot !== undefined &&
     options.fromManifest !== undefined

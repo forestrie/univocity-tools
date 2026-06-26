@@ -62,6 +62,13 @@ export default defineDeployerCommand({
       description: "RPC URL for chain reads and broadcast (env: RPC_URL)",
       valueHint: "url",
     },
+    insecure: {
+      type: "boolean",
+      description:
+        "Allow http:// manifest URLs and skip deploy-manifest sidecar " +
+        "verification (local dev only)",
+      default: false,
+    },
   }),
   run: defineCommandRunner(
     parseDeployImutableFromReleaseOptions,

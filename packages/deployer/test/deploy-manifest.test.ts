@@ -1,22 +1,31 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
 import { parseDeployManifest } from "../deploy-manifest.js";
 import {
   bytecodeSha256,
+  loadDeployManifestSource,
   readImutableFromDeployManifest,
+  verifyDeployManifestSidecar,
 } from "../read-deploy-manifest.js";
 import { parseProposeImutableOptions } from "../options.js";
 import { runProposeImutable } from "../propose-imutable.js";
 import { parseProposal } from "../proposal.js";
+import { sha256FileHex } from "../file-sha256.js";
 
 const ROOT = "/tmp/univocity";
 const KEY_A =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const OWNER = "0x1528b86ff561f617602356efdbD05908a07AA788";
 const FIXTURE_BYTECODE = "0x6001" as const;
+const GOLDEN_FIXTURE = JSON.parse(
+  readFileSync(
+    path.join(import.meta.dir, "fixtures/deploy-manifest.fixture.json"),
+    "utf8",
+  ),
+) as Record<string, unknown>;
 
 async function manifestFixture(bytecode: string = FIXTURE_BYTECODE) {
   const digest = await bytecodeSha256(bytecode as `0x${string}`);
@@ -75,6 +84,69 @@ describe("readImutableFromDeployManifest", () => {
       await expect(readImutableFromDeployManifest(file)).rejects.toThrow(
         "sha256 mismatch",
       );
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("golden deploy-manifest fixture", () => {
+  test("validates and round-trips", async () => {
+    expect(parseDeployManifest(JSON.stringify(GOLDEN_FIXTURE)).releaseId).toBe(
+      "v0.4.0-fixture",
+    );
+    const base = mkdtempSync(path.join(tmpdir(), "golden-manifest-"));
+    const file = path.join(base, "deploy-manifest.fixture.json");
+    writeFileSync(file, JSON.stringify(GOLDEN_FIXTURE));
+    try {
+      const { artifact } = await readImutableFromDeployManifest(file);
+      expect(artifact.bytecode).toBe(FIXTURE_BYTECODE);
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("loadDeployManifestSource", () => {
+  test("rejects http:// without insecure", async () => {
+    await expect(
+      loadDeployManifestSource("http://example.com/manifest.json"),
+    ).rejects.toThrow("http:// URLs require --insecure");
+  });
+});
+
+describe("verifyDeployManifestSidecar", () => {
+  test("accepts matching sidecar", async () => {
+    const base = mkdtempSync(path.join(tmpdir(), "manifest-sidecar-"));
+    const manifestPath = path.join(base, "deploy-manifest-v0.4.0.json");
+    writeFileSync(manifestPath, JSON.stringify(GOLDEN_FIXTURE));
+    const digest = await sha256FileHex(manifestPath);
+    writeFileSync(
+      `${manifestPath}.sha256`,
+      `${digest}  deploy-manifest-v0.4.0.json\n`,
+    );
+    try {
+      await verifyDeployManifestSidecar(
+        manifestPath,
+        `${manifestPath}.sha256`,
+      );
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
+  test("rejects mismatched sidecar", async () => {
+    const base = mkdtempSync(path.join(tmpdir(), "manifest-sidecar-"));
+    const manifestPath = path.join(base, "deploy-manifest-v0.4.0.json");
+    writeFileSync(manifestPath, JSON.stringify(GOLDEN_FIXTURE));
+    writeFileSync(
+      `${manifestPath}.sha256`,
+      `${"a".repeat(64)}  deploy-manifest-v0.4.0.json\n`,
+    );
+    try {
+      await expect(
+        verifyDeployManifestSidecar(manifestPath, `${manifestPath}.sha256`),
+      ).rejects.toThrow("sidecar mismatch");
     } finally {
       rmSync(base, { recursive: true, force: true });
     }
