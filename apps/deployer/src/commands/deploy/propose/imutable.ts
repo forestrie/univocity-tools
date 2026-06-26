@@ -124,6 +124,14 @@ export default defineDeployerCommand({
       valueHint: "path",
       default: "${env:RELEASE_ROOT}",
     },
+    "from-manifest": {
+      type: "string",
+      description:
+        "Deploy manifest JSON file or URL (reads ImutableUnivocity " +
+        "creationBytecode with sha256 verification; env: DEPLOY_MANIFEST)",
+      valueHint: "path|url",
+      default: "${env:DEPLOY_MANIFEST}",
+    },
   }),
   run: defineCommandRunner(parseProposeImutableOptions, runProposeImutable),
 });

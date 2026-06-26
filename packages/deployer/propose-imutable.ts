@@ -12,6 +12,7 @@ import {
   type BootstrapKeyInput,
 } from "./bootstrap-key.js";
 import { DEFAULT_CHAIN_ID } from "./deploy-constants.js";
+import { readImutableFromDeployManifest } from "./read-deploy-manifest.js";
 import {
   buildImutableArtifact,
   imutableArtifactPath,
@@ -118,12 +119,14 @@ export async function runProposeImutable(
   out: Out,
   options: ProposeImutableOptions,
 ): Promise<void> {
-  if (options.releaseRoot === undefined) {
+  if (options.releaseRoot === undefined && options.fromManifest === undefined) {
     requireForgeBin(options);
     requireCastBin(options);
   }
   const execCwd =
-    options.releaseRoot !== undefined ? process.cwd() : options.univocityRoot;
+    options.releaseRoot !== undefined || options.fromManifest !== undefined
+      ? process.cwd()
+      : options.univocityRoot;
   const ctx = toFoundryExecContext({
     forgeBin: options.forgeBin,
     castBin: options.castBin,
@@ -136,18 +139,20 @@ export async function runProposeImutable(
     bootstrapKeyInput(resolvedOptions),
   );
   const artifact =
-    options.releaseRoot !== undefined
-      ? await readImutableBytecode(
-          imutableArtifactPath(path.join(options.releaseRoot, "out")),
-        )
-      : await (async () => {
-          out.print("Building ImutableUnivocity artifact...");
-          return buildImutableArtifact(
-            ctx,
-            options.forgeConfig,
-            options.outDir,
-          );
-        })();
+    options.fromManifest !== undefined
+      ? (await readImutableFromDeployManifest(options.fromManifest)).artifact
+      : options.releaseRoot !== undefined
+        ? await readImutableBytecode(
+            imutableArtifactPath(path.join(options.releaseRoot, "out")),
+          )
+        : await (async () => {
+            out.print("Building ImutableUnivocity artifact...");
+            return buildImutableArtifact(
+              ctx,
+              options.forgeConfig,
+              options.outDir,
+            );
+          })();
   const deploymentData = buildImutableDeploymentData(
     artifact.bytecode,
     bootstrap.algId,

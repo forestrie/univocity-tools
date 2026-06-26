@@ -204,6 +204,8 @@ export type ProposeImutableOptions = DeployerCommonOptions & {
   outPath?: string;
   /** Extracted build archive root (from archive-extract --release-root). */
   releaseRoot?: string;
+  /** Deploy manifest file or URL (from Univocity release). */
+  fromManifest?: string;
 };
 
 export function parseProposeImutableOptions(
@@ -315,6 +317,12 @@ export function parseProposeImutableOptions(
 
   const releaseRoot = resolveReleaseRoot(args);
   if (releaseRoot !== undefined) options.releaseRoot = releaseRoot;
+
+  const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
+  if (fromManifest !== undefined) options.fromManifest = fromManifest;
+  if (options.releaseRoot !== undefined && options.fromManifest !== undefined) {
+    throw new Error("--release-root and --from-manifest are mutually exclusive");
+  }
 
   return options;
 }
