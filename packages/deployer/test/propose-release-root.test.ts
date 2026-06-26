@@ -2,7 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { ALG_KS256 } from "../deploy-constants.js";
+import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
+import { ALG_KS256, DEFAULT_CHAIN_ID } from "../deploy-constants.js";
 import { buildImutableDeploymentData } from "../imutable-deploy-data.js";
 import {
   IMUTABLE_ARTIFACT_REL,
@@ -10,6 +11,8 @@ import {
   readImutableBytecode,
 } from "../imutable-artifact.js";
 import { parseProposeImutableOptions } from "../options.js";
+import { runProposeImutable } from "../propose-imutable.js";
+import { parseProposal } from "../proposal.js";
 
 const ROOT = "/tmp/univocity";
 const KEY_A =
@@ -78,6 +81,29 @@ describe("propose imutable from release root", () => {
         OWNER as `0x${string}`,
       );
       expect(deploymentData.startsWith(FIXTURE_BYTECODE)).toBe(true);
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
+  test("release-root path proposes without rpc-url or forge/cast", async () => {
+    const base = mkdtempSync(path.join(tmpdir(), "univocity-tools-propose-"));
+    const releaseRoot = path.join(base, "release");
+    writeReleaseRootFixture(releaseRoot);
+    const out = createCaptureOut();
+    try {
+      const options = parseProposeImutableOptions({
+        "source-root": ROOT,
+        "bootstrap-alg": "ks256",
+        "bootstrap-ks256-signer": OWNER,
+        "deploy-key": KEY_A,
+        "release-root": releaseRoot,
+      });
+      await runProposeImutable(out, options);
+      const proposal = parseProposal(out.lines[0]!.text);
+      expect(proposal.chainId).toBe(DEFAULT_CHAIN_ID);
+      expect(proposal.imutableUnivocity).toBeNull();
+      expect(proposal.publishMode).toBe("eoa");
     } finally {
       rmSync(base, { recursive: true, force: true });
     }

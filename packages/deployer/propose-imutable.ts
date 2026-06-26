@@ -3,10 +3,8 @@ import {
   requireForgeBin,
   requireCastBin,
   toFoundryExecContext,
-  type FoundryExecContext,
 } from "@univocity-tools/foundry-exec/require-bins";
-import { runCast } from "@univocity-tools/foundry-exec/spawn";
-import { getContractAddress, type Address, type Hex } from "viem";
+import { createPublicClient, getContractAddress, http, type Address, type Hex } from "viem";
 import {
   generateEs256BootstrapKey,
   generateKs256BootstrapKey,
@@ -85,7 +83,6 @@ async function applyGeneratedBootstrapMaterial(
 }
 
 async function resolveChainId(
-  ctx: FoundryExecContext,
   options: ProposeImutableOptions,
 ): Promise<number> {
   if (options.chainId !== undefined) {
@@ -94,32 +91,22 @@ async function resolveChainId(
   if (options.rpcUrl === undefined) {
     return DEFAULT_CHAIN_ID;
   }
-  const { stdout } = await runCast(ctx, [
-    "chain-id",
-    "--rpc-url",
-    options.rpcUrl,
-  ]);
-  const value = Number(stdout.trim());
+  const client = createPublicClient({ transport: http(options.rpcUrl) });
+  const value = await client.getChainId();
   if (!Number.isInteger(value) || value <= 0) {
-    throw new Error(`cast chain-id returned unexpected value: ${stdout}`);
+    throw new Error(`rpc chain-id returned unexpected value: ${value}`);
   }
   return value;
 }
 
 async function predictEoaAddress(
-  ctx: FoundryExecContext,
   options: ProposeImutableOptions,
 ): Promise<Address | null> {
   if (options.rpcUrl === undefined) {
     return null;
   }
-  const { stdout } = await runCast(ctx, [
-    "nonce",
-    options.from,
-    "--rpc-url",
-    options.rpcUrl,
-  ]);
-  const nonce = Number(stdout.trim());
+  const client = createPublicClient({ transport: http(options.rpcUrl) });
+  const nonce = await client.getTransactionCount({ address: options.from });
   if (!Number.isInteger(nonce) || nonce < 0) {
     return null;
   }
@@ -133,8 +120,8 @@ export async function runProposeImutable(
 ): Promise<void> {
   if (options.releaseRoot === undefined) {
     requireForgeBin(options);
+    requireCastBin(options);
   }
-  requireCastBin(options);
   const execCwd =
     options.releaseRoot !== undefined ? process.cwd() : options.univocityRoot;
   const ctx = toFoundryExecContext({
@@ -166,7 +153,7 @@ export async function runProposeImutable(
     bootstrap.algId,
     bootstrap.key,
   );
-  const chainId = await resolveChainId(ctx, options);
+  const chainId = await resolveChainId(resolvedOptions);
 
   if (!options.safePublish) {
     const tx: ProposalTransaction = {
@@ -175,7 +162,7 @@ export async function runProposeImutable(
       data: deploymentData,
       operation: 0,
     };
-    const predicted = await predictEoaAddress(ctx, resolvedOptions);
+    const predicted = await predictEoaAddress(resolvedOptions);
     const proposal: Proposal = {
       kind: "deploy-imutable",
       version: 1,
