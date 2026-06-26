@@ -18,6 +18,8 @@ export const CREATE3_FACTORY_RELEASE_ARTIFACT_REL =
   "CREATE3Factory.sol/CREATE3Factory.json";
 
 /** Factory artifact path under an extracted create3-factory release root. */
-export function create3FactoryReleaseArtifactPath(releaseRoot: string): string {
+export function create3FactoryReleaseArtifactPath(
+  releaseRoot: string,
+): string {
   return path.join(releaseRoot, "out", CREATE3_FACTORY_RELEASE_ARTIFACT_REL);
 }

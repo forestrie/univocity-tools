@@ -32,10 +32,7 @@ import { readFactoryBytecode } from "./read-factory-bytecode.js";
 const PROXY_POLL_MS = 500;
 const PROXY_POLL_MAX = 60;
 
-async function getCode(
-  rpcUrl: string,
-  address: string,
-): Promise<string> {
+async function getCode(rpcUrl: string, address: string): Promise<string> {
   const client = createPublicClient({ transport: http(rpcUrl) });
   const code = await client.getBytecode({ address: address as `0x${string}` });
   return code ?? "0x";

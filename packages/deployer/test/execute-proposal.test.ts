@@ -11,8 +11,7 @@ const ROOT = "/tmp/univocity";
 const KEY_A =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const ADDR_A = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-const OTHER =
-  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
+const OTHER = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 
 const EOA_PROPOSAL: Proposal = {
   kind: "deploy-imutable",
@@ -71,10 +70,7 @@ describe("runExecuteProposal", () => {
     const out = createCaptureOut();
     const dir = mkdtempSync(path.join(tmpdir(), "execute-proposal-"));
     const file = path.join(dir, "proposal.json");
-    writeFileSync(
-      file,
-      serializeProposal({ ...EOA_PROPOSAL, from: OTHER }),
-    );
+    writeFileSync(file, serializeProposal({ ...EOA_PROPOSAL, from: OTHER }));
     try {
       const options = parseExecuteProposalOptions({
         _: [file],

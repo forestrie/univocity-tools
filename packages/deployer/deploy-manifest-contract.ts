@@ -35,7 +35,10 @@ export function validateDeployManifestContract(
     fail(`${label}.creationBytecode must be hex`);
   }
   const bytecodeSha256 = record.bytecodeSha256;
-  if (typeof bytecodeSha256 !== "string" || !/^[a-f0-9]{64}$/i.test(bytecodeSha256)) {
+  if (
+    typeof bytecodeSha256 !== "string" ||
+    !/^[a-f0-9]{64}$/i.test(bytecodeSha256)
+  ) {
     fail(`${label}.bytecodeSha256 must be a 64-char hex sha256 digest`);
   }
   const solcVersion = record.solcVersion;

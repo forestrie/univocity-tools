@@ -325,8 +325,13 @@ export function parseProposeImutableOptions(
 
   const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
   if (fromManifest !== undefined) options.fromManifest = fromManifest;
-  if (options.releaseRoot !== undefined && options.fromManifest !== undefined) {
-    throw new Error("--release-root and --from-manifest are mutually exclusive");
+  if (
+    options.releaseRoot !== undefined &&
+    options.fromManifest !== undefined
+  ) {
+    throw new Error(
+      "--release-root and --from-manifest are mutually exclusive",
+    );
   }
 
   return options;

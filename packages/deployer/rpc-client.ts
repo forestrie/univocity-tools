@@ -16,10 +16,7 @@ export type RpcClients = {
 };
 
 /** Build viem public + wallet clients for a deploy key and RPC URL. */
-export function createRpcClients(
-  rpcUrl: string,
-  deployKey: Hex,
-): RpcClients {
+export function createRpcClients(rpcUrl: string, deployKey: Hex): RpcClients {
   const account = privateKeyToAccount(deployKey);
   const transport = http(rpcUrl);
   const publicClient = createPublicClient({ transport });

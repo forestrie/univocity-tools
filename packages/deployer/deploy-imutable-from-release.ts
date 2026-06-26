@@ -41,7 +41,8 @@ function findUnivocityArchive(
     return found;
   }
   return assets.find(
-    (asset) => asset.name.startsWith("univocity-") && asset.name.endsWith(".tar.gz"),
+    (asset) =>
+      asset.name.startsWith("univocity-") && asset.name.endsWith(".tar.gz"),
   );
 }
 
@@ -72,7 +73,9 @@ async function resolveReleaseInputs(
   const release = await getReleaseByTag(client, releaseTag);
   out.print("Resolved release %s", release.tag_name);
 
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "deployer-release-"));
+  const tempDir = await fs.mkdtemp(
+    path.join(os.tmpdir(), "deployer-release-"),
+  );
   const manifestAsset = findManifestAsset(release.assets, release.tag_name);
   if (manifestAsset !== undefined) {
     const manifestPath = path.join(tempDir, manifestAsset.name);
@@ -90,7 +93,11 @@ async function resolveReleaseInputs(
 
   const archivePath = path.join(options.workDir, archiveAsset.name);
   await downloadReleaseAsset(client, archiveAsset, archivePath);
-  const releaseRoot = path.join(options.workDir, "release-root", release.tag_name);
+  const releaseRoot = path.join(
+    options.workDir,
+    "release-root",
+    release.tag_name,
+  );
   await fs.mkdir(releaseRoot, { recursive: true });
   await runArchiveExtract(out, {
     univocityRoot: options.univocityRoot,
@@ -168,7 +175,9 @@ export async function runDeployImutableFromRelease(
 
   const proposal = parseProposal(await Bun.file(proposalPath).text());
   if (proposal.imutableUnivocity === null) {
-    throw new Error("deploy completed but proposal has no imutableUnivocity address");
+    throw new Error(
+      "deploy completed but proposal has no imutableUnivocity address",
+    );
   }
 
   const manifest: ImutableDeploymentManifest = {

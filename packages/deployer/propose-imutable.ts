@@ -4,7 +4,13 @@ import {
   requireCastBin,
   toFoundryExecContext,
 } from "@univocity-tools/foundry-exec/require-bins";
-import { createPublicClient, getContractAddress, http, type Address, type Hex } from "viem";
+import {
+  createPublicClient,
+  getContractAddress,
+  http,
+  type Address,
+  type Hex,
+} from "viem";
 import {
   generateEs256BootstrapKey,
   generateKs256BootstrapKey,
@@ -119,7 +125,10 @@ export async function runProposeImutable(
   out: Out,
   options: ProposeImutableOptions,
 ): Promise<void> {
-  if (options.releaseRoot === undefined && options.fromManifest === undefined) {
+  if (
+    options.releaseRoot === undefined &&
+    options.fromManifest === undefined
+  ) {
     requireForgeBin(options);
     requireCastBin(options);
   }

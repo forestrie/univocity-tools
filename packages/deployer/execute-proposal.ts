@@ -130,12 +130,7 @@ export async function runExecuteProposal(
     throw new Error("execute requires --rpc-url (or RPC_URL)");
   }
 
-  const deployed = await broadcast(
-    out,
-    options,
-    options.rpcUrl,
-    proposal,
-  );
+  const deployed = await broadcast(out, options, options.rpcUrl, proposal);
   if (deployed !== undefined) {
     await persistDeployedAddress(out, options, proposal, deployed);
   }
