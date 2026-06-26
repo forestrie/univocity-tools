@@ -9,8 +9,8 @@ on:
       - "v*"
 
 jobs:
-  release:
-    name: Build Linux binaries and publish
+  release-linux:
+    name: Build Linux binaries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -30,23 +30,85 @@ jobs:
       - name: Build Linux binaries
         run: bun run build:binary:linux-x64
 
+      - name: Upload Linux release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-linux
+          path: |
+            apps/contract-artefacts/dist/contract-artefacts-linux-x64
+            apps/deployer/dist/deployer-linux-x64
+          if-no-files-found: error
+
+  release-darwin:
+    name: Build darwin-arm64 binaries
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@v3
+        with:
+          install: true
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Create3 defaults snapshot
+        run: bun run check:create3
+
+      - name: Build darwin-arm64 binaries
+        run: bun run build:binary:darwin-arm64
+
+      - name: Upload darwin release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-darwin
+          path: |
+            apps/contract-artefacts/dist/contract-artefacts-darwin-arm64
+            apps/deployer/dist/deployer-darwin-arm64
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub release
+    needs: [release-linux, release-darwin]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Linux assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-linux
+          path: release/linux
+
+      - name: Download darwin assets
+        uses: actions/download-artifact@v4
+        with:
+          name: release-darwin
+          path: release/darwin
+
       - name: Prepare release assets
         run: |
           set -euo pipefail
-          mkdir -p release
-          for app in contract-artefacts deployer; do
-            binary="apps/${app}/dist/${app}-linux-x64"
-            cp "${binary}" "release/${app}-linux-x64"
-            shasum -a 256 "release/${app}-linux-x64" > "release/${app}-linux-x64.sha256"
+          mkdir -p upload
+          cp release/linux/contract-artefacts-linux-x64 upload/
+          cp release/linux/deployer-linux-x64 upload/
+          cp release/darwin/contract-artefacts-darwin-arm64 upload/
+          cp release/darwin/deployer-darwin-arm64 upload/
+          for binary in upload/*; do
+            shasum -a 256 "$binary" > "${binary}.sha256"
           done
-          chmod +x release/*-linux-x64
+          chmod +x upload/*-linux-x64 upload/*-darwin-arm64
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            release/contract-artefacts-linux-x64
-            release/contract-artefacts-linux-x64.sha256
-            release/deployer-linux-x64
-            release/deployer-linux-x64.sha256
+            upload/contract-artefacts-linux-x64
+            upload/contract-artefacts-linux-x64.sha256
+            upload/deployer-linux-x64
+            upload/deployer-linux-x64.sha256
+            upload/contract-artefacts-darwin-arm64
+            upload/contract-artefacts-darwin-arm64.sha256
+            upload/deployer-darwin-arm64
+            upload/deployer-darwin-arm64.sha256
