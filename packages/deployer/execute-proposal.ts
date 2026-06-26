@@ -81,7 +81,7 @@ async function broadcast(
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
     assertReceiptSuccess(receipt.status);
 
-    if (tx.to === null && receipt.contractAddress !== undefined) {
+    if (tx.to === null && receipt.contractAddress != null) {
       deployed = getAddress(receipt.contractAddress);
       out.out("ImutableUnivocity deployed at: %s", deployed);
     } else {

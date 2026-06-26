@@ -117,15 +117,17 @@ export function parseDeployCreate3Options(
   args: LooseParsedArgs,
 ): DeployCreate3Options {
   const slice = args as DeployCreate3ArgSlice;
-  return {
+  const releaseRoot = resolveReleaseRoot(args);
+  const options: DeployCreate3Options = {
     ...parseDeployerCommonOptions(slice),
     rpcUrl: resolveRpcUrl(slice),
     deployKey: resolveDeployKey(slice),
     create3Salt: resolveCreate3Salt(slice),
-    ...(resolveReleaseRoot(args) !== undefined
-      ? { releaseRoot: resolveReleaseRoot(args) }
-      : {}),
   };
+  if (releaseRoot !== undefined) {
+    options.releaseRoot = releaseRoot;
+  }
+  return options;
 }
 
 /**

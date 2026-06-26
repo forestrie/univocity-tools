@@ -2,6 +2,7 @@ import type { Out } from "@univocity-tools/cli-kit/reporting";
 import { runArchiveExtract } from "@univocity-tools/contract-artefacts-common/main";
 import {
   createGithubClient,
+  DEFAULT_AUTH_KIND,
   getReleaseByTag,
   resolveGithubToken,
   type ReleaseAsset,
@@ -15,7 +16,10 @@ import os from "node:os";
 import path from "node:path";
 import { privateKeyToAccount } from "viem/accounts";
 import { runExecuteProposal } from "./execute-proposal.js";
-import type { DeployImutableFromReleaseOptions } from "./options.js";
+import type {
+  DeployImutableFromReleaseOptions,
+  ProposeImutableOptions,
+} from "./options.js";
 import { runProposeImutable } from "./propose-imutable.js";
 import { parseProposal } from "./proposal.js";
 
@@ -64,7 +68,7 @@ async function resolveReleaseInputs(
   releaseTag: string,
   options: DeployImutableFromReleaseOptions,
 ): Promise<ResolvedReleaseInputs> {
-  const token = await resolveGithubToken(out, "auto");
+  const token = await resolveGithubToken(out, DEFAULT_AUTH_KIND);
   const client = createGithubClient({
     org: DEFAULT_GITHUB_ORG,
     repo: DEFAULT_GITHUB_REPO,
@@ -103,12 +107,11 @@ async function resolveReleaseInputs(
     univocityRoot: options.univocityRoot,
     workDir: options.workDir,
     forgeConfig: options.forgeConfig,
-    outDir: options.outDir,
     buildRoot: options.buildRoot,
-    foundryOut: options.foundryOut,
-    foundrySrc: options.foundrySrc,
-    foundryCache: options.foundryCache,
-    foundryLibs: options.foundryLibs,
+    outDir: options.outDir,
+    srcDir: options.srcDir,
+    cacheDir: options.cacheDir,
+    libsDir: options.libsDir,
     forgeBin: options.forgeBin,
     castBin: options.castBin,
     archive: archivePath,
@@ -155,12 +158,15 @@ export async function runDeployImutableFromRelease(
     options.workDir,
     `proposal-${options.fromRelease}.json`,
   );
-  const proposeOptions = {
+  const proposeOptions: ProposeImutableOptions = {
     ...options,
-    fromManifest: resolved.fromManifest,
-    releaseRoot: resolved.releaseRoot,
     outPath: proposalPath,
   };
+  if (resolved.fromManifest !== undefined) {
+    proposeOptions.fromManifest = resolved.fromManifest;
+  } else if (resolved.releaseRoot !== undefined) {
+    proposeOptions.releaseRoot = resolved.releaseRoot;
+  }
   await runProposeImutable(out, proposeOptions);
 
   const executeOptions = {

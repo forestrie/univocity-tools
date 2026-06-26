@@ -6,7 +6,7 @@ import {
 import type { ImutableArtifact } from "./imutable-artifact.js";
 
 async function sha256Hex(data: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", data);
+  const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(data));
   return [...new Uint8Array(digest)]
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
