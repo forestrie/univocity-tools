@@ -9,7 +9,24 @@ import type { ImutableArtifact } from "./imutable-artifact.js";
 export type LoadDeployManifestOptions = {
   /** Allow http:// URLs and skip TLS concerns (local dev only). */
   insecure?: boolean;
+  /** When set, manifest.releaseId must match this tag (fail-closed). */
+  expectedReleaseId?: string;
+  /** Local sidecar path; verified before parse when source is a local file. */
+  manifestSidecar?: string;
 };
+
+/** Fail when manifest releaseId does not match the requested release tag. */
+export function assertManifestReleaseId(
+  manifest: DeployManifest,
+  expectedTag: string,
+): void {
+  if (manifest.releaseId !== expectedTag) {
+    throw new Error(
+      `deploy-manifest releaseId mismatch: expected ${expectedTag}, ` +
+        `got ${manifest.releaseId}`,
+    );
+  }
+}
 
 async function sha256Hex(data: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new Uint8Array(data));
@@ -58,14 +75,28 @@ export async function loadDeployManifestSource(
   return Bun.file(source).text();
 }
 
+async function verifyLocalManifestSidecarIfPresent(
+  source: string,
+  options?: LoadDeployManifestOptions,
+): Promise<void> {
+  if (options?.manifestSidecar === undefined || /^https?:\/\//i.test(source)) {
+    return;
+  }
+  await verifyDeployManifestSidecar(source, options.manifestSidecar);
+}
+
 /** Read and verify a deploy-manifest; returns the ImutableUnivocity artifact. */
 export async function readImutableFromDeployManifest(
   source: string,
   options?: LoadDeployManifestOptions,
 ): Promise<{ manifest: DeployManifest; artifact: ImutableArtifact }> {
+  await verifyLocalManifestSidecarIfPresent(source, options);
   const manifest = parseDeployManifest(
     await loadDeployManifestSource(source, options),
   );
+  if (options?.expectedReleaseId !== undefined) {
+    assertManifestReleaseId(manifest, options.expectedReleaseId);
+  }
   const entry = manifest.contracts.ImutableUnivocity;
   await assertBytecodeSha256(
     entry.contractName,

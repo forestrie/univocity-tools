@@ -9,6 +9,7 @@ export type FakeRpcClientsConfig = {
   txHash?: Hex;
   receiptStatus?: "success" | "reverted";
   contractAddress?: Address;
+  chainId?: number;
   bytecode?: Record<string, Hex | "0x" | undefined>;
   balance?: bigint;
   sendRawTransaction?: (serialized: Hex) => Promise<Hex>;
@@ -29,6 +30,7 @@ export function createFakeRpcClients(
   } as unknown as WalletClient;
 
   const publicClient = {
+    getChainId: async () => config.chainId ?? 84532,
     waitForTransactionReceipt: async () => ({
       status: config.receiptStatus ?? "success",
       contractAddress: config.contractAddress,

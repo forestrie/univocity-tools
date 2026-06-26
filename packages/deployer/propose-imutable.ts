@@ -92,18 +92,24 @@ async function applyGeneratedBootstrapMaterial(
 async function resolveChainId(
   options: ProposeImutableOptions,
 ): Promise<number> {
+  if (options.rpcUrl !== undefined) {
+    const client = createPublicClient({ transport: http(options.rpcUrl) });
+    const rpcChainId = await client.getChainId();
+    if (!Number.isInteger(rpcChainId) || rpcChainId <= 0) {
+      throw new Error(`rpc chain-id returned unexpected value: ${rpcChainId}`);
+    }
+    if (options.chainId !== undefined && options.chainId !== rpcChainId) {
+      throw new Error(
+        `--chain-id ${options.chainId} does not match RPC chain id ` +
+          `${rpcChainId}; omit --chain-id or fix --rpc-url`,
+      );
+    }
+    return rpcChainId;
+  }
   if (options.chainId !== undefined) {
     return options.chainId;
   }
-  if (options.rpcUrl === undefined) {
-    return DEFAULT_CHAIN_ID;
-  }
-  const client = createPublicClient({ transport: http(options.rpcUrl) });
-  const value = await client.getChainId();
-  if (!Number.isInteger(value) || value <= 0) {
-    throw new Error(`rpc chain-id returned unexpected value: ${value}`);
-  }
-  return value;
+  return DEFAULT_CHAIN_ID;
 }
 
 async function predictEoaAddress(

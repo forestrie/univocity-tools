@@ -5,6 +5,7 @@ import path from "node:path";
 import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
 import { parseDeployManifest } from "../deploy-manifest.js";
 import {
+  assertManifestReleaseId,
   bytecodeSha256,
   loadDeployManifestSource,
   readImutableFromDeployManifest,
@@ -43,6 +44,28 @@ async function manifestFixture(bytecode: string = FIXTURE_BYTECODE) {
     },
   };
 }
+
+describe("assertManifestReleaseId", () => {
+  test("accepts matching releaseId", async () => {
+    const manifest = await manifestFixture();
+    expect(() =>
+      assertManifestReleaseId(
+        parseDeployManifest(JSON.stringify(manifest)),
+        "v0.4.0",
+      ),
+    ).not.toThrow();
+  });
+
+  test("rejects mismatch", async () => {
+    const manifest = await manifestFixture();
+    expect(() =>
+      assertManifestReleaseId(
+        parseDeployManifest(JSON.stringify(manifest)),
+        "v0.3.0",
+      ),
+    ).toThrow("releaseId mismatch");
+  });
+});
 
 describe("parseDeployManifest", () => {
   test("accepts a valid manifest", async () => {

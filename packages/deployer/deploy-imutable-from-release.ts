@@ -20,7 +20,11 @@ import {
   runExecuteProposal,
   type ExecuteProposalRunDeps,
 } from "./execute-proposal.js";
-import { verifyDeployManifestSidecar } from "./read-deploy-manifest.js";
+import {
+  assertManifestReleaseId,
+  verifyDeployManifestSidecar,
+} from "./read-deploy-manifest.js";
+import { parseDeployManifest } from "./deploy-manifest.js";
 import type {
   DeployImutableFromReleaseOptions,
   ProposeImutableOptions,
@@ -28,46 +32,53 @@ import type {
 import { runProposeImutable } from "./propose-imutable.js";
 import { parseProposal } from "./proposal.js";
 
-function findManifestAsset(
+function formatAssetHint(
   assets: ReleaseAsset[],
+  prefix: string,
+): string {
+  const names = assets
+    .map((asset) => asset.name)
+    .filter((name) => name.startsWith(prefix))
+    .sort();
+  if (names.length === 0) {
+    return "none";
+  }
+  return names.join(", ");
+}
+
+function requireReleaseAsset(
+  assets: ReleaseAsset[],
+  exactName: string,
   releaseTag: string,
-): ReleaseAsset | undefined {
-  const exact = `deploy-manifest-${releaseTag}.json`;
-  const found = assets.find((asset) => asset.name === exact);
+  hintPrefix: string,
+): ReleaseAsset {
+  const found = assets.find((asset) => asset.name === exactName);
   if (found !== undefined) {
     return found;
   }
-  return assets.find((asset) => asset.name.startsWith("deploy-manifest-"));
+  throw new Error(
+    `release ${releaseTag} is missing asset ${exactName}; ` +
+      `available ${hintPrefix} assets: ${formatAssetHint(assets, hintPrefix)}`,
+  );
+}
+
+function optionalExactAsset(
+  assets: ReleaseAsset[],
+  exactName: string,
+): ReleaseAsset | undefined {
+  return assets.find((asset) => asset.name === exactName);
 }
 
 function findManifestSidecarAsset(
   assets: ReleaseAsset[],
   manifestName: string,
-): ReleaseAsset | undefined {
-  const exact = `${manifestName}.sha256`;
-  const found = assets.find((asset) => asset.name === exact);
-  if (found !== undefined) {
-    return found;
-  }
-  return assets.find(
-    (asset) =>
-      asset.name.startsWith("deploy-manifest-") &&
-      asset.name.endsWith(".sha256"),
-  );
-}
-
-function findUnivocityArchive(
-  assets: ReleaseAsset[],
   releaseTag: string,
-): ReleaseAsset | undefined {
-  const exact = `univocity-${releaseTag}.tar.gz`;
-  const found = assets.find((asset) => asset.name === exact);
-  if (found !== undefined) {
-    return found;
-  }
-  return assets.find(
-    (asset) =>
-      asset.name.startsWith("univocity-") && asset.name.endsWith(".tar.gz"),
+): ReleaseAsset {
+  return requireReleaseAsset(
+    assets,
+    `${manifestName}.sha256`,
+    releaseTag,
+    "deploy-manifest-",
   );
 }
 
@@ -83,6 +94,7 @@ async function verifyManifestSidecarOrThrow(
   manifestPath: string,
   manifestAsset: ReleaseAsset,
   assets: ReleaseAsset[],
+  releaseTag: string,
 ): Promise<void> {
   if (options.insecure) {
     out.warn(
@@ -91,18 +103,24 @@ async function verifyManifestSidecarOrThrow(
     return;
   }
 
-  const sidecarAsset = findManifestSidecarAsset(assets, manifestAsset.name);
-  if (sidecarAsset === undefined) {
-    throw new Error(
-      `release is missing deploy-manifest sidecar ${manifestAsset.name}.sha256; ` +
-        "refusing to proceed (pass --insecure to override)",
-    );
-  }
+  const sidecarAsset = findManifestSidecarAsset(
+    assets,
+    manifestAsset.name,
+    releaseTag,
+  );
 
   const sidecarPath = `${manifestPath}.sha256`;
   await client.downloadToFile(sidecarAsset.url, sidecarPath);
   await verifyDeployManifestSidecar(manifestPath, sidecarPath);
   out.print("Verified deploy-manifest sidecar %s", sidecarAsset.name);
+}
+
+async function assertDownloadedManifestReleaseId(
+  manifestPath: string,
+  releaseTag: string,
+): Promise<void> {
+  const manifest = parseDeployManifest(await Bun.file(manifestPath).text());
+  assertManifestReleaseId(manifest, releaseTag);
 }
 
 export async function resolveReleaseInputs(
@@ -124,7 +142,10 @@ export async function resolveReleaseInputs(
   const tempDir = await fs.mkdtemp(
     path.join(os.tmpdir(), "deployer-release-"),
   );
-  const manifestAsset = findManifestAsset(release.assets, release.tag_name);
+  const manifestAsset = optionalExactAsset(
+    release.assets,
+    `deploy-manifest-${release.tag_name}.json`,
+  );
   if (manifestAsset !== undefined) {
     const manifestPath = path.join(tempDir, manifestAsset.name);
     await githubClient.downloadToFile(manifestAsset.url, manifestPath);
@@ -135,15 +156,23 @@ export async function resolveReleaseInputs(
       manifestPath,
       manifestAsset,
       release.assets,
+      release.tag_name,
     );
+    await assertDownloadedManifestReleaseId(manifestPath, release.tag_name);
     out.print("Using deploy-manifest asset %s", manifestAsset.name);
     return { fromManifest: manifestPath };
   }
 
-  const archiveAsset = findUnivocityArchive(release.assets, release.tag_name);
+  const archiveAsset = optionalExactAsset(
+    release.assets,
+    `univocity-${release.tag_name}.tar.gz`,
+  );
   if (archiveAsset === undefined) {
     throw new Error(
-      `release ${releaseTag} has no deploy-manifest or univocity archive asset`,
+      `release ${releaseTag} has no deploy-manifest-${release.tag_name}.json ` +
+        `or univocity-${release.tag_name}.tar.gz; ` +
+        `available deploy-manifest assets: ${formatAssetHint(release.assets, "deploy-manifest-")}; ` +
+        `available univocity archives: ${formatAssetHint(release.assets, "univocity-")}`,
     );
   }
 

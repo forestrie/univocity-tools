@@ -138,6 +138,27 @@ describe("runExecuteProposal", () => {
     }
   });
 
+  test("rejects RPC chainId mismatch", async () => {
+    const out = createCaptureOut();
+    const dir = mkdtempSync(path.join(tmpdir(), "execute-proposal-"));
+    const file = path.join(dir, "proposal.json");
+    writeFileSync(file, serializeProposal(EOA_PROPOSAL));
+    const clients = createFakeRpcClients({ chainId: 1 });
+    try {
+      const options = parseExecuteProposalOptions({
+        _: [file],
+        "source-root": ROOT,
+        "deploy-key": KEY_A,
+        "rpc-url": "http://127.0.0.1:8545",
+      });
+      await expect(
+        runExecuteProposal(out, options, { clients }),
+      ).rejects.toThrow("does not match proposal chainId");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("rejects reverted receipt", async () => {
     const out = createCaptureOut();
     const dir = mkdtempSync(path.join(tmpdir(), "execute-proposal-"));

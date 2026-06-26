@@ -135,6 +135,15 @@ export async function runExecuteProposal(
 
   const clients =
     deps?.clients ?? createRpcClients(options.rpcUrl, options.signer.key);
+
+  const rpcChainId = await clients.publicClient.getChainId();
+  if (rpcChainId !== proposal.chainId) {
+    throw new Error(
+      `RPC chain id ${rpcChainId} does not match proposal chainId ` +
+        `${proposal.chainId}; check --rpc-url points at the intended network`,
+    );
+  }
+
   const deployed = await broadcast(
     out,
     options,

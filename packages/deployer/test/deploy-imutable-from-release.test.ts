@@ -12,6 +12,7 @@ import {
   runDeployImutableFromRelease,
 } from "../deploy-imutable-from-release.js";
 import { parseDeployImutableFromReleaseOptions } from "../options.js";
+import { sha256FileHex } from "../file-sha256.js";
 import { serializeProposal, type Proposal } from "../proposal.js";
 
 const ROOT = "/tmp/univocity";
@@ -184,7 +185,118 @@ describe("runDeployImutableFromRelease", () => {
     });
     await expect(
       resolveReleaseInputs(out, "v0.4.0", options, client),
-    ).rejects.toThrow("missing deploy-manifest sidecar");
+    ).rejects.toThrow("missing asset deploy-manifest-v0.4.0.json.sha256");
+  });
+
+  test("resolveReleaseInputs happy path verifies sidecar and releaseId", async () => {
+    const out = createCaptureOut();
+    const options = parseDeployImutableFromReleaseOptions({
+      "source-root": ROOT,
+      "from-release": "v0.4.0",
+      "bootstrap-alg": "ks256",
+      "bootstrap-ks256-signer": OWNER,
+      "deploy-key": KEY_A,
+      "rpc-url": "http://127.0.0.1:8545",
+    });
+    const manifestJson = JSON.stringify(FIXTURE_MANIFEST);
+    const manifestAsset = releaseAsset(
+      "deploy-manifest-v0.4.0.json",
+      "asset://manifest",
+    );
+    const sidecarAsset = releaseAsset(
+      "deploy-manifest-v0.4.0.json.sha256",
+      "asset://sidecar",
+    );
+    const scratch = mkdtempSync(path.join(tmpdir(), "manifest-digest-"));
+    const scratchManifest = path.join(scratch, "deploy-manifest-v0.4.0.json");
+    writeFileSync(scratchManifest, manifestJson);
+    const digest = await sha256FileHex(scratchManifest);
+    rmSync(scratch, { recursive: true, force: true });
+    const client = stubGithubClient({
+      assets: [manifestAsset, sidecarAsset],
+      downloads: {
+        "asset://manifest": manifestJson,
+        "asset://sidecar": `${digest}  deploy-manifest-v0.4.0.json\n`,
+      },
+    });
+    const resolved = await resolveReleaseInputs(
+      out,
+      "v0.4.0",
+      options,
+      client,
+    );
+    expect(resolved.fromManifest).toBeDefined();
+  });
+
+  test("resolveReleaseInputs rejects releaseId mismatch", async () => {
+    const out = createCaptureOut();
+    const options = parseDeployImutableFromReleaseOptions({
+      "source-root": ROOT,
+      "from-release": "v0.4.0",
+      "bootstrap-alg": "ks256",
+      "bootstrap-ks256-signer": OWNER,
+      "deploy-key": KEY_A,
+      "rpc-url": "http://127.0.0.1:8545",
+      insecure: true,
+    });
+    const badManifest = { ...FIXTURE_MANIFEST, releaseId: "v0.3.0" };
+    const manifestAsset = releaseAsset(
+      "deploy-manifest-v0.4.0.json",
+      "asset://manifest",
+    );
+    const client = stubGithubClient({
+      assets: [manifestAsset],
+      downloads: {
+        "asset://manifest": JSON.stringify(badManifest),
+      },
+    });
+    await expect(
+      resolveReleaseInputs(out, "v0.4.0", options, client),
+    ).rejects.toThrow("releaseId mismatch");
+  });
+
+  test("resolveReleaseInputs does not fall back to wrong-tag manifest", async () => {
+    const out = createCaptureOut();
+    const options = parseDeployImutableFromReleaseOptions({
+      "source-root": ROOT,
+      "from-release": "v0.4.0",
+      "bootstrap-alg": "ks256",
+      "bootstrap-ks256-signer": OWNER,
+      "deploy-key": KEY_A,
+      "rpc-url": "http://127.0.0.1:8545",
+      insecure: true,
+    });
+    const manifestAsset = releaseAsset(
+      "deploy-manifest-v0.3.0.json",
+      "asset://manifest",
+    );
+    const client = stubGithubClient({
+      tag: "v0.4.0",
+      assets: [manifestAsset],
+      downloads: {
+        "asset://manifest": JSON.stringify(FIXTURE_MANIFEST),
+      },
+    });
+    await expect(
+      resolveReleaseInputs(out, "v0.4.0", options, client),
+    ).rejects.toThrow("deploy-manifest-v0.4.0.json");
+  });
+
+  test("resolveReleaseInputs rejects bad tag assets", async () => {
+    const out = createCaptureOut();
+    const options = parseDeployImutableFromReleaseOptions({
+      "source-root": ROOT,
+      "from-release": "v9.9.9",
+      "bootstrap-alg": "ks256",
+      "bootstrap-ks256-signer": OWNER,
+      "deploy-key": KEY_A,
+      "rpc-url": "http://127.0.0.1:8545",
+      insecure: true,
+    });
+    const client = stubGithubClient({ assets: [], tag: "v9.9.9" });
+    await expect(
+      resolveReleaseInputs(out, "v9.9.9", options, client),
+    ).rejects.toThrow("deploy-manifest-v9.9.9.json");
   });
 
   test("resolveReleaseInputs allows missing sidecar with --insecure", async () => {
@@ -215,23 +327,6 @@ describe("runDeployImutableFromRelease", () => {
       client,
     );
     expect(resolved.fromManifest).toBeDefined();
-  });
-
-  test("resolveReleaseInputs rejects bad tag assets", async () => {
-    const out = createCaptureOut();
-    const options = parseDeployImutableFromReleaseOptions({
-      "source-root": ROOT,
-      "from-release": "v9.9.9",
-      "bootstrap-alg": "ks256",
-      "bootstrap-ks256-signer": OWNER,
-      "deploy-key": KEY_A,
-      "rpc-url": "http://127.0.0.1:8545",
-      insecure: true,
-    });
-    const client = stubGithubClient({ assets: [] });
-    await expect(
-      resolveReleaseInputs(out, "v9.9.9", options, client),
-    ).rejects.toThrow("has no deploy-manifest or univocity archive");
   });
 });
 
