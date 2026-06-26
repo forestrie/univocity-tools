@@ -125,23 +125,12 @@ export async function runProposeImutable(
   out: Out,
   options: ProposeImutableOptions,
 ): Promise<void> {
-  if (
-    options.releaseRoot === undefined &&
-    options.fromManifest === undefined
-  ) {
+  const foundryFree =
+    options.releaseRoot !== undefined || options.fromManifest !== undefined;
+  if (!foundryFree) {
     requireForgeBin(options);
     requireCastBin(options);
   }
-  const execCwd =
-    options.releaseRoot !== undefined || options.fromManifest !== undefined
-      ? process.cwd()
-      : options.univocityRoot;
-  const ctx = toFoundryExecContext({
-    forgeBin: options.forgeBin,
-    castBin: options.castBin,
-    out,
-    cwd: execCwd,
-  });
 
   const resolvedOptions = await applyGeneratedBootstrapMaterial(out, options);
   const bootstrap = await resolveBootstrapKey(
@@ -160,6 +149,12 @@ export async function runProposeImutable(
             imutableArtifactPath(path.join(options.releaseRoot, "out")),
           )
         : await (async () => {
+            const ctx = toFoundryExecContext({
+              forgeBin: options.forgeBin,
+              castBin: options.castBin,
+              out,
+              cwd: options.univocityRoot,
+            });
             out.print("Building ImutableUnivocity artifact...");
             return buildImutableArtifact(
               ctx,
