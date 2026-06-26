@@ -19,6 +19,14 @@ export default defineDeployerCommand({
         "CREATE3 factory salt string (default: forestrie.eth/univocity/CREATE3Factory/0 or CREATE3_SALT env)",
       valueHint: "string",
     },
+    "release-root": {
+      type: "string",
+      description:
+        "Extracted create3-factory release root (reads prebuilt bytecode; " +
+        "env: RELEASE_ROOT)",
+      valueHint: "path",
+      default: "${env:RELEASE_ROOT}",
+    },
   }),
   run: defineCommandRunner(parseDeployCreate3Options, runDeployCreate3),
 });

@@ -5,9 +5,10 @@ import {
   requireCastBin,
   requireForgeBin,
 } from "@univocity-tools/foundry-exec/require-bins";
-import { runCast, runForge } from "@univocity-tools/foundry-exec/spawn";
+import { runForge } from "@univocity-tools/foundry-exec/spawn";
 import {
   createPublicClient,
+  createWalletClient,
   getCreate2Address,
   http,
   keccak256,
@@ -22,31 +23,22 @@ import {
 import {
   create3FactoryArtifactPath,
   create3FactoryForgeConfigPath,
+  create3FactoryReleaseArtifactPath,
 } from "./create3-factory-paths.js";
 import type { DeployCreate3Options } from "./options.js";
+import { createRpcClients, hasBytecodeAt } from "./rpc-client.js";
 import { readFactoryBytecode } from "./read-factory-bytecode.js";
 
 const PROXY_POLL_MS = 500;
 const PROXY_POLL_MAX = 60;
 
-async function castCode(
-  out: Out,
-  options: DeployCreate3Options,
+async function getCode(
+  rpcUrl: string,
   address: string,
 ): Promise<string> {
-  const ctx = toFoundryExecContext({
-    forgeBin: options.forgeBin,
-    castBin: options.castBin,
-    out,
-    cwd: options.univocityRoot,
-  });
-  const { stdout } = await runCast(ctx, [
-    "code",
-    address,
-    "--rpc-url",
-    options.rpcUrl,
-  ]);
-  return stdout.trim();
+  const client = createPublicClient({ transport: http(rpcUrl) });
+  const code = await client.getBytecode({ address: address as `0x${string}` });
+  return code ?? "0x";
 }
 
 async function buildCreate3Factory(
@@ -68,7 +60,7 @@ async function ensureArachnidProxy(
   options: DeployCreate3Options,
   create3: Create3Config,
 ): Promise<void> {
-  const proxyCode = await castCode(out, options, create3.proxy);
+  const proxyCode = await getCode(options.rpcUrl, create3.proxy);
   if (hasContractCode(proxyCode)) {
     out.log("Arachnid proxy already at %s", create3.proxy);
     return;
@@ -84,22 +76,13 @@ async function ensureArachnidProxy(
   }
 
   out.print("Deploying Arachnid proxy to %s...", create3.proxy);
-  const ctx = toFoundryExecContext({
-    forgeBin: options.forgeBin,
-    castBin: options.castBin,
-    out,
-    cwd: options.univocityRoot,
+  const hash = await client.sendRawTransaction({
+    serializedTransaction: create3["deploy-tx"] as Hex,
   });
-  await runCast(ctx, [
-    "rpc",
-    "eth_sendRawTransaction",
-    create3["deploy-tx"],
-    "--rpc-url",
-    options.rpcUrl,
-  ]);
+  out.print("Arachnid proxy deploy tx: %s", hash);
 
   for (let attempt = 0; attempt < PROXY_POLL_MAX; attempt++) {
-    const code = await castCode(out, options, create3.proxy);
+    const code = await getCode(options.rpcUrl, create3.proxy);
     if (hasContractCode(code)) {
       out.print("Arachnid proxy deployed at %s", create3.proxy);
       return;
@@ -141,9 +124,11 @@ async function deployCreate3Factory(
   create3: Create3Config,
   bytecode: Hex,
 ): Promise<void> {
-  const account = privateKeyToAccount(options.deployKey);
-  const client = createPublicClient({ transport: http(options.rpcUrl) });
-  const balance = await client.getBalance({ address: account.address });
+  const { publicClient, walletClient, account } = createRpcClients(
+    options.rpcUrl,
+    options.deployKey,
+  );
+  const balance = await publicClient.getBalance({ address: account.address });
   if (balance === 0n) {
     throw new Error(
       `Deployer ${account.address} has no funds for CREATE3 factory deployment`,
@@ -159,36 +144,18 @@ async function deployCreate3Factory(
     create3.factory,
   );
 
-  const ctx = toFoundryExecContext({
-    forgeBin: options.forgeBin,
-    castBin: options.castBin,
-    out,
-    cwd: options.univocityRoot,
+  const hash = await walletClient.sendTransaction({
+    account,
+    chain: null,
+    to: create3.proxy,
+    data: calldata,
+    value: 0n,
   });
-  const { stdout } = await runCast(ctx, [
-    "send",
-    create3.proxy,
-    calldata,
-    "--private-key",
-    options.deployKey,
-    "--rpc-url",
-    options.rpcUrl,
-    "--json",
-  ]);
-
-  out.log("%s", stdout);
-
-  const parsed: unknown = JSON.parse(stdout);
-  if (
-    parsed !== null &&
-    typeof parsed === "object" &&
-    "status" in parsed &&
-    parsed.status !== "0x1" &&
-    parsed.status !== 1 &&
-    parsed.status !== "1"
-  ) {
-    throw new Error(`CREATE3 factory deployment failed: ${stdout}`);
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  if (receipt.status !== "success") {
+    throw new Error(`CREATE3 factory deployment failed: ${hash}`);
   }
+  out.print("CREATE3 factory deployment tx: %s", hash);
 }
 
 /** Deploy the shared CREATE3 factory via Arachnid if not already deployed. */
@@ -196,27 +163,39 @@ export async function runDeployCreate3(
   out: Out,
   options: DeployCreate3Options,
 ): Promise<void> {
-  requireForgeBin(options);
-  requireCastBin(options);
+  if (options.releaseRoot === undefined) {
+    requireForgeBin(options);
+    requireCastBin(options);
+  }
 
   const create3 = options.create3;
 
-  const factoryCode = await castCode(out, options, create3.factory);
+  const factoryCode = await getCode(options.rpcUrl, create3.factory);
   if (hasContractCode(factoryCode)) {
     out.out("CREATE3 factory already deployed at %s", create3.factory);
     return;
   }
 
-  await buildCreate3Factory(out, options);
-  const artifact = await readFactoryBytecode(
-    create3FactoryArtifactPath(options.univocityRoot),
-  );
+  const artifact =
+    options.releaseRoot !== undefined
+      ? await readFactoryBytecode(
+          create3FactoryReleaseArtifactPath(options.releaseRoot),
+        )
+      : await (async () => {
+          await buildCreate3Factory(out, options);
+          return readFactoryBytecode(
+            create3FactoryArtifactPath(options.univocityRoot),
+          );
+        })();
 
   await ensureArachnidProxy(out, options, create3);
   await deployCreate3Factory(out, options, create3, artifact.bytecode);
 
-  const deployedCode = await castCode(out, options, create3.factory);
-  if (!hasContractCode(deployedCode)) {
+  const deployed = await hasBytecodeAt(
+    createPublicClient({ transport: http(options.rpcUrl) }),
+    create3.factory,
+  );
+  if (!deployed) {
     throw new Error(
       `CREATE3 factory still has no code at ${create3.factory} after deployment`,
     );
