@@ -37,7 +37,10 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 - **Cursor:** [.cursor/rules/citty-cli.mdc](.cursor/rules/citty-cli.mdc),
   [.cursor/rules/cli-command-structure.mdc](.cursor/rules/cli-command-structure.mdc),
   [.cursor/rules/bun-spawn-subprocess.mdc](.cursor/rules/bun-spawn-subprocess.mdc),
-  [.cursor/rules/commit-conventions.mdc](.cursor/rules/commit-conventions.mdc)
+  [.cursor/rules/commit-conventions.mdc](.cursor/rules/commit-conventions.mdc),
+  [.cursor/rules/branch-naming.mdc](.cursor/rules/branch-naming.mdc),
+  [.cursor/rules/typescript-comments.mdc](.cursor/rules/typescript-comments.mdc),
+  [.cursor/rules/types-single-responsibility.mdc](.cursor/rules/types-single-responsibility.mdc)
 
 ## Commands
 
