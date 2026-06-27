@@ -124,6 +124,28 @@ export default defineDeployerCommand({
       valueHint: "path",
       default: "${env:RELEASE_ROOT}",
     },
+    "from-manifest": {
+      type: "string",
+      description:
+        "Deploy manifest JSON file or URL (reads ImutableUnivocity " +
+        "creationBytecode with sha256 verification; env: DEPLOY_MANIFEST)",
+      valueHint: "path|url",
+      default: "${env:DEPLOY_MANIFEST}",
+    },
+    "manifest-sidecar": {
+      type: "string",
+      description:
+        "Local sha256 sidecar for --from-manifest (env: DEPLOY_MANIFEST_SIDECAR)",
+      valueHint: "path",
+      default: "${env:DEPLOY_MANIFEST_SIDECAR}",
+    },
+    insecure: {
+      type: "boolean",
+      description:
+        "Allow http:// manifest URLs (local dev only; does not affect " +
+        "local files)",
+      default: false,
+    },
   }),
   run: defineCommandRunner(parseProposeImutableOptions, runProposeImutable),
 });

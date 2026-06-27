@@ -3,10 +3,14 @@ import {
   requireForgeBin,
   requireCastBin,
   toFoundryExecContext,
-  type FoundryExecContext,
 } from "@univocity-tools/foundry-exec/require-bins";
-import { runCast } from "@univocity-tools/foundry-exec/spawn";
-import { getContractAddress, type Address, type Hex } from "viem";
+import {
+  createPublicClient,
+  getContractAddress,
+  http,
+  type Address,
+  type Hex,
+} from "viem";
 import {
   generateEs256BootstrapKey,
   generateKs256BootstrapKey,
@@ -14,6 +18,10 @@ import {
   type BootstrapKeyInput,
 } from "./bootstrap-key.js";
 import { DEFAULT_CHAIN_ID } from "./deploy-constants.js";
+import {
+  readImutableFromDeployManifest,
+  type LoadDeployManifestOptions,
+} from "./read-deploy-manifest.js";
 import {
   buildImutableArtifact,
   imutableArtifactPath,
@@ -84,42 +92,50 @@ async function applyGeneratedBootstrapMaterial(
   return options;
 }
 
+function manifestLoadOptions(
+  options: ProposeImutableOptions,
+): LoadDeployManifestOptions | undefined {
+  const loadOptions: LoadDeployManifestOptions = {};
+  if (options.insecure) {
+    loadOptions.insecure = true;
+  }
+  if (options.manifestSidecar !== undefined) {
+    loadOptions.manifestSidecar = options.manifestSidecar;
+  }
+  return Object.keys(loadOptions).length > 0 ? loadOptions : undefined;
+}
+
 async function resolveChainId(
-  ctx: FoundryExecContext,
   options: ProposeImutableOptions,
 ): Promise<number> {
+  if (options.rpcUrl !== undefined) {
+    const client = createPublicClient({ transport: http(options.rpcUrl) });
+    const rpcChainId = await client.getChainId();
+    if (!Number.isInteger(rpcChainId) || rpcChainId <= 0) {
+      throw new Error(`rpc chain-id returned unexpected value: ${rpcChainId}`);
+    }
+    if (options.chainId !== undefined && options.chainId !== rpcChainId) {
+      throw new Error(
+        `--chain-id ${options.chainId} does not match RPC chain id ` +
+          `${rpcChainId}; omit --chain-id or fix --rpc-url`,
+      );
+    }
+    return rpcChainId;
+  }
   if (options.chainId !== undefined) {
     return options.chainId;
   }
-  if (options.rpcUrl === undefined) {
-    return DEFAULT_CHAIN_ID;
-  }
-  const { stdout } = await runCast(ctx, [
-    "chain-id",
-    "--rpc-url",
-    options.rpcUrl,
-  ]);
-  const value = Number(stdout.trim());
-  if (!Number.isInteger(value) || value <= 0) {
-    throw new Error(`cast chain-id returned unexpected value: ${stdout}`);
-  }
-  return value;
+  return DEFAULT_CHAIN_ID;
 }
 
 async function predictEoaAddress(
-  ctx: FoundryExecContext,
   options: ProposeImutableOptions,
 ): Promise<Address | null> {
   if (options.rpcUrl === undefined) {
     return null;
   }
-  const { stdout } = await runCast(ctx, [
-    "nonce",
-    options.from,
-    "--rpc-url",
-    options.rpcUrl,
-  ]);
-  const nonce = Number(stdout.trim());
+  const client = createPublicClient({ transport: http(options.rpcUrl) });
+  const nonce = await client.getTransactionCount({ address: options.from });
   if (!Number.isInteger(nonce) || nonce < 0) {
     return null;
   }
@@ -131,42 +147,49 @@ export async function runProposeImutable(
   out: Out,
   options: ProposeImutableOptions,
 ): Promise<void> {
-  if (options.releaseRoot === undefined) {
+  const foundryFree =
+    options.releaseRoot !== undefined || options.fromManifest !== undefined;
+  if (!foundryFree) {
     requireForgeBin(options);
+    requireCastBin(options);
   }
-  requireCastBin(options);
-  const execCwd =
-    options.releaseRoot !== undefined ? process.cwd() : options.univocityRoot;
-  const ctx = toFoundryExecContext({
-    forgeBin: options.forgeBin,
-    castBin: options.castBin,
-    out,
-    cwd: execCwd,
-  });
 
   const resolvedOptions = await applyGeneratedBootstrapMaterial(out, options);
   const bootstrap = await resolveBootstrapKey(
     bootstrapKeyInput(resolvedOptions),
   );
   const artifact =
-    options.releaseRoot !== undefined
-      ? await readImutableBytecode(
-          imutableArtifactPath(path.join(options.releaseRoot, "out")),
-        )
-      : await (async () => {
-          out.print("Building ImutableUnivocity artifact...");
-          return buildImutableArtifact(
-            ctx,
-            options.forgeConfig,
-            options.outDir,
-          );
-        })();
+    options.fromManifest !== undefined
+      ? (
+          await readImutableFromDeployManifest(
+            options.fromManifest,
+            manifestLoadOptions(options),
+          )
+        ).artifact
+      : options.releaseRoot !== undefined
+        ? await readImutableBytecode(
+            imutableArtifactPath(path.join(options.releaseRoot, "out")),
+          )
+        : await (async () => {
+            const ctx = toFoundryExecContext({
+              forgeBin: options.forgeBin,
+              castBin: options.castBin,
+              out,
+              cwd: options.univocityRoot,
+            });
+            out.print("Building ImutableUnivocity artifact...");
+            return buildImutableArtifact(
+              ctx,
+              options.forgeConfig,
+              options.outDir,
+            );
+          })();
   const deploymentData = buildImutableDeploymentData(
     artifact.bytecode,
     bootstrap.algId,
     bootstrap.key,
   );
-  const chainId = await resolveChainId(ctx, options);
+  const chainId = await resolveChainId(resolvedOptions);
 
   if (!options.safePublish) {
     const tx: ProposalTransaction = {
@@ -175,7 +198,7 @@ export async function runProposeImutable(
       data: deploymentData,
       operation: 0,
     };
-    const predicted = await predictEoaAddress(ctx, resolvedOptions);
+    const predicted = await predictEoaAddress(resolvedOptions);
     const proposal: Proposal = {
       kind: "deploy-imutable",
       version: 1,

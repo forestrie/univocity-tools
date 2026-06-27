@@ -438,10 +438,11 @@ deployer
 │   └── show
 └── deploy
     ├── create3                # Deploy shared CREATE3 factory via Arachnid
+    ├── imutable               # One-shot EOA deploy from a GitHub release tag
     ├── propose
     │   └── imutable           # Build a deploy-imutable proposal (EOA or Safe)
     ├── approve [proposalFile] # Sign + execute a Safe proposal; stdin if no file
-    └── execute [proposalFile] # Broadcast a local proposal (cast send); stdin if no file
+    └── execute [proposalFile] # Broadcast a local proposal (viem); stdin if no file
 ```
 
 ### Propose / approve / execute model
@@ -454,12 +455,20 @@ one implementation.
 - **propose imutable** builds the `ImutableUnivocity` deployment data
   (default: `forge build` → creation code + `abi.encode(int64 bootstrapAlg,
   bytes bootstrapKey)`; with `--release-root`, reads prebuilt bytecode from
-  `<release-root>/out/ImutableUnivocity.sol/ImutableUnivocity.json` and skips
-  `forge build`), then emits a deployer-native proposal JSON
-  (`kind: "deploy-imutable"`).
+  `<release-root>/out/ImutableUnivocity.sol/ImutableUnivocity.json`; with
+  `--from-manifest`, reads verified bytecode from a Univocity
+  `deploy-manifest-<tag>.json` — both skip `forge`/`cast`), then emits a
+  deployer-native proposal JSON (`kind: "deploy-imutable"`).
   - Composable release path:
     `contract-artefacts fetch-release` → `archive-extract --release-root R`
     → `deploy propose imutable --release-root R` → `deploy approve`.
+  - Manifest path (preferred when published):
+    `deploy propose imutable --from-manifest deploy-manifest-v0.4.0.json`.
+  - One-shot EOA path:
+    `deploy imutable --from-release v0.4.0` (fetch manifest or archive,
+    verify the published `.sha256` sidecar, propose, execute, write
+    deployment manifest). Use `--insecure` only for local dev (skips
+    sidecar verification and permits `http://` manifest URLs).
   - Without `--safe-publish`: `publishMode: "eoa"`, one contract-create
     transaction (`to: null`); the proposal is pipeable to `deploy execute`.
   - With `--safe-publish`: `publishMode: "safe"`, a
@@ -473,7 +482,10 @@ one implementation.
 - **execute** reads an `eoa` proposal (file or stdin), refuses `safe`
   proposals (route those through **approve**), asserts the resolved
   signer matches the proposal `from`, and broadcasts each transaction
-  with `cast send` (`--create` for contract-creates).
+  via viem (`WalletClient.sendTransaction`; contract-creates use `to: null`).
+- **deploy create3** with `--release-root` reads factory bytecode from an
+  extracted create3-factory archive and skips `forge build`; chain I/O uses
+  viem (no `cast` on the release-root path).
 
 Signer resolution (shared deploy-suite flags):
 

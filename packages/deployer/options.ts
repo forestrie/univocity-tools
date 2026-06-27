@@ -100,6 +100,12 @@ export type DeployCreate3Options = DeployerCommonOptions & {
   rpcUrl: string;
   deployKey: Hex;
   create3Salt: string;
+  /** Extracted create3-factory release root (skips forge build). */
+  releaseRoot?: string;
+  /** Deploy manifest with CREATE3Factory bytecode (foundry-free). */
+  fromManifest?: string;
+  /** Allow CREATE3 deploy when computed address differs from config. */
+  forceFactoryDeploy?: boolean;
 };
 
 type DeployCreate3ArgSlice = CommonArgSlice & {
@@ -109,18 +115,42 @@ type DeployCreate3ArgSlice = CommonArgSlice & {
   "deploy-key"?: string | undefined;
   create3Salt?: string | undefined;
   "create3-salt"?: string | undefined;
+  fromManifest?: string | undefined;
+  "from-manifest"?: string | undefined;
+  forceFactoryDeploy?: boolean | undefined;
+  "force-factory-deploy"?: boolean | undefined;
 };
 
 export function parseDeployCreate3Options(
   args: LooseParsedArgs,
 ): DeployCreate3Options {
   const slice = args as DeployCreate3ArgSlice;
-  return {
+  const releaseRoot = resolveReleaseRoot(args);
+  const options: DeployCreate3Options = {
     ...parseDeployerCommonOptions(slice),
     rpcUrl: resolveRpcUrl(slice),
     deployKey: resolveDeployKey(slice),
     create3Salt: resolveCreate3Salt(slice),
   };
+  if (releaseRoot !== undefined) {
+    options.releaseRoot = releaseRoot;
+  }
+  const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
+  if (fromManifest !== undefined) {
+    options.fromManifest = fromManifest;
+  }
+  if (
+    options.releaseRoot !== undefined &&
+    options.fromManifest !== undefined
+  ) {
+    throw new Error(
+      "--release-root and --from-manifest are mutually exclusive",
+    );
+  }
+  if (Boolean(args["force-factory-deploy"] ?? args.forceFactoryDeploy)) {
+    options.forceFactoryDeploy = true;
+  }
+  return options;
 }
 
 /**
@@ -204,6 +234,12 @@ export type ProposeImutableOptions = DeployerCommonOptions & {
   outPath?: string;
   /** Extracted build archive root (from archive-extract --release-root). */
   releaseRoot?: string;
+  /** Deploy manifest file or URL (from Univocity release). */
+  fromManifest?: string;
+  /** Local sha256 sidecar for --from-manifest (env: DEPLOY_MANIFEST_SIDECAR). */
+  manifestSidecar?: string;
+  /** Allow http:// manifest URLs (local dev). */
+  insecure?: boolean;
 };
 
 export function parseProposeImutableOptions(
@@ -316,6 +352,52 @@ export function parseProposeImutableOptions(
   const releaseRoot = resolveReleaseRoot(args);
   if (releaseRoot !== undefined) options.releaseRoot = releaseRoot;
 
+  const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
+  if (fromManifest !== undefined) options.fromManifest = fromManifest;
+  const manifestSidecar = readOption(
+    args,
+    "manifest-sidecar",
+    "DEPLOY_MANIFEST_SIDECAR",
+  );
+  if (manifestSidecar !== undefined) {
+    options.manifestSidecar = manifestSidecar;
+  }
+  if (Boolean(args.insecure)) {
+    options.insecure = true;
+  }
+  if (
+    options.releaseRoot !== undefined &&
+    options.fromManifest !== undefined
+  ) {
+    throw new Error(
+      "--release-root and --from-manifest are mutually exclusive",
+    );
+  }
+
+  return options;
+}
+
+export type DeployImutableFromReleaseOptions = ProposeImutableOptions & {
+  fromRelease: string;
+  deploymentManifestOut?: string;
+};
+
+export function parseDeployImutableFromReleaseOptions(
+  args: LooseParsedArgs,
+): DeployImutableFromReleaseOptions {
+  const base = parseProposeImutableOptions(args);
+  const fromRelease = readOption(args, "from-release", "FROM_RELEASE");
+  if (fromRelease === undefined) {
+    throw new Error("--from-release (or FROM_RELEASE) is required");
+  }
+  const options: DeployImutableFromReleaseOptions = {
+    ...base,
+    fromRelease,
+  };
+  const manifestOut = readOption(args, "deployment-manifest-out");
+  if (manifestOut !== undefined) {
+    options.deploymentManifestOut = manifestOut;
+  }
   return options;
 }
 
