@@ -18,7 +18,10 @@ import {
   type BootstrapKeyInput,
 } from "./bootstrap-key.js";
 import { DEFAULT_CHAIN_ID } from "./deploy-constants.js";
-import { readImutableFromDeployManifest } from "./read-deploy-manifest.js";
+import {
+  readImutableFromDeployManifest,
+  type LoadDeployManifestOptions,
+} from "./read-deploy-manifest.js";
 import {
   buildImutableArtifact,
   imutableArtifactPath,
@@ -89,6 +92,19 @@ async function applyGeneratedBootstrapMaterial(
   return options;
 }
 
+function manifestLoadOptions(
+  options: ProposeImutableOptions,
+): LoadDeployManifestOptions | undefined {
+  const loadOptions: LoadDeployManifestOptions = {};
+  if (options.insecure) {
+    loadOptions.insecure = true;
+  }
+  if (options.manifestSidecar !== undefined) {
+    loadOptions.manifestSidecar = options.manifestSidecar;
+  }
+  return Object.keys(loadOptions).length > 0 ? loadOptions : undefined;
+}
+
 async function resolveChainId(
   options: ProposeImutableOptions,
 ): Promise<number> {
@@ -147,7 +163,7 @@ export async function runProposeImutable(
       ? (
           await readImutableFromDeployManifest(
             options.fromManifest,
-            options.insecure ? { insecure: true } : undefined,
+            manifestLoadOptions(options),
           )
         ).artifact
       : options.releaseRoot !== undefined

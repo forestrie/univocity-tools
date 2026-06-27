@@ -60,6 +60,9 @@ jobs:
       - name: Build darwin-arm64 binaries
         run: bun run build:binary:darwin-arm64
 
+      - name: Smoke test darwin deployer binary
+        run: ./apps/deployer/dist/deployer-darwin-arm64 --help
+
       - name: Upload darwin release assets
         uses: actions/upload-artifact@v4
         with:

@@ -102,6 +102,10 @@ export type DeployCreate3Options = DeployerCommonOptions & {
   create3Salt: string;
   /** Extracted create3-factory release root (skips forge build). */
   releaseRoot?: string;
+  /** Deploy manifest with CREATE3Factory bytecode (foundry-free). */
+  fromManifest?: string;
+  /** Allow CREATE3 deploy when computed address differs from config. */
+  forceFactoryDeploy?: boolean;
 };
 
 type DeployCreate3ArgSlice = CommonArgSlice & {
@@ -111,6 +115,10 @@ type DeployCreate3ArgSlice = CommonArgSlice & {
   "deploy-key"?: string | undefined;
   create3Salt?: string | undefined;
   "create3-salt"?: string | undefined;
+  fromManifest?: string | undefined;
+  "from-manifest"?: string | undefined;
+  forceFactoryDeploy?: boolean | undefined;
+  "force-factory-deploy"?: boolean | undefined;
 };
 
 export function parseDeployCreate3Options(
@@ -126,6 +134,21 @@ export function parseDeployCreate3Options(
   };
   if (releaseRoot !== undefined) {
     options.releaseRoot = releaseRoot;
+  }
+  const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
+  if (fromManifest !== undefined) {
+    options.fromManifest = fromManifest;
+  }
+  if (
+    options.releaseRoot !== undefined &&
+    options.fromManifest !== undefined
+  ) {
+    throw new Error(
+      "--release-root and --from-manifest are mutually exclusive",
+    );
+  }
+  if (Boolean(args["force-factory-deploy"] ?? args.forceFactoryDeploy)) {
+    options.forceFactoryDeploy = true;
   }
   return options;
 }
@@ -213,7 +236,9 @@ export type ProposeImutableOptions = DeployerCommonOptions & {
   releaseRoot?: string;
   /** Deploy manifest file or URL (from Univocity release). */
   fromManifest?: string;
-  /** Allow http:// manifest URLs and skip sidecar verification (local dev). */
+  /** Local sha256 sidecar for --from-manifest (env: DEPLOY_MANIFEST_SIDECAR). */
+  manifestSidecar?: string;
+  /** Allow http:// manifest URLs (local dev). */
   insecure?: boolean;
 };
 
@@ -329,6 +354,14 @@ export function parseProposeImutableOptions(
 
   const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
   if (fromManifest !== undefined) options.fromManifest = fromManifest;
+  const manifestSidecar = readOption(
+    args,
+    "manifest-sidecar",
+    "DEPLOY_MANIFEST_SIDECAR",
+  );
+  if (manifestSidecar !== undefined) {
+    options.manifestSidecar = manifestSidecar;
+  }
   if (Boolean(args.insecure)) {
     options.insecure = true;
   }

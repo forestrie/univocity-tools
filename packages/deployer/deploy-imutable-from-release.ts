@@ -32,10 +32,7 @@ import type {
 import { runProposeImutable } from "./propose-imutable.js";
 import { parseProposal } from "./proposal.js";
 
-function formatAssetHint(
-  assets: ReleaseAsset[],
-  prefix: string,
-): string {
+function formatAssetHint(assets: ReleaseAsset[], prefix: string): string {
   const names = assets
     .map((asset) => asset.name)
     .filter((name) => name.startsWith(prefix))

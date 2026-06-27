@@ -62,6 +62,17 @@ The Univocity release workflow generates the manifest from forge `out/` after
 parsing (fail-closed). Pass `--insecure` to skip sidecar verification and to
 allow `http://` manifest URLs (local dev only).
 
+For Safe / manual propose flows, pass `--manifest-sidecar` with a local path to
+the `.sha256` file alongside `--from-manifest`. Without a sidecar, propose only
+recomputes the embedded `bytecodeSha256` (corruption detection, not release
+authenticity).
+
+| Consumer path | Sidecar required | Notes |
+|---------------|------------------|-------|
+| `deploy imutable --from-release` | Yes (unless `--insecure`) | Downloads manifest + sidecar from GitHub |
+| `deploy propose imutable --from-manifest` | Recommended via `--manifest-sidecar` | Production Safe flow |
+| Local dev / http URL | `--insecure` on propose only allows http | Does not skip sidecar on `--from-release` |
+
 ## Security considerations / trust model
 
 - The embedded `bytecodeSha256` field detects **corruption** (truncated download,

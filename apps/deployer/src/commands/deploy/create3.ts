@@ -27,6 +27,19 @@ export default defineDeployerCommand({
       valueHint: "path",
       default: "${env:RELEASE_ROOT}",
     },
+    "from-manifest": {
+      type: "string",
+      description:
+        "Deploy manifest with CREATE3Factory bytecode (env: DEPLOY_MANIFEST)",
+      valueHint: "path|url",
+      default: "${env:DEPLOY_MANIFEST}",
+    },
+    "force-factory-deploy": {
+      type: "boolean",
+      description:
+        "Allow CREATE3 deploy when computed factory address differs from config",
+      default: false,
+    },
   }),
   run: defineCommandRunner(parseDeployCreate3Options, runDeployCreate3),
 });

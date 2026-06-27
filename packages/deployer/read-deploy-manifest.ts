@@ -109,6 +109,33 @@ export async function readImutableFromDeployManifest(
   };
 }
 
+/** Read CREATE3Factory bytecode from a deploy manifest. */
+export async function readCreate3FromDeployManifest(
+  source: string,
+  options?: LoadDeployManifestOptions,
+): Promise<{ manifest: DeployManifest; artifact: ImutableArtifact }> {
+  await verifyLocalManifestSidecarIfPresent(source, options);
+  const manifest = parseDeployManifest(
+    await loadDeployManifestSource(source, options),
+  );
+  if (options?.expectedReleaseId !== undefined) {
+    assertManifestReleaseId(manifest, options.expectedReleaseId);
+  }
+  const entry = manifest.contracts.CREATE3Factory;
+  if (entry === undefined) {
+    throw new Error("deploy-manifest has no CREATE3Factory contract entry");
+  }
+  await assertBytecodeSha256(
+    entry.contractName,
+    entry.creationBytecode,
+    entry.bytecodeSha256,
+  );
+  return {
+    manifest,
+    artifact: { bytecode: entry.creationBytecode },
+  };
+}
+
 /** Verify all contract bytecode digests in a manifest (throws on mismatch). */
 export async function verifyDeployManifestDigests(
   manifest: DeployManifest,

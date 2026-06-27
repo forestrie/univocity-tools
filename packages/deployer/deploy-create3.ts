@@ -31,6 +31,7 @@ import {
   hasBytecodeAt,
   type RpcClients,
 } from "./rpc-client.js";
+import { readCreate3FromDeployManifest } from "./read-deploy-manifest.js";
 import { readFactoryBytecode } from "./read-factory-bytecode.js";
 
 const PROXY_POLL_MS = 500;
@@ -110,7 +111,7 @@ async function ensureArachnidProxy(
   );
 }
 
-function warnIfFactoryAddressMismatch(
+function assertFactoryAddressMatches(
   out: Out,
   options: DeployCreate3Options,
   bytecode: Hex,
@@ -124,12 +125,14 @@ function warnIfFactoryAddressMismatch(
     salt: saltHash,
   });
   if (computed.toLowerCase() !== create3.factory.toLowerCase()) {
-    out.warn(
-      'WARNING: salt "%s" + bytecode would deploy to %s, not configured factory %s',
-      options.create3Salt,
-      computed,
-      create3.factory,
-    );
+    const message =
+      `salt "${options.create3Salt}" + bytecode would deploy to ${computed}, ` +
+      `not configured factory ${create3.factory}`;
+    if (options.forceFactoryDeploy) {
+      out.warn("WARNING: %s (--force-factory-deploy)", message);
+      return;
+    }
+    throw new Error(`${message}; pass --force-factory-deploy to override`);
   }
 }
 
@@ -148,7 +151,7 @@ async function deployCreate3Factory(
     );
   }
 
-  warnIfFactoryAddressMismatch(out, options, bytecode, create3);
+  assertFactoryAddressMatches(out, options, bytecode, create3);
 
   const calldata = buildDeployCalldata(options.create3Salt, bytecode);
   out.print(
@@ -177,7 +180,10 @@ export async function runDeployCreate3(
   options: DeployCreate3Options,
   deps?: DeployCreate3RunDeps,
 ): Promise<void> {
-  if (options.releaseRoot === undefined) {
+  if (
+    options.releaseRoot === undefined &&
+    options.fromManifest === undefined
+  ) {
     requireForgeBin(options);
     requireCastBin(options);
   }
@@ -200,16 +206,18 @@ export async function runDeployCreate3(
   }
 
   const artifact =
-    options.releaseRoot !== undefined
-      ? await readFactoryBytecode(
-          create3FactoryReleaseArtifactPath(options.releaseRoot),
-        )
-      : await (async () => {
-          await buildCreate3Factory(out, options);
-          return readFactoryBytecode(
-            create3FactoryArtifactPath(options.univocityRoot),
-          );
-        })();
+    options.fromManifest !== undefined
+      ? (await readCreate3FromDeployManifest(options.fromManifest)).artifact
+      : options.releaseRoot !== undefined
+        ? await readFactoryBytecode(
+            create3FactoryReleaseArtifactPath(options.releaseRoot),
+          )
+        : await (async () => {
+            await buildCreate3Factory(out, options);
+            return readFactoryBytecode(
+              create3FactoryArtifactPath(options.univocityRoot),
+            );
+          })();
 
   await ensureArachnidProxy(out, options, create3, readClient);
   await deployCreate3Factory(

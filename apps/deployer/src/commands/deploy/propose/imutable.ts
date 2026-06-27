@@ -132,6 +132,13 @@ export default defineDeployerCommand({
       valueHint: "path|url",
       default: "${env:DEPLOY_MANIFEST}",
     },
+    "manifest-sidecar": {
+      type: "string",
+      description:
+        "Local sha256 sidecar for --from-manifest (env: DEPLOY_MANIFEST_SIDECAR)",
+      valueHint: "path",
+      default: "${env:DEPLOY_MANIFEST_SIDECAR}",
+    },
     insecure: {
       type: "boolean",
       description:

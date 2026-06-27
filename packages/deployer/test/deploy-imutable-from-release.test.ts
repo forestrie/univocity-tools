@@ -13,6 +13,8 @@ import {
 } from "../deploy-imutable-from-release.js";
 import { parseDeployImutableFromReleaseOptions } from "../options.js";
 import { sha256FileHex } from "../file-sha256.js";
+import { createFakeRpcClients } from "./helpers/fake-rpc-clients.js";
+import { startJsonRpcStub } from "./helpers/json-rpc-stub.js";
 import { serializeProposal, type Proposal } from "../proposal.js";
 
 const ROOT = "/tmp/univocity";
@@ -327,6 +329,68 @@ describe("runDeployImutableFromRelease", () => {
       client,
     );
     expect(resolved.fromManifest).toBeDefined();
+  });
+  test("integration resolves manifest, proposes, and executes with stub viem", async () => {
+    const out = createCaptureOut();
+    const workDir = mkdtempSync(path.join(tmpdir(), "from-release-int-"));
+    const manifestJson = JSON.stringify(FIXTURE_MANIFEST);
+    const manifestAsset = releaseAsset(
+      "deploy-manifest-v0.4.0.json",
+      "asset://manifest",
+    );
+    const sidecarAsset = releaseAsset(
+      "deploy-manifest-v0.4.0.json.sha256",
+      "asset://sidecar",
+    );
+    const scratch = mkdtempSync(path.join(tmpdir(), "digest-"));
+    const scratchManifest = path.join(scratch, "deploy-manifest-v0.4.0.json");
+    writeFileSync(scratchManifest, manifestJson);
+    const digest = await sha256FileHex(scratchManifest);
+    rmSync(scratch, { recursive: true, force: true });
+    const client = stubGithubClient({
+      assets: [manifestAsset, sidecarAsset],
+      downloads: {
+        "asset://manifest": manifestJson,
+        "asset://sidecar": `${digest}  deploy-manifest-v0.4.0.json\n`,
+      },
+    });
+    const stub = startJsonRpcStub({ chainId: 84532 });
+    const options = parseDeployImutableFromReleaseOptions({
+      "source-root": ROOT,
+      "work-dir": workDir,
+      "from-release": "v0.4.0",
+      "bootstrap-alg": "ks256",
+      "bootstrap-ks256-signer": OWNER,
+      "deploy-key": KEY_A,
+      "rpc-url": stub.url,
+    });
+    const clients = createFakeRpcClients({
+      contractAddress: DEPLOYED,
+      chainId: 84532,
+    });
+    const savedPath = process.env.PATH;
+    Object.assign(process.env, {
+      PATH: mkdtempSync(path.join(tmpdir(), "no-forge-")),
+    });
+
+    try {
+      await runDeployImutableFromRelease(out, options, {
+        resolveRelease: (resolveOut, tag, resolveOptions) =>
+          resolveReleaseInputs(resolveOut, tag, resolveOptions, client),
+        executeDeps: { clients },
+      });
+      const manifestPath = path.join(workDir, "manifest-v0.4.0.json");
+      const written = JSON.parse(readFileSync(manifestPath, "utf8")) as {
+        imutableUnivocity: string;
+      };
+      expect(written.imutableUnivocity.toLowerCase()).toBe(
+        DEPLOYED.toLowerCase(),
+      );
+    } finally {
+      process.env.PATH = savedPath;
+      stub.stop();
+      rmSync(workDir, { recursive: true, force: true });
+    }
   });
 });
 

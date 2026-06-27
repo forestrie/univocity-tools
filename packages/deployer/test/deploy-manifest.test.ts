@@ -200,6 +200,35 @@ describe("propose imutable from manifest", () => {
     }
   });
 
+  test("--from-manifest verifies local sidecar when provided", async () => {
+    const base = mkdtempSync(path.join(tmpdir(), "deploy-manifest-sidecar-"));
+    const file = path.join(base, "deploy-manifest-v0.4.0.json");
+    writeFileSync(file, JSON.stringify(await manifestFixture()));
+    const digest = await sha256FileHex(file);
+    writeFileSync(
+      `${file}.sha256`,
+      `${digest}  deploy-manifest-v0.4.0.json\n`,
+    );
+    const out = createCaptureOut();
+    try {
+      const options = parseProposeImutableOptions({
+        "source-root": ROOT,
+        "bootstrap-alg": "ks256",
+        "bootstrap-ks256-signer": OWNER,
+        "deploy-key": KEY_A,
+        "from-manifest": file,
+        "manifest-sidecar": `${file}.sha256`,
+      });
+      await runProposeImutable(out, options);
+      const proposal = parseProposal(out.lines[0]!.text);
+      expect(proposal.transactions[0]?.data.startsWith(FIXTURE_BYTECODE)).toBe(
+        true,
+      );
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
+  });
+
   test("rejects --release-root and --from-manifest together", () => {
     expect(() =>
       parseProposeImutableOptions({
@@ -211,5 +240,36 @@ describe("propose imutable from manifest", () => {
         "from-manifest": "/tmp/manifest.json",
       }),
     ).toThrow("mutually exclusive");
+  });
+
+  test("--from-manifest with sidecar verifies before propose", async () => {
+    const base = mkdtempSync(
+      path.join(tmpdir(), "deploy-manifest-sidecar-propose-"),
+    );
+    const file = path.join(base, "deploy-manifest-v0.4.0.json");
+    writeFileSync(file, JSON.stringify(await manifestFixture()));
+    const digest = await sha256FileHex(file);
+    writeFileSync(
+      `${file}.sha256`,
+      `${digest}  deploy-manifest-v0.4.0.json\n`,
+    );
+    const out = createCaptureOut();
+    try {
+      const options = parseProposeImutableOptions({
+        "source-root": ROOT,
+        "bootstrap-alg": "ks256",
+        "bootstrap-ks256-signer": OWNER,
+        "deploy-key": KEY_A,
+        "from-manifest": file,
+        "manifest-sidecar": `${file}.sha256`,
+      });
+      await runProposeImutable(out, options);
+      const proposal = parseProposal(out.lines[0]!.text);
+      expect(proposal.transactions[0]?.data.startsWith(FIXTURE_BYTECODE)).toBe(
+        true,
+      );
+    } finally {
+      rmSync(base, { recursive: true, force: true });
+    }
   });
 });
