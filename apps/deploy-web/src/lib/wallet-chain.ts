@@ -35,13 +35,16 @@ function chainIdToHex(chainId: number): string {
   return `0x${chainId.toString(16)}`;
 }
 
-function isChainNotAddedError(error: unknown): boolean {
+function isUnsupportedChainError(error: unknown): boolean {
   if (typeof error === "object" && error !== null && "code" in error) {
-    return (error as { code: number }).code === 4902;
+    const code = (error as { code: number }).code;
+    return code === 4901 || code === 4902;
   }
   const message = error instanceof Error ? error.message : String(error);
   return (
+    message.includes("4901") ||
     message.includes("4902") ||
+    message.toLowerCase().includes("unsupported chain") ||
     message.toLowerCase().includes("unrecognized chain")
   );
 }
@@ -87,7 +90,7 @@ export async function ensureWalletChain(
   try {
     await switchWalletChain(provider, chainId);
   } catch (error) {
-    if (!isChainNotAddedError(error)) {
+    if (!isUnsupportedChainError(error)) {
       throw error;
     }
     await addWalletChain(provider, chain);

@@ -402,6 +402,11 @@ async function connectWallet(): Promise<void> {
     }
   } catch (error) {
     state.deployError = (error as Error).message;
+    state.walletAddress = null;
+    state.walletChainId = null;
+    if (state.walletMode === "privy") {
+      await logoutPrivy().catch(() => undefined);
+    }
   } finally {
     state.busy = false;
     render();
