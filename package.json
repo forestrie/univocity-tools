@@ -21,6 +21,7 @@
     "check": "prettier --check apps packages",
     "check:subprocess": "bun scripts/check-subprocess-imports.ts",
     "check:browser-safe": "bun scripts/check-browser-safe.ts",
+    "check:client-secrets": "bun scripts/check-client-secrets.ts",
     "check:cli": "bun scripts/check-cli-imports.ts",
     "format": "prettier --write apps packages"
   },

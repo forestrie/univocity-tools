@@ -83,6 +83,23 @@ describe("buildDeploymentTxData", () => {
   });
 });
 
+describe("assertWalletChainMatches", () => {
+  test("rejects when wallet chainId differs from configured chain", async () => {
+    const { assertWalletChainMatches } = await import("../src/lib/deploy.js");
+    const provider = {
+      request: vi.fn(async ({ method }: { method: string }) => {
+        if (method === "eth_chainId") {
+          return "0x1";
+        }
+        return null;
+      }),
+    };
+    await expect(assertWalletChainMatches(provider, 84532)).rejects.toThrow(
+      "wallet chainId 1 does not match configured 84532",
+    );
+  });
+});
+
 describe("deployImutableContract", () => {
   const originalFetch = globalThis.fetch;
 
@@ -103,7 +120,7 @@ describe("deployImutableContract", () => {
           return sendTransaction();
         }
         if (method === "eth_chainId") {
-          return "0x14a34";
+          return "0x14a34"; // 84532
         }
         return null;
       }),

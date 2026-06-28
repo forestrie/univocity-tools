@@ -48,6 +48,9 @@ jobs:
       - name: Build apps
         run: bun run build
 
+      - name: Client bundle secret audit (deploy-web)
+        run: bun run check:client-secrets
+
   darwin-smoke:
     name: Darwin deployer smoke
     runs-on: macos-latest
