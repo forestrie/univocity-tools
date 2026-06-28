@@ -1,7 +1,10 @@
 import { evaluateOptionValue } from "@univocity-tools/cli-kit";
+import { CREATE3_DEFAULTS } from "@univocity-tools/create3-options/defaults";
 import { keccak256, toBytes, type Hex } from "viem";
 
 export const DEFAULT_CREATE3_SALT = "forestrie.eth/univocity/CREATE3Factory/0";
+
+export const DEFAULT_UUPS_SALT = CREATE3_DEFAULTS["uups-salt"];
 
 /** keccak256(bytes(saltString)) — matches cast keccak and Solidity. */
 export function hashCreate3SaltString(saltString: string): Hex {
@@ -76,6 +79,19 @@ export function resolveCreate3Salt(args: {
     ) ??
     process.env.CREATE3_SALT ??
     DEFAULT_CREATE3_SALT
+  );
+}
+
+export type ProxySaltArgSlice = {
+  proxySalt?: string | undefined;
+  "proxy-salt"?: string | undefined;
+};
+
+export function resolveProxySalt(args: ProxySaltArgSlice): string {
+  return (
+    evaluateOptionValue("proxy-salt", args.proxySalt ?? args["proxy-salt"]) ??
+    process.env.UUPS_PROXY_SALT ??
+    DEFAULT_UUPS_SALT
   );
 }
 

@@ -8,6 +8,7 @@ export default defineDeployerCommand({
   subCommands: {
     create3: () => import("./create3.js").then((m) => m.default),
     imutable: () => import("./imutable.js").then((m) => m.default),
+    uups: () => import("./uups.js").then((m) => m.default),
     propose: () => import("./propose/index.js").then((m) => m.default),
     execute: () => import("./execute.js").then((m) => m.default),
     approve: () => import("./approve.js").then((m) => m.default),

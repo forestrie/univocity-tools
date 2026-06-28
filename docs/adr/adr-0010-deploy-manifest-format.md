@@ -29,6 +29,20 @@ unpacking tarballs.
       "creationBytecode": "0x…",
       "bytecodeSha256": "<64-char lowercase hex>",
       "solcVersion": "0.8.26"
+    },
+    "UUPSUnivocity": {
+      "contractName": "UUPSUnivocity",
+      "creationBytecode": "0x…",
+      "bytecodeSha256": "<64-char lowercase hex>",
+      "solcVersion": "0.8.26",
+      "abi": []
+    },
+    "ERC1967Proxy": {
+      "contractName": "ERC1967Proxy",
+      "creationBytecode": "0x…",
+      "bytecodeSha256": "<64-char lowercase hex>",
+      "solcVersion": "0.8.26",
+      "constructorAbi": []
     }
   }
 }
@@ -38,8 +52,13 @@ unpacking tarballs.
   behind `creationBytecode`, not the JSON string). Lowercase hex, no `0x`.
 - **`CREATE3Factory`**: optional; present when the release includes the shared
   factory archive.
+- **`UUPSUnivocity` / `ERC1967Proxy`**: optional; present for foundry-free UUPS
+  deploy (`deploy uups --from-release`). `UUPSUnivocity` includes full `abi`
+  (for audit); consumers use a fixed `initialize` signature at deploy time.
 - **`constructorAbi`**: optional JSON ABI fragment for the constructor; omitted
   when empty.
+- **`abi`**: optional full or partial contract ABI when needed beyond
+  `constructorAbi`.
 
 The Univocity release workflow generates the manifest from forge `out/` after
 `forge build`. A sidecar `deploy-manifest-<id>.json.sha256` uses the same

@@ -87,4 +87,4 @@ jobs:
       - uses: foundry-rs/foundry-toolchain@v1
 
       - name: From-release anvil e2e
-        run: bun test packages/deployer/test/e2e/from-release.anvil.test.ts
+        run: bun test packages/deployer/test/e2e/

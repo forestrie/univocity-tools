@@ -12,6 +12,8 @@ export type DeployManifest = {
   contracts: {
     ImutableUnivocity: DeployManifestContract;
     CREATE3Factory?: DeployManifestContract;
+    UUPSUnivocity?: DeployManifestContract;
+    ERC1967Proxy?: DeployManifestContract;
   };
 };
 
@@ -50,6 +52,18 @@ export function validateDeployManifest(value: unknown): DeployManifest {
     manifest.contracts.CREATE3Factory = validateDeployManifestContract(
       contracts.CREATE3Factory,
       "contracts.CREATE3Factory",
+    );
+  }
+  if (contracts.UUPSUnivocity !== undefined) {
+    manifest.contracts.UUPSUnivocity = validateDeployManifestContract(
+      contracts.UUPSUnivocity,
+      "contracts.UUPSUnivocity",
+    );
+  }
+  if (contracts.ERC1967Proxy !== undefined) {
+    manifest.contracts.ERC1967Proxy = validateDeployManifestContract(
+      contracts.ERC1967Proxy,
+      "contracts.ERC1967Proxy",
     );
   }
   return manifest;

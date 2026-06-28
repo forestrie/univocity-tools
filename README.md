@@ -51,6 +51,21 @@ bun run --filter @univocity-tools/deployer build
 ./apps/deployer/dist/cli.js config show
 ```
 
+Foundry-free fresh-chain deploy (binary + release manifest only):
+
+```bash
+./apps/deployer/dist/deployer deploy create3 --from-release v0.1.4 --rpc-url "$RPC_URL"
+./apps/deployer/dist/deployer deploy uups \
+  --from-release v0.1.4 \
+  --upgrade-admin "$UPGRADE_ADMIN" \
+  --bootstrap-alg ks256 \
+  --bootstrap-ks256-signer <OWNER> \
+  --rpc-url "$RPC_URL"
+```
+
+See [docs/agents/e2e-deploy.md](docs/agents/e2e-deploy.md) and
+[ADR-0012](docs/adr/adr-0012-foundry-free-uups-deploy.md).
+
 ## Standalone binaries
 
 CI publishes **Linux x64** binaries on tagged releases (`v*`). On macOS,

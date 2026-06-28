@@ -18,7 +18,9 @@ import type { BootstrapAlg } from "./bootstrap-key.js";
 import {
   resolveCreate3Salt,
   resolveOptionalRpcUrl,
+  resolveProxySalt,
   resolveRpcUrl,
+  type ProxySaltArgSlice,
 } from "./create3-deploy-helpers.js";
 import {
   DEFAULT_CREATE_CALL,
@@ -106,8 +108,18 @@ export type DeployCreate3Options = DeployerCommonOptions & {
   releaseRoot?: string;
   /** Deploy manifest with CREATE3Factory bytecode (foundry-free). */
   fromManifest?: string;
+  /** Local sha256 sidecar for --from-manifest (env: DEPLOY_MANIFEST_SIDECAR). */
+  manifestSidecar?: string;
+  /** When set, manifest.releaseId must match this tag. */
+  expectedReleaseId?: string;
+  /** Allow http:// manifest URLs (local dev). */
+  insecure?: boolean;
   /** Allow CREATE3 deploy when computed address differs from config. */
   forceFactoryDeploy?: boolean;
+};
+
+export type DeployCreate3FromReleaseOptions = DeployCreate3Options & {
+  fromRelease: string;
 };
 
 type DeployCreate3ArgSlice = CommonArgSlice & {
@@ -149,9 +161,162 @@ export function parseDeployCreate3Options(
       "--release-root and --from-manifest are mutually exclusive",
     );
   }
+  const manifestSidecar = readOption(
+    args,
+    "manifest-sidecar",
+    "DEPLOY_MANIFEST_SIDECAR",
+  );
+  if (manifestSidecar !== undefined) {
+    options.manifestSidecar = manifestSidecar;
+  }
+  if (Boolean(args.insecure)) {
+    options.insecure = true;
+  }
   if (Boolean(args["force-factory-deploy"] ?? args.forceFactoryDeploy)) {
     options.forceFactoryDeploy = true;
   }
+  return options;
+}
+
+export function parseDeployCreate3FromReleaseOptions(
+  args: LooseParsedArgs,
+): DeployCreate3FromReleaseOptions {
+  const base = parseDeployCreate3Options(args);
+  const fromRelease = readOption(args, "from-release", "FROM_RELEASE");
+  if (fromRelease === undefined) {
+    throw new Error("--from-release (or FROM_RELEASE) is required");
+  }
+  return { ...base, fromRelease };
+}
+
+export type DeployUupsOptions = DeployerCommonOptions & {
+  rpcUrl: string;
+  deployKey: Hex;
+  proxySalt: string;
+  upgradeAdmin: Address;
+  bootstrapAlg: BootstrapAlg;
+  es256Pem?: string;
+  es256Pub64?: string;
+  es256X?: string;
+  es256Y?: string;
+  ks256Signer?: string;
+  releaseRoot?: string;
+  fromManifest?: string;
+  manifestSidecar?: string;
+  expectedReleaseId?: string;
+  insecure?: boolean;
+};
+
+function parseUupsBootstrapFields(
+  args: LooseParsedArgs,
+  options: DeployUupsOptions,
+): void {
+  const es256Pem = readOption(
+    args,
+    "bootstrap-es256-pem",
+    "BOOTSTRAP_PEM_ES256",
+  );
+  if (es256Pem !== undefined) options.es256Pem = es256Pem;
+  const es256Pub64 = readOption(
+    args,
+    "bootstrap-es256-pub",
+    "BOOTSTRAP_PUB_ES256",
+  );
+  if (es256Pub64 !== undefined) options.es256Pub64 = es256Pub64;
+  const es256X = readOption(args, "bootstrap-es256-x", "ES256_X");
+  if (es256X !== undefined) options.es256X = es256X;
+  const es256Y = readOption(args, "bootstrap-es256-y", "ES256_Y");
+  if (es256Y !== undefined) options.es256Y = es256Y;
+  const ks256Signer = readOption(
+    args,
+    "bootstrap-ks256-signer",
+    "KS256_SIGNER",
+  );
+  if (ks256Signer !== undefined) options.ks256Signer = ks256Signer;
+}
+
+export function parseDeployUupsOptions(
+  args: LooseParsedArgs,
+): DeployUupsOptions {
+  const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const upgradeAdminRaw = readOption(args, "upgrade-admin", "UPGRADE_ADMIN");
+  if (upgradeAdminRaw === undefined) {
+    throw new Error("--upgrade-admin (or UPGRADE_ADMIN) is required");
+  }
+  const options: DeployUupsOptions = {
+    ...common,
+    rpcUrl: resolveRpcUrl(args as RpcArgSlice),
+    deployKey: resolveDeployKey(args),
+    proxySalt: resolveProxySalt(args as ProxySaltArgSlice),
+    upgradeAdmin: getAddress(upgradeAdminRaw),
+    bootstrapAlg: parseBootstrapAlg(args),
+  };
+  parseUupsBootstrapFields(args, options);
+
+  const releaseRoot = resolveReleaseRoot(args);
+  if (releaseRoot !== undefined) options.releaseRoot = releaseRoot;
+  const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
+  if (fromManifest !== undefined) options.fromManifest = fromManifest;
+  const manifestSidecar = readOption(
+    args,
+    "manifest-sidecar",
+    "DEPLOY_MANIFEST_SIDECAR",
+  );
+  if (manifestSidecar !== undefined) {
+    options.manifestSidecar = manifestSidecar;
+  }
+  if (Boolean(args.insecure)) {
+    options.insecure = true;
+  }
+  if (
+    options.releaseRoot !== undefined &&
+    options.fromManifest !== undefined
+  ) {
+    throw new Error(
+      "--release-root and --from-manifest are mutually exclusive",
+    );
+  }
+  return options;
+}
+
+export type DeployUupsFromReleaseOptions = DeployUupsOptions & {
+  fromRelease: string;
+  deploymentManifestOut?: string;
+};
+
+export function parseDeployUupsFromReleaseOptions(
+  args: LooseParsedArgs,
+): DeployUupsFromReleaseOptions {
+  const base = parseDeployUupsOptions(args);
+  const fromRelease = readOption(args, "from-release", "FROM_RELEASE");
+  if (fromRelease === undefined) {
+    throw new Error("--from-release (or FROM_RELEASE) is required");
+  }
+  const options: DeployUupsFromReleaseOptions = { ...base, fromRelease };
+  const manifestOut = readOption(args, "deployment-manifest-out");
+  if (manifestOut !== undefined) {
+    options.deploymentManifestOut = manifestOut;
+  }
+  return options;
+}
+
+export type DeployUupsPredictOptions = DeployerCommonOptions & {
+  deployKey: Hex;
+  proxySalt: string;
+  rpcUrl?: string;
+};
+
+export function parseDeployUupsPredictOptions(
+  args: LooseParsedArgs,
+): DeployUupsPredictOptions {
+  const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const options: DeployUupsPredictOptions = {
+    ...common,
+    deployKey: resolveDeployKey(args),
+    proxySalt: resolveProxySalt(args as ProxySaltArgSlice),
+  };
+  const rpcUrl = resolveOptionalRpcUrl(args as RpcArgSlice);
+  if (rpcUrl !== undefined) options.rpcUrl = rpcUrl;
   return options;
 }
 
