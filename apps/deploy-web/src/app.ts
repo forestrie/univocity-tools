@@ -133,7 +133,7 @@ function renderManifest(): void {
   const section = el("manifest-section");
   section.innerHTML = `
     <h2>2. Verify release manifest</h2>
-    <p class="hint">Fetches deploy-manifest JSON + sha256 sidecar from GitHub (or drag-drop both files offline).</p>
+    <p class="hint">Fetches deploy-manifest via this site's API proxy (GitHub release CDN blocks direct browser fetch) or drag-drop both files offline.</p>
     <label for="release-tag">Release tag</label>
     <input id="release-tag" value="${state.releaseTag}" />
     <div class="row">
