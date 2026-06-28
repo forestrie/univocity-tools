@@ -6,7 +6,7 @@ import {
   verifyAndParseImutableManifest,
   verifyManifestBytesWithSidecar,
 } from "@univocity-tools/deploy-core";
-import { verifyManifestFiles } from "../src/lib/manifest.js";
+import { fetchVerifiedManifest, verifyManifestFiles } from "../src/lib/manifest.js";
 
 const FIXTURE = readFileSync(
   path.join(
@@ -15,6 +15,57 @@ const FIXTURE = readFileSync(
   ),
   "utf8",
 );
+
+describe("fetchVerifiedManifest", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  test("fetches and verifies manifest via same-origin API for v0.1.4", async () => {
+    const manifest = FIXTURE.replace(
+      '"releaseId": "v0.4.0-fixture"',
+      '"releaseId": "v0.1.4"',
+    );
+    const bytes = new TextEncoder().encode(manifest);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const hex = [...new Uint8Array(digest)]
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    const sidecar = `${hex}  deploy-manifest-v0.1.4.json\n`;
+
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      expect(String(input)).toBe("/api/manifest/v0.1.4");
+      return new Response(
+        JSON.stringify({
+          releaseTag: "v0.1.4",
+          raw: manifest,
+          sidecar,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const result = await fetchVerifiedManifest("0.1.4");
+    expect(result.releaseTag).toBe("v0.1.4");
+    expect(result.artifact.bytecode).toBe("0x6001");
+  });
+
+  test("surfaces API proxy errors for missing releases", async () => {
+    globalThis.fetch = vi.fn(async () => {
+      return new Response(
+        JSON.stringify({ error: "GitHub release v0.1.5 not found (404)" }),
+        { status: 404, headers: { "Content-Type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    await expect(fetchVerifiedManifest("v0.1.5")).rejects.toThrow(
+      "GitHub release v0.1.5 not found (404)",
+    );
+  });
+});
 
 describe("verifyManifestFiles", () => {
   test("accepts matching manifest and sidecar files", async () => {

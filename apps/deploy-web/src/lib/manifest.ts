@@ -1,9 +1,9 @@
 import {
   assertManifestReleaseId,
+  normalizeUnivocityReleaseTag,
   parseDeployManifest,
   verifyAndParseImutableManifest,
   verifyManifestBytesWithSidecar,
-  univocityManifestUrls,
   type DeployManifest,
   type ImutableBytecode,
 } from "@univocity-tools/deploy-core";
@@ -14,33 +14,36 @@ export type VerifiedManifest = {
   releaseTag: string;
 };
 
-/** Fetch manifest + sidecar from GitHub release assets and verify. */
+/** Fetch manifest + sidecar via same-origin API proxy and verify. */
 export async function fetchVerifiedManifest(
-  releaseTag: string,
+  releaseTagInput: string,
 ): Promise<VerifiedManifest> {
-  const { manifestUrl, sidecarUrl } = univocityManifestUrls(releaseTag);
-  const [manifestRes, sidecarRes] = await Promise.all([
-    fetch(manifestUrl),
-    fetch(sidecarUrl),
-  ]);
-  if (!manifestRes.ok) {
+  const releaseTag = normalizeUnivocityReleaseTag(releaseTagInput);
+  const response = await fetch(
+    `/api/manifest/${encodeURIComponent(releaseTag)}`,
+  );
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as {
+      error?: string;
+    };
     throw new Error(
-      `manifest fetch failed (${manifestRes.status}): ${manifestUrl}`,
+      body.error ?? `manifest fetch failed (${response.status})`,
     );
   }
-  if (!sidecarRes.ok) {
-    throw new Error(
-      `sidecar fetch failed (${sidecarRes.status}): ${sidecarUrl}`,
-    );
-  }
-  const raw = await manifestRes.text();
-  const sidecar = await sidecarRes.text();
-  const bytes = new TextEncoder().encode(raw);
-  await verifyManifestBytesWithSidecar(bytes, sidecar);
-  const { manifest, artifact } = await verifyAndParseImutableManifest(raw, {
-    expectedReleaseId: releaseTag,
-  });
-  return { manifest, artifact, releaseTag };
+  const payload = (await response.json()) as {
+    raw: string;
+    sidecar: string;
+    releaseTag: string;
+  };
+  const bytes = new TextEncoder().encode(payload.raw);
+  await verifyManifestBytesWithSidecar(bytes, payload.sidecar);
+  const { manifest, artifact } = await verifyAndParseImutableManifest(
+    payload.raw,
+    {
+      expectedReleaseId: payload.releaseTag,
+    },
+  );
+  return { manifest, artifact, releaseTag: payload.releaseTag };
 }
 
 /** Verify manifest + sidecar from local File objects (drag-drop). */

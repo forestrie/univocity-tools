@@ -59,9 +59,9 @@ jobs:
           fi
 
       - name: Deploy to Cloudflare Pages
-        working-directory: apps/deploy-web/dist
+        working-directory: apps/deploy-web
         run: |
-          wrangler pages deploy . \
+          wrangler pages deploy dist \
             --project-name=univocity-deploy \
             --commit-dirty=true
 
