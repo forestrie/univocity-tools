@@ -94,9 +94,9 @@ describe("assertWalletChainMatches", () => {
         return null;
       }),
     };
-    await expect(
-      assertWalletChainMatches(provider, 84532),
-    ).rejects.toThrow("wallet chainId 1 does not match configured 84532");
+    await expect(assertWalletChainMatches(provider, 84532)).rejects.toThrow(
+      "wallet chainId 1 does not match configured 84532",
+    );
   });
 });
 

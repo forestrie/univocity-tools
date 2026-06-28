@@ -279,10 +279,12 @@ function renderBootstrap(): void {
     ?.addEventListener("click", () => {
       void generateBootstrap();
     });
-  section.querySelector("#bootstrap-acked")?.addEventListener("change", (e) => {
-    state.bootstrapBackedUp = (e.target as HTMLInputElement).checked;
-    renderDeploy();
-  });
+  section
+    .querySelector("#bootstrap-acked")
+    ?.addEventListener("change", (e) => {
+      state.bootstrapBackedUp = (e.target as HTMLInputElement).checked;
+      renderDeploy();
+    });
 }
 
 function renderDeploy(): void {
@@ -452,4 +454,8 @@ async function runDeploy(): Promise<void> {
   }
 }
 
-export { buildDeploymentTxData, bootstrapAckRequired, state as appStateForTests };
+export {
+  buildDeploymentTxData,
+  bootstrapAckRequired,
+  state as appStateForTests,
+};
