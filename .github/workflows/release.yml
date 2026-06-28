@@ -30,13 +30,18 @@ jobs:
       - name: Build Linux binaries
         run: bun run build:binary:linux-x64
 
+      - name: Stage Linux release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release-staging
+          cp apps/contract-artefacts/dist/contract-artefacts-linux-x64 release-staging/
+          cp apps/deployer/dist/deployer-linux-x64 release-staging/
+
       - name: Upload Linux release assets
         uses: actions/upload-artifact@v4
         with:
           name: release-linux
-          path: |
-            apps/contract-artefacts/dist/contract-artefacts-linux-x64
-            apps/deployer/dist/deployer-linux-x64
+          path: release-staging/*
           if-no-files-found: error
 
   release-darwin:
@@ -63,13 +68,18 @@ jobs:
       - name: Smoke test darwin deployer binary
         run: ./apps/deployer/dist/deployer-darwin-arm64 --help
 
+      - name: Stage darwin release assets
+        run: |
+          set -euo pipefail
+          mkdir -p release-staging
+          cp apps/contract-artefacts/dist/contract-artefacts-darwin-arm64 release-staging/
+          cp apps/deployer/dist/deployer-darwin-arm64 release-staging/
+
       - name: Upload darwin release assets
         uses: actions/upload-artifact@v4
         with:
           name: release-darwin
-          path: |
-            apps/contract-artefacts/dist/contract-artefacts-darwin-arm64
-            apps/deployer/dist/deployer-darwin-arm64
+          path: release-staging/*
           if-no-files-found: error
 
   publish:
