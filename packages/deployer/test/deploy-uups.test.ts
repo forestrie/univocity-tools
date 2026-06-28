@@ -57,8 +57,7 @@ describe("runDeployUups", () => {
         [predicted.toLowerCase()]: "0x6001",
       },
       storage: {
-        [`${predicted.toLowerCase()}:${implSlot}`]:
-          `0x000000000000000000000000${IMPL.slice(2)}`,
+        [`${predicted.toLowerCase()}:${implSlot}`]: `0x000000000000000000000000${IMPL.slice(2)}`,
       },
     });
     const result = await runDeployUups(out, options, { clients });

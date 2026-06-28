@@ -49,10 +49,7 @@ export function createFakeRpcClients(
       slot: Hex;
     }) => {
       const key = `${address.toLowerCase()}:${slot.toLowerCase()}`;
-      return (
-        config.storage?.[key] ??
-        ("0x" + "0".repeat(64)) as Hex
-      );
+      return config.storage?.[key] ?? (("0x" + "0".repeat(64)) as Hex);
     },
     getBalance: async () => config.balance ?? 1n,
     sendRawTransaction: config.sendRawTransaction ?? (async () => txHash),
