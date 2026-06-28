@@ -15,11 +15,12 @@
     "build:binary": "bun run --filter '@univocity-tools/*' build:binary",
     "build:binary:linux-x64": "bun run --filter '@univocity-tools/*' build:binary:linux-x64",
     "build:binary:darwin-arm64": "bun run --filter '@univocity-tools/*' build:binary:darwin-arm64",
-    "test": "bun test",
+    "test": "bun test packages apps/contract-artefacts apps/deployer && bun run --filter @univocity-tools/deploy-web test",
     "typecheck": "bun run --filter '@univocity-tools/*' typecheck",
     "check:create3": "bun run sync:create3 && git diff --exit-code packages/create3-options/src/defaults.ts",
     "check": "prettier --check apps packages",
     "check:subprocess": "bun scripts/check-subprocess-imports.ts",
+    "check:browser-safe": "bun scripts/check-browser-safe.ts",
     "check:cli": "bun scripts/check-cli-imports.ts",
     "format": "prettier --write apps packages"
   },

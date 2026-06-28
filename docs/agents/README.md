@@ -10,6 +10,7 @@ Always-loaded bootstrap: [AGENTS.md](../../AGENTS.md) and
 | Code style, layout | [conventions.md](conventions.md) |
 | CLI structure, parse vs execute | [cli.md](cli.md) |
 | Deploy e2e tiers and manual smoke | [e2e-deploy.md](e2e-deploy.md) |
+| Browser deploy wizard (`apps/deploy-web`) | [deploy-web.md](deploy-web.md) |
 | Spawning `forge`, `cast`, etc. | [subprocess.md](subprocess.md) |
 | Tooling vocabulary | [CONTEXT.md](../../CONTEXT.md) |
 | Platform domain | [devdocs glossary](../../devdocs/glossary.md) |
