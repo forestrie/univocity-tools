@@ -17,6 +17,7 @@
     "@privy-io/chains": "^0.0.2",
     "@privy-io/js-sdk-core": "^0.52.0",
     "@univocity-tools/deploy-core": "workspace:*",
+    "buffer": "^6.0.3",
     "viem": "^2.31.0"
   },
   "devDependencies": {

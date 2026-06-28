@@ -214,11 +214,14 @@ describe("deployImutableContract", () => {
     const { artifact } = await verifyAndParseImutableManifest(FIXTURE);
     const sendTransaction = vi.fn().mockResolvedValue("0x" + "ab".repeat(32));
     const provider = {
-      request: vi.fn(async ({ method }: { method: string }) => {
+      request: vi.fn(async ({ method, params }: { method: string; params?: unknown[] }) => {
         if (method === "eth_accounts") {
           return ["0x1528b86ff561f617602356efdbD05908a07AA788"];
         }
         if (method === "eth_sendTransaction") {
+          const tx = params?.[0] as { data?: string; value?: string };
+          expect(tx.data?.startsWith("0x")).toBe(true);
+          expect(tx.value).toBe("0x0");
           return sendTransaction();
         }
         if (method === "eth_chainId") {

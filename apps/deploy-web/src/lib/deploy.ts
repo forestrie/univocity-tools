@@ -6,14 +6,7 @@ import {
   type GenesisBinding,
   type ImutableBytecode,
 } from "@univocity-tools/deploy-core";
-import {
-  createWalletClient,
-  custom,
-  type Address,
-  type Hex,
-  type WalletClient,
-} from "viem";
-import { baseSepolia } from "viem/chains";
+import type { Address, Hex } from "viem";
 import type { EthereumProvider } from "./privy.js";
 import { ensureWalletChain } from "./wallet-chain.js";
 
@@ -36,17 +29,6 @@ export type DeployResult = {
   genesis: GenesisBinding;
 };
 
-function chainForId(chainId: number) {
-  if (chainId === baseSepolia.id) {
-    return baseSepolia;
-  }
-  return {
-    ...baseSepolia,
-    id: chainId,
-    name: `chain-${chainId}`,
-  };
-}
-
 export async function buildDeploymentTxData(
   artifact: ImutableBytecode,
   bootstrap: BootstrapKeyInput,
@@ -60,6 +42,41 @@ export async function buildDeploymentTxData(
   return { deploymentData, bootstrapAlg: resolved.alg };
 }
 
+async function getDeployAccount(provider: EthereumProvider): Promise<Address> {
+  const accounts = (await provider.request({
+    method: "eth_accounts",
+  })) as string[];
+  const account = accounts[0];
+  if (account === undefined || account.length === 0) {
+    throw new Error("wallet has no account");
+  }
+  return account as Address;
+}
+
+/** Send a contract-creation transaction via EIP-1193 (avoids viem Buffer usage). */
+export async function sendContractCreationTx(
+  provider: EthereumProvider,
+  from: Address,
+  chainId: number,
+  data: Hex,
+): Promise<Hex> {
+  const hash = await provider.request({
+    method: "eth_sendTransaction",
+    params: [
+      {
+        from,
+        data,
+        value: "0x0",
+        chainId: `0x${chainId.toString(16)}`,
+      },
+    ],
+  });
+  if (typeof hash !== "string" || !hash.startsWith("0x")) {
+    throw new Error("wallet did not return a transaction hash");
+  }
+  return hash as Hex;
+}
+
 export async function deployImutableContract(
   params: DeployParams,
 ): Promise<DeployResult> {
@@ -68,21 +85,13 @@ export async function deployImutableContract(
     params.artifact,
     params.bootstrap,
   );
-  const chain = chainForId(params.chainId);
-  const walletClient = createWalletClient({
-    chain,
-    transport: custom(params.provider),
-  });
-  const [account] = await walletClient.getAddresses();
-  if (!account) {
-    throw new Error("wallet has no account");
-  }
-  const hash = await walletClient.sendTransaction({
+  const account = await getDeployAccount(params.provider);
+  const hash = await sendContractCreationTx(
+    params.provider,
     account,
-    chain,
-    data: deploymentData,
-    value: 0n,
-  });
+    params.chainId,
+    deploymentData,
+  );
   const receipt = await waitForReceipt(params.rpcUrl, hash);
   const contractAddress = receipt.contractAddress;
   if (!contractAddress) {
@@ -136,14 +145,4 @@ export function downloadGenesisJson(genesis: GenesisBinding): void {
   anchor.download = "univocity-genesis.json";
   anchor.click();
   URL.revokeObjectURL(url);
-}
-
-export function createWalletClientFromProvider(
-  provider: EthereumProvider,
-  chainId: number,
-): WalletClient {
-  return createWalletClient({
-    chain: chainForId(chainId),
-    transport: custom(provider),
-  });
 }
