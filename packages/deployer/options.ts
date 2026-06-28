@@ -11,6 +11,8 @@ import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import type { ForgeOptions } from "@univocity-tools/forge-options/options";
 import { parseForgeOptions } from "@univocity-tools/forge-options/options";
+import type { AuthKind } from "@univocity-tools/git-options/options";
+import path from "node:path";
 import { getAddress, isHex, size, type Address, type Hex } from "viem";
 import type { BootstrapAlg } from "./bootstrap-key.js";
 import {
@@ -471,6 +473,85 @@ export function parseApproveProposalOptions(
     }
     options.safeTxHash = hex;
   }
+
+  return options;
+}
+
+export type ProvisionImutableE2eOptions =
+  import("./provision-imutable-e2e.js").ProvisionImutableE2eOptions;
+
+function readPathOption(
+  args: LooseParsedArgs,
+  optionName: string,
+): string | undefined {
+  return readEvaluatedStringOption(args as Record<string, unknown>, optionName);
+}
+
+function parseBootstrapAlgList(
+  args: LooseParsedArgs,
+): BootstrapAlg[] | undefined {
+  const raw =
+    readPathOption(args, "alg") ?? readPathOption(args, "bootstrap-alg");
+  if (raw === undefined) {
+    return undefined;
+  }
+  if (raw === "es256" || raw === "ks256") {
+    return [raw];
+  }
+  throw new Error('--alg must be "es256" or "ks256"');
+}
+
+export function parseProvisionImutableE2eOptions(
+  args: LooseParsedArgs,
+): ProvisionImutableE2eOptions {
+  const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const deployKey = resolveDeployKey(args);
+  const rpcUrl = resolveRpcUrl(args as RpcArgSlice);
+  const releaseRoot = resolveReleaseRoot(args);
+  const runId =
+    readPathOption(args, "run-id") ?? process.env.E2E_PROVISION_RUN_ID?.trim();
+  const proposalDir =
+    readPathOption(args, "proposal-dir") ??
+    path.join(common.workDir, "univocity-e2e", "proposals");
+  const es256PemOut =
+    readPathOption(args, "bootstrap-es256-pem-out") ??
+    path.join(common.workDir, "e2e-univocity-es256-bootstrap.pem");
+  const ks256KeyOut =
+    readPathOption(args, "bootstrap-ks256-key-out") ??
+    path.join(common.workDir, "e2e-univocity-ks256-bootstrap.key");
+  const skipFetch = Boolean(args["skip-fetch"] ?? args.skipFetch);
+  const fetchAuthKindRaw = readPathOption(args, "fetch-auth-kind");
+  const fetchAuthKind: AuthKind =
+    fetchAuthKindRaw === "env" || fetchAuthKindRaw === "gh-cli"
+      ? fetchAuthKindRaw
+      : "gh-cli";
+
+  const options: ProvisionImutableE2eOptions = {
+    ...common,
+    rpcUrl,
+    deployKey,
+    proposalDir: path.resolve(proposalDir),
+    es256PemOut: path.resolve(es256PemOut),
+    ks256KeyOut: path.resolve(ks256KeyOut),
+    skipFetch,
+    fetchAuthKind,
+  };
+  if (releaseRoot !== undefined) {
+    options.releaseRoot = path.resolve(releaseRoot);
+  }
+  if (runId !== undefined && runId.length > 0) {
+    options.runId = runId;
+  }
+  const algs = parseBootstrapAlgList(args);
+  if (algs !== undefined) {
+    options.algs = algs;
+  }
+  const fetchOrg = readPathOption(args, "fetch-org");
+  if (fetchOrg !== undefined) options.fetchOrg = fetchOrg;
+  const fetchRepo = readPathOption(args, "fetch-repo");
+  if (fetchRepo !== undefined) options.fetchRepo = fetchRepo;
+  const fetchArtefact = readPathOption(args, "fetch-artefact");
+  if (fetchArtefact !== undefined) options.fetchArtefact = fetchArtefact;
 
   return options;
 }

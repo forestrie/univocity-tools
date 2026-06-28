@@ -11,5 +11,6 @@ export default defineDeployerCommand({
     propose: () => import("./propose/index.js").then((m) => m.default),
     execute: () => import("./execute.js").then((m) => m.default),
     approve: () => import("./approve.js").then((m) => m.default),
+    provision: () => import("./provision/index.js").then((m) => m.default),
   },
 });

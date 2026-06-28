@@ -45,7 +45,7 @@ describe("contract-artefacts CLI", () => {
     const { logs } = await withStubbedExit(() =>
       runMain(command, { rawArgs: ["--version"] }),
     );
-    expect(logs).toEqual(["0.1.0"]);
-    expect(VERSION).toBe("0.1.0");
+    expect(logs).toEqual(["0.6.0"]);
+    expect(VERSION).toBe("0.6.0");
   });
 });

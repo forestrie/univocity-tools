@@ -102,6 +102,19 @@ The directory where an **archive extract** places forge artefacts
 `<release-root>/out/` without Foundry.
 _Avoid_: work dir, contracts checkout root.
 
+**Ephemeral Univocity provision**:
+Per-run deploy of fresh **ImutableUnivocity** contracts (ES256 and KS256
+**bootstrap alg variants**) with generated bootstrap keys for cross-stack
+e2e. Orchestrated by `deploy provision e2e` or `runProvisionImutableE2e`;
+consumer repos wire secrets and Playwright env.
+_Avoid_: fresh deploy, test contract, Safe deploy (e2e uses EOA publish).
+
+**Imutable deployment manifest**:
+Deployer-native JSON (`kind: "imutable-deployment"`) recording `chainId`,
+`imutableUnivocity`, `bootstrapAlg`, and `publishMode` after a successful
+e2e provision. Distinct from a **deploy proposal** (`kind: "deploy-imutable"`).
+_Avoid_: proposal JSON, deployment receipt.
+
 **Source hydration**:
 Writing Solidity source files from forge `out/build-info` embedded
 content into a **release root**. Skips paths that already exist.

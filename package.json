@@ -1,6 +1,6 @@
 {
   "name": "univocity-tools",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "private": true,
   "description": "TypeScript/Bun CLI tooling for Univocity smart contracts",
   "type": "module",
