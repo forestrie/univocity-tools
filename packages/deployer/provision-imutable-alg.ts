@@ -50,10 +50,7 @@ function manifestPathFor(
   address: Address,
 ): string {
   const short = address.slice(2, 10).toLowerCase();
-  return path.join(
-    proposalDir,
-    `manifest-${alg}-${chainId}-${short}.json`,
-  );
+  return path.join(proposalDir, `manifest-${alg}-${chainId}-${short}.json`);
 }
 
 function pointerPathFor(

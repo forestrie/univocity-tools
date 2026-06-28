@@ -27,7 +27,12 @@ async function readContractCode(
   rpcUrl: string,
   address: Address,
 ): Promise<string> {
-  const { stdout } = await runCast(ctx, ["code", address, "--rpc-url", rpcUrl]);
+  const { stdout } = await runCast(ctx, [
+    "code",
+    address,
+    "--rpc-url",
+    rpcUrl,
+  ]);
   return stdout.trim();
 }
 
@@ -71,7 +76,11 @@ export async function verifyImutableBootstrap(
   if (code.length === 0 || code === "0x") {
     throw new Error(`no contract code at ${address}`);
   }
-  const onChainAlg = await readOnChainBootstrapAlg(ctx, options.rpcUrl, address);
+  const onChainAlg = await readOnChainBootstrapAlg(
+    ctx,
+    options.rpcUrl,
+    address,
+  );
   const expected = expectedAlgValue(manifest.bootstrapAlg);
   if (onChainAlg !== expected) {
     throw new Error(
