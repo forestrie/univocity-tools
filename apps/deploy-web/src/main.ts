@@ -1,3 +1,4 @@
+import "./lib/browser-polyfills.js";
 import { getPrivyAppId, isE2ePrivyMock } from "./env.js";
 import { mountApp } from "./app.js";
 import { getPrivyClient } from "./lib/privy.js";

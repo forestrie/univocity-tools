@@ -22,6 +22,14 @@ export default defineConfig(async ({ command }) => ({
     outDir: "dist",
     emptyOutDir: true,
   },
+  resolve: {
+    alias: {
+      buffer: "buffer",
+    },
+  },
+  optimizeDeps: {
+    include: ["buffer"],
+  },
   server: {
     port: 5175,
   },
