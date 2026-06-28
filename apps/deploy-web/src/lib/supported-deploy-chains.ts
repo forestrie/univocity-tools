@@ -31,9 +31,7 @@ export const SUPPORTED_DEPLOY_CHAINS: readonly SupportedDeployChain[] = [
         chainName: baseSepolia.name,
         nativeCurrency: baseSepolia.nativeCurrency,
         rpcUrls: [...baseSepolia.rpcUrls.default.http],
-        ...(blockExplorerUrl
-          ? { blockExplorerUrls: [blockExplorerUrl] }
-          : {}),
+        ...(blockExplorerUrl ? { blockExplorerUrls: [blockExplorerUrl] } : {}),
       },
     };
   })(),

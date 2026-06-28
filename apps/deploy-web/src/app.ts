@@ -17,11 +17,7 @@ import {
   type DeployResult,
 } from "./lib/deploy.js";
 import { ensureWalletChain } from "./lib/wallet-chain.js";
-import {
-  getDefaultReleaseTag,
-  getPrivyAppId,
-  isE2ePrivyMock,
-} from "./env.js";
+import { getDefaultReleaseTag, getPrivyAppId, isE2ePrivyMock } from "./env.js";
 import { fetchVerifiedManifest, verifyManifestFiles } from "./lib/manifest.js";
 import { bootstrapAckRequired } from "./lib/bootstrap-guards.js";
 import {

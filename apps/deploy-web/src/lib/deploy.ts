@@ -17,7 +17,10 @@ import { baseSepolia } from "viem/chains";
 import type { EthereumProvider } from "./privy.js";
 import { ensureWalletChain } from "./wallet-chain.js";
 
-export { assertWalletChainMatches, readWalletChainId } from "./wallet-chain.js";
+export {
+  assertWalletChainMatches,
+  readWalletChainId,
+} from "./wallet-chain.js";
 
 export type DeployParams = {
   provider: EthereumProvider;

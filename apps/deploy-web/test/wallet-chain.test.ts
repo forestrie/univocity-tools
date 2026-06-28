@@ -20,13 +20,7 @@ describe("ensureWalletChain", () => {
     let chainHex = "0x1";
     const provider = {
       request: vi.fn(
-        async ({
-          method,
-          params,
-        }: {
-          method: string;
-          params?: unknown[];
-        }) => {
+        async ({ method, params }: { method: string; params?: unknown[] }) => {
           if (method === "eth_chainId") {
             return chainHex;
           }
@@ -49,13 +43,7 @@ describe("ensureWalletChain", () => {
     let addCalled = false;
     const provider = {
       request: vi.fn(
-        async ({
-          method,
-          params,
-        }: {
-          method: string;
-          params?: unknown[];
-        }) => {
+        async ({ method, params }: { method: string; params?: unknown[] }) => {
           if (method === "eth_chainId") {
             return chainHex;
           }

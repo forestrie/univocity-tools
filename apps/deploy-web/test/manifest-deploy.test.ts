@@ -168,13 +168,7 @@ describe("deployImutableContract", () => {
     const sendTransaction = vi.fn().mockResolvedValue("0x" + "ab".repeat(32));
     const provider = {
       request: vi.fn(
-        async ({
-          method,
-          params,
-        }: {
-          method: string;
-          params?: unknown[];
-        }) => {
+        async ({ method, params }: { method: string; params?: unknown[] }) => {
           if (method === "eth_accounts") {
             return ["0x1528b86ff561f617602356efdbD05908a07AA788"];
           }
