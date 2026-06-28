@@ -161,6 +161,60 @@ describe("deployImutableContract", () => {
     globalThis.fetch = originalFetch;
   });
 
+  test("switches wallet chain before sendTransaction when mismatched", async () => {
+    const { deployImutableContract } = await import("../src/lib/deploy.js");
+    const { artifact } = await verifyAndParseImutableManifest(FIXTURE);
+    let chainHex = "0x1";
+    const sendTransaction = vi.fn().mockResolvedValue("0x" + "ab".repeat(32));
+    const provider = {
+      request: vi.fn(
+        async ({
+          method,
+          params,
+        }: {
+          method: string;
+          params?: unknown[];
+        }) => {
+          if (method === "eth_accounts") {
+            return ["0x1528b86ff561f617602356efdbD05908a07AA788"];
+          }
+          if (method === "eth_sendTransaction") {
+            return sendTransaction();
+          }
+          if (method === "eth_chainId") {
+            return chainHex;
+          }
+          if (method === "wallet_switchEthereumChain") {
+            chainHex = (params?.[0] as { chainId: string }).chainId;
+            return null;
+          }
+          return null;
+        },
+      ),
+    };
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        result: {
+          contractAddress: "0x" + "11".repeat(20),
+        },
+      }),
+    }) as unknown as typeof fetch;
+
+    const result = await deployImutableContract({
+      provider,
+      chainId: 84532,
+      rpcUrl: "http://localhost:8545",
+      artifact,
+      bootstrap: {
+        alg: "ks256",
+        signer: "0x1528b86ff561f617602356efdbD05908a07AA788",
+      },
+    });
+    expect(chainHex).toBe("0x14a34");
+    expect(result.genesis.chainId).toBe(84532);
+  });
+
   test("sends contract creation tx via mock provider", async () => {
     const { deployImutableContract } = await import("../src/lib/deploy.js");
     const { artifact } = await verifyAndParseImutableManifest(FIXTURE);

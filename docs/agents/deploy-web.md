@@ -53,6 +53,21 @@ awaits the bridge before login wallet creation and `getEthereumProvider()`.
 Without the iframe, Privy email login works but deploy signing fails with
 “Embedded wallet proxy not initialized”.
 
+### Wallet network (Base Sepolia)
+
+Privy embedded wallets default to **Ethereum mainnet (chainId 1)** unless the app
+calls `wallet_switchEthereumChain`. deploy-web switches to the selected supported
+network on connect and again before deploy (`ensureWalletChain` in
+[`src/lib/wallet-chain.ts`](../../apps/deploy-web/src/lib/wallet-chain.ts)).
+
+Supported deploy chains are listed in
+[`src/lib/supported-deploy-chains.ts`](../../apps/deploy-web/src/lib/supported-deploy-chains.ts)
+(today: **Base Sepolia / 84532** only). Injected MetaMask wallets may require
+`wallet_addEthereumChain` on first use; the app handles error **4902** automatically.
+
+There is no reliable “default chain” control in the Privy dashboard for
+`@privy-io/js-sdk-core`; chain alignment is **app-side**.
+
 ### Mock Privy seam (`PUBLIC_E2E_PRIVY=mock`)
 
 Hermetic path for local UI and future in-repo Playwright (mandate plan-0047

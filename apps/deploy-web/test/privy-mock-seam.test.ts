@@ -20,6 +20,16 @@ describe("createMockEthereumProvider", () => {
     expect(await provider.request({ method: "eth_chainId" })).toBe("0x14a34");
   });
 
+  test("wallet_switchEthereumChain updates eth_chainId", async () => {
+    const provider = createMockEthereumProvider({ chainIdHex: "0x1" });
+    expect(await provider.request({ method: "eth_chainId" })).toBe("0x1");
+    await provider.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: "0x14a34" }],
+    });
+    expect(await provider.request({ method: "eth_chainId" })).toBe("0x14a34");
+  });
+
   test("eth_sendTransaction returns deterministic hash", async () => {
     const provider = createMockEthereumProvider();
     const hash = await provider.request({

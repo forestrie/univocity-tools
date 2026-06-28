@@ -16,7 +16,7 @@ export type MockEthereumProviderOptions = {
 export function createMockEthereumProvider(
   options?: MockEthereumProviderOptions,
 ): EthereumProvider {
-  const chainIdHex = options?.chainIdHex ?? DEFAULT_CHAIN_ID_HEX;
+  let chainIdHex = options?.chainIdHex ?? DEFAULT_CHAIN_ID_HEX;
   const sendTransaction =
     options?.sendTransaction ?? (async () => MOCK_E2E_TX_HASH);
 
@@ -28,6 +28,13 @@ export function createMockEthereumProvider(
           return [MOCK_E2E_WALLET_ADDRESS];
         case "eth_chainId":
           return chainIdHex;
+        case "wallet_switchEthereumChain": {
+          const target = (params?.[0] as { chainId: string }).chainId;
+          chainIdHex = target;
+          return null;
+        }
+        case "wallet_addEthereumChain":
+          return null;
         case "eth_sendTransaction":
           return sendTransaction();
         default:
