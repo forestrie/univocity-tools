@@ -1,0 +1,18 @@
+{
+  "name": "@univocity-tools/deploy-core",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Browser-safe Univocity deploy logic (manifest, bootstrap, tx data)",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "viem": "^2.31.0"
+  }
+}

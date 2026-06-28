@@ -1,6 +1,6 @@
 # E2e deploy confidence tiers
 
-Deployer integration tests and operator smoke checks are split into four
+Deployer integration tests and operator smoke checks are split into **five**
 **confidence tiers**. Pick the tier that matches your path — ephemeral
 cross-stack provision and foundry-free `--from-release` are different flows.
 
@@ -72,3 +72,25 @@ Checklist:
 Use **`v0.1.4`** (manifest asset) — older docs referencing `v0.4.0` fall back
 to tarball extraction when no `deploy-manifest-<tag>.json` exists on the
 release.
+
+## Tier D — browser deploy (manual)
+
+**App:** [univocity-deploy](https://univocity-deploy.pages.dev) (or local
+`bun run --filter @univocity-tools/deploy-web dev` with Privy env).
+
+The deploy-web app mounts Privy's embedded-wallet iframe on load so Privy email
+login can create/sign with an embedded wallet. For hermetic UI checks without
+Privy, use `PUBLIC_E2E_PRIVY=mock` (see [deploy-web.md](./deploy-web.md)).
+
+Checklist:
+
+1. Set `TESTING_PRIVY_APP_ID` (shared Forestrie testing Privy app) and allowlist
+   the Pages origin, or use injected wallet (or `PUBLIC_E2E_PRIVY=mock` locally).
+2. Open the app; connect wallet on target chain (default Base Sepolia `84532`).
+3. Fetch & verify manifest for **`v0.1.4`** (or drag-drop manifest + `.sha256`).
+4. Choose KS256 bootstrap (generate or paste signer); confirm genesis-critical warning.
+5. Deploy; wait for receipt; download `{ chainId, univocityAddr, bootstrapAlg }`.
+6. Optional Step 2: [mandate FORKING.md](../../../mandate/FORKING.md) onboard
+   request with `univocityAddr` from genesis JSON.
+
+See [deploy-web.md](./deploy-web.md) for env vars and CI deploy workflow.

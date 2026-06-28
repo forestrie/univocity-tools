@@ -33,6 +33,9 @@ jobs:
       - name: Subprocess policy
         run: bun run check:subprocess
 
+      - name: Browser-safe deploy-core
+        run: bun run check:browser-safe
+
       - name: CLI policy
         run: bun run check:cli
 
@@ -40,7 +43,7 @@ jobs:
         run: bun run typecheck
 
       - name: Test
-        run: bun test
+        run: bun run test
 
       - name: Build apps
         run: bun run build

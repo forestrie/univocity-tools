@@ -1,0 +1,81 @@
+name: Deploy deploy-web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/deploy-web/**"
+      - "packages/deploy-core/**"
+      - ".github/workflows/deploy-deploy-web.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy deploy-web to Pages
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: univocity-deploy-pages
+      cancel-in-progress: true
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      VITE_DEFAULT_RELEASE_TAG: v0.1.4
+      VITE_DEFAULT_CHAIN_ID: "84532"
+      VITE_DEFAULT_RPC_URL: https://sepolia.base.org
+      TESTING_PRIVY_APP_ID: ${{ vars.TESTING_PRIVY_APP_ID }}
+      TESTING_PRIVY_CLIENT_ID: ${{ vars.TESTING_PRIVY_CLIENT_ID }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@v3
+        with:
+          install: true
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build deploy-web
+        run: bun run --filter @univocity-tools/deploy-web build
+
+      - name: Install Wrangler
+        run: npm install -g wrangler@^4.94.0
+
+      - name: Authenticate Wrangler
+        run: yes n | wrangler whoami
+
+      - name: Ensure Pages project exists
+        run: |
+          if wrangler pages project list 2>/dev/null | grep -q "univocity-deploy"; then
+            echo "Pages project univocity-deploy already exists"
+          else
+            wrangler pages project create univocity-deploy --production-branch=main
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: apps/deploy-web/dist
+        run: |
+          wrangler pages deploy . \
+            --project-name=univocity-deploy \
+            --commit-dirty=true
+
+      - name: Smoke check Pages deployment
+        run: |
+          PROD_URL="https://univocity-deploy.pages.dev"
+          for i in 1 2 3 4 5; do
+            if curl -sfI "$PROD_URL/" | head -1 | grep -q "200"; then
+              curl -sf "$PROD_URL/" | grep -q "Univocity deploy"
+              echo "Smoke check passed: $PROD_URL"
+              exit 0
+            fi
+            echo "Waiting for $PROD_URL (attempt $i)..."
+            sleep 3
+          done
+          echo "Smoke check failed: $PROD_URL not ready" >&2
+          exit 1
