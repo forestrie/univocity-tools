@@ -14,6 +14,7 @@
     "test:privy": "vitest run test/privy-integration.test.ts"
   },
   "dependencies": {
+    "@privy-io/chains": "^0.0.2",
     "@privy-io/js-sdk-core": "^0.52.0",
     "@univocity-tools/deploy-core": "workspace:*",
     "viem": "^2.31.0"

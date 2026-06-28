@@ -15,33 +15,12 @@ import {
 } from "viem";
 import { baseSepolia } from "viem/chains";
 import type { EthereumProvider } from "./privy.js";
+import { ensureWalletChain } from "./wallet-chain.js";
 
-/** Read `eth_chainId` from an EIP-1193 provider (hex string or number). */
-export async function readWalletChainId(
-  provider: EthereumProvider,
-): Promise<number> {
-  const raw = await provider.request({ method: "eth_chainId" });
-  if (typeof raw === "string") {
-    return Number.parseInt(raw, 16);
-  }
-  if (typeof raw === "number") {
-    return raw;
-  }
-  throw new Error("wallet did not return eth_chainId");
-}
-
-/** Reject deploy when the wallet network does not match the configured chain. */
-export async function assertWalletChainMatches(
-  provider: EthereumProvider,
-  expectedChainId: number,
-): Promise<void> {
-  const walletChainId = await readWalletChainId(provider);
-  if (walletChainId !== expectedChainId) {
-    throw new Error(
-      `wallet chainId ${walletChainId} does not match configured ${expectedChainId}`,
-    );
-  }
-}
+export {
+  assertWalletChainMatches,
+  readWalletChainId,
+} from "./wallet-chain.js";
 
 export type DeployParams = {
   provider: EthereumProvider;
@@ -84,7 +63,7 @@ export async function buildDeploymentTxData(
 export async function deployImutableContract(
   params: DeployParams,
 ): Promise<DeployResult> {
-  await assertWalletChainMatches(params.provider, params.chainId);
+  await ensureWalletChain(params.provider, params.chainId);
   const { deploymentData, bootstrapAlg } = await buildDeploymentTxData(
     params.artifact,
     params.bootstrap,

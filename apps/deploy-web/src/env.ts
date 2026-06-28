@@ -1,5 +1,7 @@
 /** Vite public env (no secrets). */
 
+import { getDefaultDeployChain } from "./lib/supported-deploy-chains.js";
+
 /** Hermetic E2E / Playwright — deterministic mock Privy (mandate plan-0047 convention). */
 export function isE2ePrivyMockFlag(value: string | undefined): boolean {
   return value === "mock";
@@ -33,9 +35,11 @@ export function getPrivyClientId(): string | undefined {
 }
 
 export function getDefaultRpcUrl(): string {
-  return (
-    import.meta.env.VITE_DEFAULT_RPC_URL?.trim() || "https://sepolia.base.org"
-  );
+  const fromEnv = import.meta.env.VITE_DEFAULT_RPC_URL?.trim();
+  if (fromEnv) {
+    return fromEnv;
+  }
+  return getDefaultDeployChain().rpcUrl;
 }
 
 export function getDefaultChainId(): number {
@@ -46,5 +50,5 @@ export function getDefaultChainId(): number {
       return parsed;
     }
   }
-  return 84532;
+  return getDefaultDeployChain().chainId;
 }

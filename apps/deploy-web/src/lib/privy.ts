@@ -4,6 +4,7 @@ import Privy, {
   getUserEmbeddedEthereumWallet,
 } from "@privy-io/js-sdk-core";
 import { getPrivyAppId, getPrivyClientId, isE2ePrivyMock } from "../env.js";
+import { getPrivyDeploySupportedChains } from "./privy-chains.js";
 import { ensurePrivyEmbeddedWalletBridge } from "./privy-iframe.js";
 import {
   MOCK_E2E_WALLET_ADDRESS,
@@ -43,6 +44,7 @@ export async function getPrivyClient(): Promise<Privy> {
       appId,
       ...(clientId ? { clientId } : {}),
       storage: new LocalStorage(),
+      supportedChains: getPrivyDeploySupportedChains(),
     });
     await client.initialize();
     privyClient = client;

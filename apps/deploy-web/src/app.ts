@@ -5,18 +5,19 @@ import {
   type ImutableBytecode,
 } from "@univocity-tools/deploy-core";
 import {
-  getDefaultChainId,
-  getDefaultReleaseTag,
-  getDefaultRpcUrl,
-  getPrivyAppId,
-  isE2ePrivyMock,
-} from "./env.js";
+  getDefaultDeployChain,
+  getSupportedDeployChain,
+  SUPPORTED_DEPLOY_CHAINS,
+} from "./lib/supported-deploy-chains.js";
 import {
   buildDeploymentTxData,
   deployImutableContract,
   downloadGenesisJson,
+  readWalletChainId,
   type DeployResult,
 } from "./lib/deploy.js";
+import { ensureWalletChain } from "./lib/wallet-chain.js";
+import { getDefaultReleaseTag, getPrivyAppId, isE2ePrivyMock } from "./env.js";
 import { fetchVerifiedManifest, verifyManifestFiles } from "./lib/manifest.js";
 import { bootstrapAckRequired } from "./lib/bootstrap-guards.js";
 import {
@@ -26,6 +27,7 @@ import {
   loginWithPrivyEmail,
   logoutPrivy,
   requestInjectedAccounts,
+  type EthereumProvider,
 } from "./lib/privy.js";
 
 type WalletMode = "privy" | "injected";
@@ -44,6 +46,7 @@ type AppState = {
   bootstrapBackedUp: boolean;
   chainId: number;
   rpcUrl: string;
+  walletChainId: number | null;
   deployError: string | null;
   deployResult: DeployResult | null;
   busy: boolean;
@@ -61,8 +64,9 @@ const state: AppState = {
   ks256PrivateKey: null,
   es256Pem: "",
   bootstrapBackedUp: false,
-  chainId: getDefaultChainId(),
-  rpcUrl: getDefaultRpcUrl(),
+  chainId: getDefaultDeployChain().chainId,
+  rpcUrl: getDefaultDeployChain().rpcUrl,
+  walletChainId: null,
   deployError: null,
   deployResult: null,
   busy: false,
@@ -97,6 +101,14 @@ function render(): void {
 
 function renderWallet(): void {
   const privyConfigured = Boolean(getPrivyAppId()) || isE2ePrivyMock();
+  const walletChainLine =
+    state.walletChainId !== null
+      ? `<p class="hint">Wallet network: chainId ${state.walletChainId}${
+          state.walletChainId === state.chainId
+            ? " (matches deploy target)"
+            : " — will switch on deploy"
+        }</p>`
+      : "";
   const section = el("wallet-section");
   section.innerHTML = `
     <h2>1. Connect wallet</h2>
@@ -113,6 +125,7 @@ function renderWallet(): void {
           : `<button type="button" id="connect-btn">Connect</button>`
       }
     </div>
+    ${walletChainLine}
   `;
   section.querySelectorAll("[data-mode]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -300,10 +313,14 @@ function renderDeploy(): void {
     state.artifact &&
     !state.busy &&
     (!ackRequired || state.bootstrapBackedUp);
+  const chainOptions = SUPPORTED_DEPLOY_CHAINS.map(
+    (chain) =>
+      `<option value="${chain.chainId}" ${state.chainId === chain.chainId ? "selected" : ""}>${chain.name} (${chain.chainId})</option>`,
+  ).join("");
   section.innerHTML = `
     <h2>4. Deploy on chain</h2>
-    <label for="chain-id">Chain ID</label>
-    <input id="chain-id" type="number" value="${state.chainId}" />
+    <label for="chain-id">Network</label>
+    <select id="chain-id">${chainOptions}</select>
     <label for="rpc-url">RPC URL (for receipt polling)</label>
     <input id="rpc-url" value="${state.rpcUrl}" />
     <div class="row">
@@ -312,7 +329,14 @@ function renderDeploy(): void {
     ${state.deployError ? `<p class="error">${state.deployError}</p>` : ""}
   `;
   section.querySelector("#chain-id")?.addEventListener("change", (e) => {
-    state.chainId = Number((e.target as HTMLInputElement).value);
+    const chainId = Number((e.target as HTMLSelectElement).value);
+    const chain = getSupportedDeployChain(chainId);
+    if (!chain) {
+      return;
+    }
+    state.chainId = chain.chainId;
+    state.rpcUrl = chain.rpcUrl;
+    renderDeploy();
   });
   section.querySelector("#rpc-url")?.addEventListener("input", (e) => {
     state.rpcUrl = (e.target as HTMLInputElement).value.trim();
@@ -343,6 +367,11 @@ function renderResult(): void {
     });
 }
 
+async function syncWalletChain(provider: EthereumProvider): Promise<void> {
+  await ensureWalletChain(provider, state.chainId);
+  state.walletChainId = await readWalletChainId(provider);
+}
+
 async function connectWallet(): Promise<void> {
   state.busy = true;
   render();
@@ -359,12 +388,25 @@ async function connectWallet(): Promise<void> {
       }
       await loginWithPrivyEmail(email.trim());
       state.walletAddress = await getPrivyWalletAddress();
+      const provider = await getPrivyEthereumProvider();
+      if (provider) {
+        await syncWalletChain(provider);
+      }
     } else {
       const accounts = await requestInjectedAccounts();
       state.walletAddress = accounts[0] ?? null;
+      const provider = getInjectedProvider();
+      if (provider) {
+        await syncWalletChain(provider);
+      }
     }
   } catch (error) {
     state.deployError = (error as Error).message;
+    state.walletAddress = null;
+    state.walletChainId = null;
+    if (state.walletMode === "privy") {
+      await logoutPrivy().catch(() => undefined);
+    }
   } finally {
     state.busy = false;
     render();
@@ -376,6 +418,7 @@ async function disconnectWallet(): Promise<void> {
     await logoutPrivy();
   }
   state.walletAddress = null;
+  state.walletChainId = null;
   render();
 }
 
