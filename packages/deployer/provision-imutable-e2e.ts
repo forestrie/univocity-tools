@@ -45,7 +45,11 @@ async function findUnivocityArchive(workDir: string): Promise<string> {
   const base = path.join(workDir, "univocity");
   const entries = await fs.readdir(base, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.isFile() && entry.name.startsWith("univocity") && entry.name.endsWith(".tar.gz")) {
+    if (
+      entry.isFile() &&
+      entry.name.startsWith("univocity") &&
+      entry.name.endsWith(".tar.gz")
+    ) {
       return path.join(base, entry.name);
     }
   }

@@ -484,7 +484,10 @@ function readPathOption(
   args: LooseParsedArgs,
   optionName: string,
 ): string | undefined {
-  return readEvaluatedStringOption(args as Record<string, unknown>, optionName);
+  return readEvaluatedStringOption(
+    args as Record<string, unknown>,
+    optionName,
+  );
 }
 
 function parseBootstrapAlgList(

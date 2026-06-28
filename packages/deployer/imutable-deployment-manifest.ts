@@ -41,7 +41,10 @@ export function validateImutableDeploymentManifest(
   if (record.publishMode !== "eoa" && record.publishMode !== "safe") {
     fail('publishMode must be "eoa" or "safe"');
   }
-  if (typeof record.imutableUnivocity !== "string" || !isAddress(record.imutableUnivocity)) {
+  if (
+    typeof record.imutableUnivocity !== "string" ||
+    !isAddress(record.imutableUnivocity)
+  ) {
     fail("imutableUnivocity must be an address");
   }
   if (typeof record.from !== "string" || !isAddress(record.from)) {

@@ -5,8 +5,31 @@ release, deploy, and ops. Human setup: [README.md](README.md). Tooling
 glossary: [CONTEXT.md](CONTEXT.md). Platform glossary:
 [devdocs/glossary.md](../devdocs/glossary.md).
 
-Cursor and Claude Code: also read [.cursorrules](./.cursorrules) for
-always-on rules.
+**Plans:** After a Cursor-built plan exists, persist under `docs/plans/`.
+
+## Git worktrees
+
+The **home clone** (`~/Dev/personal/forestrie/univocity-tools`) stays on
+**`main`** (fast-forwarded to `origin/main`). Do not check out feature
+branches here.
+
+**Agents and parallel work** use a git worktree under **`../.worktrees/`**
+(resolves to `~/Dev/personal/forestrie/.worktrees/`):
+
+```bash
+# from this repo root
+git fetch origin
+git worktree add ../.worktrees/univocity-tools-for-<issue>-<slug> \
+  -b robin/for-<issue>-<slug> origin/main
+# existing branch:
+git worktree add ../.worktrees/univocity-tools-for-<issue>-<slug> \
+  robin/for-<issue>-<slug>
+```
+
+When work merges to `main`, remove the worktree:
+`git worktree remove ../.worktrees/<name>`. Do **not** use
+`~/Dev/personal/forestrie-wt/` or ad-hoc `.worktrees/univocity-tools-tier1`
+(retired).
 
 ## Layout
 
@@ -72,6 +95,8 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 ## Documentation map
 
 - **Agent index**: [docs/agents/README.md](docs/agents/README.md)
+- **Deploy e2e tiers**: [docs/agents/e2e-deploy.md](docs/agents/e2e-deploy.md)
+- **Plans**: [docs/plans/](docs/plans/)
 - **Conventions**: [docs/agents/conventions.md](docs/agents/conventions.md)
 - **CLIs (citty)**: [docs/agents/cli.md](docs/agents/cli.md)
 - **Subprocesses**: [docs/agents/subprocess.md](docs/agents/subprocess.md)

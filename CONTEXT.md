@@ -109,6 +109,20 @@ e2e. Orchestrated by `deploy provision e2e` or `runProvisionImutableE2e`;
 consumer repos wire secrets and Playwright env.
 _Avoid_: fresh deploy, test contract, Safe deploy (e2e uses EOA publish).
 
+**Deploy manifest**:
+Release JSON asset (`deploy-manifest-<tag>.json`) published on a **contracts
+repo** GitHub release. Holds verified `creationBytecode` and metadata for
+foundry-free propose/deploy. Distinct from **Imutable deployment manifest**
+(post-deploy output). See [ADR-0010](docs/adr/adr-0010-deploy-manifest-format.md).
+_Avoid_: conflating with deployment manifest written after execute.
+
+**From-release deploy**:
+One-shot EOA path: `deploy imutable --from-release <tag>` — fetches deploy
+manifest (or archive fallback), verifies `.sha256` sidecar, proposes,
+executes via viem, writes **Imutable deployment manifest**. No `forge`/`cast`
+on the operator machine when using a published manifest.
+_Avoid_: conflating with `deploy provision e2e` (ephemeral cross-stack).
+
 **Imutable deployment manifest**:
 Deployer-native JSON (`kind: "imutable-deployment"`) recording `chainId`,
 `imutableUnivocity`, `bootstrapAlg`, and `publishMode` after a successful
