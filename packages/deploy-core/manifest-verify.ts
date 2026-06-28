@@ -80,17 +80,11 @@ async function assertBytecodeSha256(
 export async function verifyDeployManifestDigests(
   manifest: DeployManifest,
 ): Promise<void> {
-  await assertBytecodeSha256(
-    manifest.contracts.ImutableUnivocity.contractName,
-    manifest.contracts.ImutableUnivocity.creationBytecode,
-    manifest.contracts.ImutableUnivocity.bytecodeSha256,
-  );
-  const factory = manifest.contracts.CREATE3Factory;
-  if (factory !== undefined) {
+  for (const entry of Object.values(manifest.contracts)) {
     await assertBytecodeSha256(
-      factory.contractName,
-      factory.creationBytecode,
-      factory.bytecodeSha256,
+      entry.contractName,
+      entry.creationBytecode,
+      entry.bytecodeSha256,
     );
   }
 }

@@ -102,4 +102,5 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 - **Subprocesses**: [docs/agents/subprocess.md](docs/agents/subprocess.md)
 - **ADR-0001**: [docs/adr/adr-0001-typescript-tools-sibling-repo.md](docs/adr/adr-0001-typescript-tools-sibling-repo.md)
 - **ADR-0003**: [docs/adr/adr-0003-create3-config-build-snapshot.md](docs/adr/adr-0003-create3-config-build-snapshot.md)
+- **ADR-0012**: [docs/adr/adr-0012-foundry-free-uups-deploy.md](docs/adr/adr-0012-foundry-free-uups-deploy.md)
 - **Platform**: [../devdocs/](../devdocs/)

@@ -8,10 +8,12 @@ cross-stack provision and foundry-free `--from-release` are different flows.
 |------|----------------|---------------------|
 | Ephemeral e2e provision | `deploy provision e2e` | Yes (`anvil`, `forge`, `cast`) |
 | From-release EOA deploy | `deploy imutable --from-release <tag>` | **No** (deployer binary only) |
+| Fresh-chain CREATE3 + UUPS | `deploy create3 --from-release` then `deploy uups --from-release` | **No** |
 
 See also [plan-0049](../../../canopy/docs/plans/plan-0049-e2e-imutable-provision-consolidation.md)
-(provision consolidation) and [ADR-0010](../adr/adr-0010-deploy-manifest-format.md)
-(deploy-manifest trust model).
+(provision consolidation), [ADR-0010](../adr/adr-0010-deploy-manifest-format.md)
+(deploy-manifest trust model), and [ADR-0012](../adr/adr-0012-foundry-free-uups-deploy.md)
+(UUPS foundry-free deploy).
 
 ## Tier A — stub (always CI)
 
@@ -43,6 +45,19 @@ bun test packages/deployer/test/e2e/from-release.anvil.test.ts
 Skips when `anvil` is not on PATH. CI job: `integration-anvil` in
 `.github/workflows/ci.yml` (Foundry toolchain installed in that job only).
 
+## Tier B-uups — anvil, foundry-free CREATE3 + UUPS (integration-anvil CI)
+
+**Test:** `packages/deployer/test/e2e/uups-from-release.anvil.test.ts`
+
+Committed real deploy-manifest fixture (`CREATE3Factory`, `UUPSUnivocity`,
+`ERC1967Proxy`). Deploys shared factory then UUPS proxy on fresh anvil; asserts
+proxy at the golden CREATE3 address from `deployment.json` ephemeral config.
+Port **18547**.
+
+```bash
+bun test packages/deployer/test/e2e/uups-from-release.anvil.test.ts
+```
+
 ## Tier C — manual release smoke (operator)
 
 Run after published tags exist. As of 2026-06-28:
@@ -72,6 +87,32 @@ Checklist:
 Use **`v0.1.4`** (manifest asset) — older docs referencing `v0.4.0` fall back
 to tarball extraction when no `deploy-manifest-<tag>.json` exists on the
 release.
+
+### Fresh-chain CREATE3 + UUPS (foundry-free)
+
+After a Univocity release ships `UUPSUnivocity` and `ERC1967Proxy` manifest
+entries:
+
+1. Download deployer binary; set `DEPLOY_KEY`, `RPC_URL`, `UPGRADE_ADMIN`.
+2. Deploy shared CREATE3 factory (no-op when already present):
+   ```bash
+   ./deployer-linux-x64 deploy create3 --from-release v0.1.4 --rpc-url "$RPC_URL"
+   ```
+3. Deploy UUPS proxy:
+   ```bash
+   ./deployer-linux-x64 deploy uups \
+     --from-release v0.1.4 \
+     --upgrade-admin "$UPGRADE_ADMIN" \
+     --bootstrap-alg ks256 \
+     --bootstrap-ks256-signer <OWNER> \
+     --rpc-url "$RPC_URL"
+   ```
+4. Predict address without broadcasting:
+   ```bash
+   ./deployer-linux-x64 deploy uups predict --deploy-key "$DEPLOY_KEY"
+   ```
+5. Confirm `uups-deployment` manifest under `--work-dir` lists `proxy` and
+   `implementation` addresses.
 
 ## Tier D — browser deploy (manual)
 

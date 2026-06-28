@@ -10,6 +10,7 @@ const SAMPLE_CONFIG = {
   "deploy-tx": "0xabcd",
   signer: "0x2222222222222222222222222222222222222222",
   factory: "0x3333333333333333333333333333333333333333",
+  "uups-salt": "forestrie.eth/univocity/UUPSUnivocity/0",
 } as const;
 
 describe("resolveCreate3Config", () => {
@@ -119,6 +120,7 @@ describe("resolveCreate3Config", () => {
         "deploy-tx": "0xabcd",
         signer: "0x2222222222222222222222222222222222222222",
         factory: "0x3333333333333333333333333333333333333333",
+        "uups-salt": "forestrie.eth/univocity/UUPSUnivocity/0",
       }),
     );
 

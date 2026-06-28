@@ -7,6 +7,8 @@ export type DeployManifestContract = {
   bytecodeSha256: string;
   solcVersion: string;
   constructorAbi?: readonly unknown[];
+  /** Full or partial contract ABI (e.g. UUPSUnivocity initialize). */
+  abi?: readonly unknown[];
 };
 
 function fail(message: string): never {
@@ -56,6 +58,12 @@ export function validateDeployManifestContract(
       fail(`${label}.constructorAbi must be an array when present`);
     }
     result.constructorAbi = record.constructorAbi;
+  }
+  if (record.abi !== undefined) {
+    if (!Array.isArray(record.abi)) {
+      fail(`${label}.abi must be an array when present`);
+    }
+    result.abi = record.abi;
   }
   return result;
 }

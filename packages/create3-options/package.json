@@ -8,7 +8,8 @@
     ".": "./options.ts",
     "./commoncli": "./commoncli.ts",
     "./options": "./options.ts",
-    "./create3-config": "./create3-config.ts"
+    "./create3-config": "./create3-config.ts",
+    "./defaults": "./src/defaults.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

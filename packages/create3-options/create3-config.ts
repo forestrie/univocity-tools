@@ -3,12 +3,19 @@ export type Create3Config = {
   "deploy-tx": `0x${string}`;
   signer: `0x${string}`;
   factory: `0x${string}`;
+  "uups-salt": string;
 };
 
 const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;
 const HEX_RE = /^0x[0-9a-fA-F]+$/;
 
-const REQUIRED_KEYS = ["proxy", "deploy-tx", "signer", "factory"] as const;
+const REQUIRED_KEYS = [
+  "proxy",
+  "deploy-tx",
+  "signer",
+  "factory",
+  "uups-salt",
+] as const;
 
 export function validateCreate3Config(value: unknown): Create3Config {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -27,6 +34,7 @@ export function validateCreate3Config(value: unknown): Create3Config {
   const deployTx = record["deploy-tx"];
   const signer = record.signer;
   const factory = record.factory;
+  const uupsSalt = record["uups-salt"];
 
   if (typeof proxy !== "string" || !ADDRESS_RE.test(proxy)) {
     throw new Error(
@@ -46,11 +54,17 @@ export function validateCreate3Config(value: unknown): Create3Config {
       "create3 config field factory must be a 0x-prefixed address",
     );
   }
+  if (typeof uupsSalt !== "string" || uupsSalt.trim().length === 0) {
+    throw new Error(
+      "create3 config field uups-salt must be a non-empty string",
+    );
+  }
 
   return {
     proxy: proxy as Create3Config["proxy"],
     "deploy-tx": deployTx as Create3Config["deploy-tx"],
     signer: signer as Create3Config["signer"],
     factory: factory as Create3Config["factory"],
+    "uups-salt": uupsSalt,
   };
 }

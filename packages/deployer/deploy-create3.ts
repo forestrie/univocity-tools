@@ -31,7 +31,7 @@ import {
   hasBytecodeAt,
   type RpcClients,
 } from "./rpc-client.js";
-import { readCreate3FromDeployManifest } from "./read-deploy-manifest.js";
+import { readCreate3FromDeployManifest, pickManifestLoadOptions } from "./read-deploy-manifest.js";
 import { readFactoryBytecode } from "./read-factory-bytecode.js";
 
 const PROXY_POLL_MS = 500;
@@ -205,9 +205,23 @@ export async function runDeployCreate3(
     return;
   }
 
+  const manifestLoadOptions =
+    options.fromManifest !== undefined
+      ? pickManifestLoadOptions({
+          manifestSidecar: options.manifestSidecar,
+          expectedReleaseId: options.expectedReleaseId,
+          insecure: options.insecure,
+        })
+      : undefined;
+
   const artifact =
     options.fromManifest !== undefined
-      ? (await readCreate3FromDeployManifest(options.fromManifest)).artifact
+      ? (
+          await readCreate3FromDeployManifest(
+            options.fromManifest,
+            manifestLoadOptions,
+          )
+        ).artifact
       : options.releaseRoot !== undefined
         ? await readFactoryBytecode(
             create3FactoryReleaseArtifactPath(options.releaseRoot),

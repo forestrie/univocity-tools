@@ -1,5 +1,7 @@
 export * from "./bootstrap-key.js";
+export * from "./create3-address.js";
 export * from "./deploy-constants.js";
+export * from "./uups-deploy-data.js";
 export * from "./deploy-manifest-contract.js";
 export * from "./deploy-manifest.js";
 export * from "./encoding.js";

@@ -123,6 +123,14 @@ executes via viem, writes **Imutable deployment manifest**. No `forge`/`cast`
 on the operator machine when using a published manifest.
 _Avoid_: conflating with `deploy provision e2e` (ephemeral cross-stack).
 
+**Foundry-free UUPS deploy**:
+Fresh-chain path: `deploy create3 --from-release <tag>` then
+`deploy uups --from-release <tag>` — reconstructs ERC1967 proxy creation code
+from manifest bytecode, deploys via shared CREATE3 factory. Proxy address is
+predictable from `(factory, deployer, uups-salt)` in `create3.jsonc`. See
+[ADR-0012](docs/adr/adr-0012-foundry-free-uups-deploy.md).
+_Avoid_: conflating with `task deploy:uups` (forge script in contracts repo).
+
 **Imutable deployment manifest**:
 Deployer-native JSON (`kind: "imutable-deployment"`) recording `chainId`,
 `imutableUnivocity`, `bootstrapAlg`, and `publishMode` after a successful

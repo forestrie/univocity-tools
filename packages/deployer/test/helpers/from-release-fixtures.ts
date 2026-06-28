@@ -19,6 +19,20 @@ export const FIXTURE_MANIFEST = {
   },
 };
 
+export const FIXTURE_MANIFEST_WITH_FACTORY = {
+  ...FIXTURE_MANIFEST,
+  contracts: {
+    ...FIXTURE_MANIFEST.contracts,
+    CREATE3Factory: {
+      contractName: "CREATE3Factory",
+      creationBytecode: "0x6001",
+      bytecodeSha256:
+        "9e67b12fd8c58953460459cad7a6d4dd7d6d57594affce8206d1397c9c4db543",
+      solcVersion: "0.8.26",
+    },
+  },
+};
+
 export function releaseAsset(name: string, url: string): ReleaseAsset {
   return {
     id: 1,

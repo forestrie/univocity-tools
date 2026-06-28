@@ -27,6 +27,7 @@ import {
 import { parseDeployManifest } from "./deploy-manifest.js";
 import type {
   DeployImutableFromReleaseOptions,
+  DeployerCommonOptions,
   ProposeImutableOptions,
 } from "./options.js";
 import { runProposeImutable } from "./propose-imutable.js";
@@ -84,9 +85,15 @@ export type ResolvedReleaseInputs = {
   releaseRoot?: string;
 };
 
+/** Options shared by --from-release download + sidecar verification. */
+export type ReleaseResolveOptions = DeployerCommonOptions & {
+  insecure?: boolean;
+  manifestSidecar?: string;
+};
+
 async function verifyManifestSidecarOrThrow(
   out: Out,
-  options: DeployImutableFromReleaseOptions,
+  options: ReleaseResolveOptions,
   client: GithubClient,
   manifestPath: string,
   manifestAsset: ReleaseAsset,
@@ -123,7 +130,7 @@ async function assertDownloadedManifestReleaseId(
 export async function resolveReleaseInputs(
   out: Out,
   releaseTag: string,
-  options: DeployImutableFromReleaseOptions,
+  options: ReleaseResolveOptions,
   client?: GithubClient,
 ): Promise<ResolvedReleaseInputs> {
   const githubClient =
