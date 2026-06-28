@@ -3,16 +3,17 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
-import type {
-  GithubClient,
-  ReleaseAsset,
-} from "@univocity-tools/github-api/main";
 import {
   resolveReleaseInputs,
   runDeployImutableFromRelease,
 } from "../deploy-imutable-from-release.js";
 import { parseDeployImutableFromReleaseOptions } from "../options.js";
 import { sha256FileHex } from "../file-sha256.js";
+import {
+  FIXTURE_MANIFEST,
+  releaseAsset,
+  stubGithubClient,
+} from "./helpers/from-release-fixtures.js";
 import { createFakeRpcClients } from "./helpers/fake-rpc-clients.js";
 import { startJsonRpcStub } from "./helpers/json-rpc-stub.js";
 import { serializeProposal, type Proposal } from "../proposal.js";
@@ -23,58 +24,6 @@ const KEY_A =
 const OWNER = "0x1528b86ff561f617602356efdbD05908a07AA788";
 const ADDR_A = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 const DEPLOYED = "0x1111111111111111111111111111111111111111" as const;
-
-const FIXTURE_MANIFEST = {
-  version: 1,
-  releaseId: "v0.4.0",
-  contracts: {
-    ImutableUnivocity: {
-      contractName: "ImutableUnivocity",
-      creationBytecode: "0x6001",
-      bytecodeSha256:
-        "9e67b12fd8c58953460459cad7a6d4dd7d6d57594affce8206d1397c9c4db543",
-      solcVersion: "0.8.26",
-      constructorAbi: [],
-    },
-  },
-};
-
-function releaseAsset(name: string, url: string): ReleaseAsset {
-  return {
-    id: 1,
-    name,
-    url,
-    browser_download_url: url,
-  };
-}
-
-function stubGithubClient(config: {
-  assets: ReleaseAsset[];
-  tag?: string;
-  downloads?: Record<string, string>;
-}): GithubClient {
-  const downloads = config.downloads ?? {};
-  return {
-    org: "forestrie",
-    repo: "univocity",
-    async getJson<T>(apiPath: string): Promise<T> {
-      if (apiPath.includes("/releases/tags/")) {
-        return {
-          tag_name: config.tag ?? "v0.4.0",
-          assets: config.assets,
-        } as T;
-      }
-      throw new Error(`unexpected api path ${apiPath}`);
-    },
-    async downloadToFile(url: string, destPath: string): Promise<void> {
-      const content = downloads[url];
-      if (content === undefined) {
-        throw new Error(`unexpected download url ${url}`);
-      }
-      writeFileSync(destPath, content);
-    },
-  };
-}
 
 describe("runDeployImutableFromRelease", () => {
   test("requires rpc-url", async () => {
