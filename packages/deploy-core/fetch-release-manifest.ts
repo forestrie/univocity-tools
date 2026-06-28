@@ -95,11 +95,7 @@ export async function fetchUnivocityReleaseManifest(
   const tag = release.tag_name;
   const manifestName = `deploy-manifest-${tag}.json`;
   const sidecarName = `${manifestName}.sha256`;
-  const manifestAsset = requireReleaseAsset(
-    release.assets,
-    manifestName,
-    tag,
-  );
+  const manifestAsset = requireReleaseAsset(release.assets, manifestName, tag);
   const sidecarAsset = requireReleaseAsset(release.assets, sidecarName, tag);
 
   const [raw, sidecar] = await Promise.all([

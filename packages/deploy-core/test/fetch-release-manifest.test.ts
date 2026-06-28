@@ -21,31 +21,36 @@ describe("fetchUnivocityReleaseManifest", () => {
     const manifestName = `deploy-manifest-${releaseTag}.json`;
     const sidecar = "abc" + "d".repeat(61) + `  ${manifestName}\n`;
 
-    globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      const url = String(input);
-      if (url.includes("/releases/tags/v0.1.4")) {
-        return new Response(
-          JSON.stringify({
-            tag_name: releaseTag,
-            assets: [
-              { name: manifestName, url: "https://api.github.test/manifest" },
-              {
-                name: `${manifestName}.sha256`,
-                url: "https://api.github.test/sidecar",
-              },
-            ],
-          }),
-          { status: 200 },
-        );
-      }
-      if (url === "https://api.github.test/manifest") {
-        return new Response(FIXTURE, { status: 200 });
-      }
-      if (url === "https://api.github.test/sidecar") {
-        return new Response(sidecar, { status: 200 });
-      }
-      throw new Error(`unexpected fetch: ${url}`);
-    }) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("/releases/tags/v0.1.4")) {
+          return new Response(
+            JSON.stringify({
+              tag_name: releaseTag,
+              assets: [
+                {
+                  name: manifestName,
+                  url: "https://api.github.test/manifest",
+                },
+                {
+                  name: `${manifestName}.sha256`,
+                  url: "https://api.github.test/sidecar",
+                },
+              ],
+            }),
+            { status: 200 },
+          );
+        }
+        if (url === "https://api.github.test/manifest") {
+          return new Response(FIXTURE, { status: 200 });
+        }
+        if (url === "https://api.github.test/sidecar") {
+          return new Response(sidecar, { status: 200 });
+        }
+        throw new Error(`unexpected fetch: ${url}`);
+      },
+    ) as unknown as typeof fetch;
 
     const result = await fetchUnivocityReleaseManifest("0.1.4", {
       githubApi: "https://api.github.test",

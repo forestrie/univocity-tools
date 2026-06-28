@@ -6,7 +6,10 @@ import {
   verifyAndParseImutableManifest,
   verifyManifestBytesWithSidecar,
 } from "@univocity-tools/deploy-core";
-import { fetchVerifiedManifest, verifyManifestFiles } from "../src/lib/manifest.js";
+import {
+  fetchVerifiedManifest,
+  verifyManifestFiles,
+} from "../src/lib/manifest.js";
 
 const FIXTURE = readFileSync(
   path.join(
