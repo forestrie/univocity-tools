@@ -7,6 +7,17 @@ export { runProposeImutable } from "./propose-imutable.js";
 export { runExecuteProposal } from "./execute-proposal.js";
 export { runApproveProposal } from "./approve-proposal.js";
 export { runDeployImutableFromRelease } from "./deploy-imutable-from-release.js";
+export { runProvisionImutableAlg } from "./provision-imutable-alg.js";
+export { runProvisionImutableE2e } from "./provision-imutable-e2e.js";
+export { genesisLogIdFromImutableAddress } from "./genesis-log-id.js";
+export {
+  readImutableDeploymentManifest,
+  writeImutableDeploymentManifest,
+} from "./imutable-deployment-manifest.js";
+export {
+  verifyImutableBootstrap,
+  verifyImutableBootstrapPair,
+} from "./verify-imutable-bootstrap.js";
 
 /** Print the resolved Create3 config as JSON. */
 export async function runConfigShow(

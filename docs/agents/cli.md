@@ -441,6 +441,8 @@ deployer
     ├── imutable               # One-shot EOA deploy from a GitHub release tag
     ├── propose
     │   └── imutable           # Build a deploy-imutable proposal (EOA or Safe)
+    ├── provision
+    │   └── e2e                # Ephemeral es256+ks256 Imutable deploy for cross-stack e2e
     ├── approve [proposalFile] # Sign + execute a Safe proposal; stdin if no file
     └── execute [proposalFile] # Broadcast a local proposal (viem); stdin if no file
 ```
@@ -514,3 +516,14 @@ Additional **approve** flags: `--rpc-url` (`RPC_URL`, required),
 Bootstrap crypto is ported to TypeScript (viem + WebCrypto), so the deploy
 step no longer needs the Solidity deploy/batch scripts; `forge` is used only
 for the build and `cast` only for chain I/O.
+
+### Ephemeral e2e provision (`deploy provision e2e`)
+
+Callable API: `runProvisionImutableE2e` / `provisionImutableE2e` in
+`@univocity-tools/deployer-common/main`. Composes `contract-artefacts
+fetch-release`, `archive-extract`, `deploy propose imutable`, `deploy execute`,
+and on-chain `bootstrapConfig()` verification. Writes **imutable deployment
+manifest** JSON under `--proposal-dir` (see ADR-0010).
+
+Canopy preflight and CI call this via `task e2e-univocity:provision` or
+`task e2e-univocity:ci-prepare` (pin **univocity-tools v0.6.0+** in release CI).
