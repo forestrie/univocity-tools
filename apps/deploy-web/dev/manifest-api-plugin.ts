@@ -1,4 +1,3 @@
-import { fetchUnivocityReleaseManifest } from "@univocity-tools/deploy-core/fetch-release-manifest";
 import type { Plugin } from "vite";
 
 /** Dev-only same-origin proxy for GitHub release manifest assets (avoids browser CORS). */
@@ -15,6 +14,9 @@ export function manifestApiPlugin(): Plugin {
 
         try {
           const tag = decodeURIComponent(match[1]!);
+          const { fetchUnivocityReleaseManifest } = await import(
+            "@univocity-tools/deploy-core/fetch-release-manifest"
+          );
           const result = await fetchUnivocityReleaseManifest(tag);
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
