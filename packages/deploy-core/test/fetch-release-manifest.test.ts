@@ -16,36 +16,26 @@ describe("fetchUnivocityReleaseManifest", () => {
     vi.restoreAllMocks();
   });
 
-  test("resolves manifest assets for v0.1.4 via GitHub API", async () => {
+  test("resolves manifest assets for v0.1.4 via release download URLs", async () => {
     const releaseTag = "v0.1.4";
     const manifestName = `deploy-manifest-${releaseTag}.json`;
     const sidecar = "abc" + "d".repeat(61) + `  ${manifestName}\n`;
+    const releasesBase = "https://releases.test/download";
 
     globalThis.fetch = vi.fn(
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
-        if (url.includes("/releases/tags/v0.1.4")) {
-          return new Response(
-            JSON.stringify({
-              tag_name: releaseTag,
-              assets: [
-                {
-                  name: manifestName,
-                  url: "https://api.github.test/manifest",
-                },
-                {
-                  name: `${manifestName}.sha256`,
-                  url: "https://api.github.test/sidecar",
-                },
-              ],
-            }),
-            { status: 200 },
-          );
-        }
-        if (url === "https://api.github.test/manifest") {
+        if (
+          url ===
+          `${releasesBase}/${releaseTag}/deploy-manifest-${releaseTag}.json`
+        ) {
+          expect(init?.redirect).toBe("follow");
           return new Response(FIXTURE, { status: 200 });
         }
-        if (url === "https://api.github.test/sidecar") {
+        if (
+          url ===
+          `${releasesBase}/${releaseTag}/deploy-manifest-${releaseTag}.json.sha256`
+        ) {
           return new Response(sidecar, { status: 200 });
         }
         throw new Error(`unexpected fetch: ${url}`);
@@ -53,9 +43,7 @@ describe("fetchUnivocityReleaseManifest", () => {
     ) as unknown as typeof fetch;
 
     const result = await fetchUnivocityReleaseManifest("0.1.4", {
-      githubApi: "https://api.github.test",
-      org: "forestrie",
-      repo: "univocity",
+      releasesBase,
     });
 
     expect(result.releaseTag).toBe("v0.1.4");
@@ -65,27 +53,11 @@ describe("fetchUnivocityReleaseManifest", () => {
 
   test("reports missing manifest asset", async () => {
     globalThis.fetch = vi.fn(async () => {
-      return new Response(
-        JSON.stringify({
-          tag_name: "v0.1.5",
-          assets: [],
-        }),
-        { status: 200 },
-      );
-    }) as unknown as typeof fetch;
-
-    await expect(fetchUnivocityReleaseManifest("v0.1.5")).rejects.toThrow(
-      "missing asset deploy-manifest-v0.1.5.json",
-    );
-  });
-
-  test("reports missing release", async () => {
-    globalThis.fetch = vi.fn(async () => {
       return new Response("not found", { status: 404 });
     }) as unknown as typeof fetch;
 
-    await expect(fetchUnivocityReleaseManifest("v9.9.9")).rejects.toThrow(
-      "GitHub release v9.9.9 not found (404)",
+    await expect(fetchUnivocityReleaseManifest("v0.1.5")).rejects.toThrow(
+      "manifest download failed (404)",
     );
   });
 });
