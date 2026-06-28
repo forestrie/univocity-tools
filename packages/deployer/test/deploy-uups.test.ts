@@ -49,14 +49,21 @@ describe("runDeployUups", () => {
       "bootstrap-ks256-signer": OWNER,
     });
     const factory = options.create3.factory.toLowerCase();
+    const implSlot =
+      "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
     const clients = createFakeRpcClients({
       bytecode: {
         [factory]: "0x6001",
         [predicted.toLowerCase()]: "0x6001",
       },
+      storage: {
+        [`${predicted.toLowerCase()}:${implSlot}`]:
+          `0x000000000000000000000000${IMPL.slice(2)}`,
+      },
     });
     const result = await runDeployUups(out, options, { clients });
     expect(result.proxy.toLowerCase()).toBe(predicted.toLowerCase());
+    expect(result.implementation.toLowerCase()).toBe(IMPL.toLowerCase());
   });
 
   test("deploys implementation and proxy via CREATE3 factory", async () => {

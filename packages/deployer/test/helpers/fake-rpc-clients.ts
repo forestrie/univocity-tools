@@ -11,6 +11,8 @@ export type FakeRpcClientsConfig = {
   contractAddress?: Address;
   chainId?: number;
   bytecode?: Record<string, Hex | "0x" | undefined>;
+  /** `${address}:${slot}` → 32-byte storage word. */
+  storage?: Record<string, Hex>;
   balance?: bigint;
   sendRawTransaction?: (serialized: Hex) => Promise<Hex>;
 };
@@ -39,6 +41,19 @@ export function createFakeRpcClients(
       config.bytecode?.[address.toLowerCase()] ??
       config.bytecode?.[address] ??
       "0x",
+    getStorageAt: async ({
+      address,
+      slot,
+    }: {
+      address: Address;
+      slot: Hex;
+    }) => {
+      const key = `${address.toLowerCase()}:${slot.toLowerCase()}`;
+      return (
+        config.storage?.[key] ??
+        ("0x" + "0".repeat(64)) as Hex
+      );
+    },
     getBalance: async () => config.balance ?? 1n,
     sendRawTransaction: config.sendRawTransaction ?? (async () => txHash),
   } as unknown as PublicClient;

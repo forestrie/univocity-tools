@@ -17,11 +17,7 @@ export async function runDeployUupsFromRelease(
   const resolveRelease = deps?.resolveRelease ?? resolveReleaseInputs;
   const deployUups = deps?.deployUups ?? runDeployUups;
 
-  const resolved = await resolveRelease(
-    out,
-    options.fromRelease,
-    options,
-  );
+  const resolved = await resolveRelease(out, options.fromRelease, options);
 
   const { fromRelease: _tag, ...deployOptions } = options;
 

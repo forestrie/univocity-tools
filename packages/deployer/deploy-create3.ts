@@ -31,7 +31,10 @@ import {
   hasBytecodeAt,
   type RpcClients,
 } from "./rpc-client.js";
-import { readCreate3FromDeployManifest, pickManifestLoadOptions } from "./read-deploy-manifest.js";
+import {
+  readCreate3FromDeployManifest,
+  pickManifestLoadOptions,
+} from "./read-deploy-manifest.js";
 import { readFactoryBytecode } from "./read-factory-bytecode.js";
 
 const PROXY_POLL_MS = 500;

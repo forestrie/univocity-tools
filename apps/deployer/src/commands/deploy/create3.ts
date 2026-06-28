@@ -11,7 +11,10 @@ import {
   parseDeployCreate3Options,
 } from "@univocity-tools/deployer-common/options";
 import type { LooseParsedArgs } from "@univocity-tools/cli-kit";
-import { createOut, resolveVerbosity } from "@univocity-tools/cli-kit/reporting";
+import {
+  createOut,
+  resolveVerbosity,
+} from "@univocity-tools/cli-kit/reporting";
 
 export default defineDeployerCommand({
   meta: {

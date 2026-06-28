@@ -1,7 +1,5 @@
 import type { Out } from "@univocity-tools/cli-kit/reporting";
-import {
-  resolveReleaseInputs,
-} from "./deploy-imutable-from-release.js";
+import { resolveReleaseInputs } from "./deploy-imutable-from-release.js";
 import { runDeployCreate3 } from "./deploy-create3.js";
 import type { DeployCreate3FromReleaseOptions } from "./options.js";
 
@@ -19,11 +17,7 @@ export async function runDeployCreate3FromRelease(
   const resolveRelease = deps?.resolveRelease ?? resolveReleaseInputs;
   const deployCreate3 = deps?.deployCreate3 ?? runDeployCreate3;
 
-  const resolved = await resolveRelease(
-    out,
-    options.fromRelease,
-    options,
-  );
+  const resolved = await resolveRelease(out, options.fromRelease, options);
 
   const { fromRelease: _tag, ...deployOptions } = options;
 
