@@ -32,6 +32,16 @@ Env:
 | `VITE_DEFAULT_RPC_URL` | Receipt polling RPC |
 | `PUBLIC_E2E_PRIVY` | Set to `mock` for hermetic UI / future Playwright (no Privy network). Unset in production. |
 
+CI runs `bun run check:client-secrets` after `build` to ensure server-only env
+names never appear in `apps/deploy-web/dist`.
+
+### Bootstrap key custody
+
+Generated KS256 keys show the **private key** in-page; deploy is blocked until
+the operator checks “I have stored the bootstrap key material”. ES256 deploy
+requires the same acknowledgement when PEM material is present. The bootstrap
+signer is genesis-critical and may differ from the deploy wallet.
+
 ### Privy embedded wallet iframe
 
 `@privy-io/js-sdk-core` requires a **hidden Privy iframe** for embedded-wallet

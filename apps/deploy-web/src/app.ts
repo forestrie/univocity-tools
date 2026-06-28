@@ -18,6 +18,7 @@ import {
   type DeployResult,
 } from "./lib/deploy.js";
 import { fetchVerifiedManifest, verifyManifestFiles } from "./lib/manifest.js";
+import { bootstrapAckRequired } from "./lib/bootstrap-guards.js";
 import {
   getInjectedProvider,
   getPrivyEthereumProvider,
@@ -38,7 +39,9 @@ type AppState = {
   artifact: ImutableBytecode | null;
   bootstrapAlg: BootstrapAlg;
   ks256Signer: string;
+  ks256PrivateKey: string | null;
   es256Pem: string;
+  bootstrapBackedUp: boolean;
   chainId: number;
   rpcUrl: string;
   deployError: string | null;
@@ -55,7 +58,9 @@ const state: AppState = {
   artifact: null,
   bootstrapAlg: "ks256",
   ks256Signer: "",
+  ks256PrivateKey: null,
   es256Pem: "",
+  bootstrapBackedUp: false,
   chainId: getDefaultChainId(),
   rpcUrl: getDefaultRpcUrl(),
   deployError: null,
@@ -207,9 +212,14 @@ function setupDropZone(zone: HTMLElement): void {
 
 function renderBootstrap(): void {
   const section = el("bootstrap-section");
+  const ackRequired = bootstrapAckRequired({
+    bootstrapAlg: state.bootstrapAlg,
+    es256Pem: state.es256Pem,
+    ks256PrivateKey: state.ks256PrivateKey,
+  });
   section.innerHTML = `
     <h2>3. Bootstrap key (genesis-critical)</h2>
-    <p class="hint">KS256 is the default for independent roots. Store ES256 PEM safely if generated.</p>
+    <p class="hint">The bootstrap key is baked into genesis and is separate from your deploy wallet. Store it before deploying.</p>
     <label for="bootstrap-alg">Algorithm</label>
     <select id="bootstrap-alg">
       <option value="ks256" ${state.bootstrapAlg === "ks256" ? "selected" : ""}>KS256 (EOA signer)</option>
@@ -219,15 +229,34 @@ function renderBootstrap(): void {
     <div class="row">
       <button type="button" id="generate-bootstrap-btn">Generate ephemeral key</button>
     </div>
+    ${
+      ackRequired
+        ? `<div class="warning">
+            <p><strong>Save bootstrap material before deploy.</strong> Loss is unrecoverable after the contract is created.</p>
+            <label class="ack">
+              <input type="checkbox" id="bootstrap-acked" ${state.bootstrapBackedUp ? "checked" : ""} />
+              I have stored the bootstrap key material safely
+            </label>
+          </div>`
+        : ""
+    }
   `;
   const fields = section.querySelector("#bootstrap-fields")!;
   if (state.bootstrapAlg === "ks256") {
     fields.innerHTML = `
       <label for="ks256-signer">KS256 signer address</label>
       <input id="ks256-signer" value="${state.ks256Signer}" placeholder="0x…" />
+      ${
+        state.ks256PrivateKey
+          ? `<label for="ks256-private-key">Generated private key (save now)</label>
+             <textarea id="ks256-private-key" rows="2" readonly>${state.ks256PrivateKey}</textarea>`
+          : ""
+      }
     `;
     fields.querySelector("#ks256-signer")?.addEventListener("input", (e) => {
       state.ks256Signer = (e.target as HTMLInputElement).value.trim();
+      state.ks256PrivateKey = null;
+      state.bootstrapBackedUp = false;
     });
   } else {
     fields.innerHTML = `
@@ -236,10 +265,13 @@ function renderBootstrap(): void {
     `;
     fields.querySelector("#es256-pem")?.addEventListener("input", (e) => {
       state.es256Pem = (e.target as HTMLTextAreaElement).value;
+      state.bootstrapBackedUp = false;
     });
   }
   section.querySelector("#bootstrap-alg")?.addEventListener("change", (e) => {
     state.bootstrapAlg = (e.target as HTMLSelectElement).value as BootstrapAlg;
+    state.ks256PrivateKey = null;
+    state.bootstrapBackedUp = false;
     renderBootstrap();
   });
   section
@@ -247,15 +279,25 @@ function renderBootstrap(): void {
     ?.addEventListener("click", () => {
       void generateBootstrap();
     });
+  section.querySelector("#bootstrap-acked")?.addEventListener("change", (e) => {
+    state.bootstrapBackedUp = (e.target as HTMLInputElement).checked;
+    renderDeploy();
+  });
 }
 
 function renderDeploy(): void {
   const section = el("deploy-section");
+  const ackRequired = bootstrapAckRequired({
+    bootstrapAlg: state.bootstrapAlg,
+    es256Pem: state.es256Pem,
+    ks256PrivateKey: state.ks256PrivateKey,
+  });
   const canDeploy =
     state.walletAddress &&
     state.manifestLoaded &&
     state.artifact &&
-    !state.busy;
+    !state.busy &&
+    (!ackRequired || state.bootstrapBackedUp);
   section.innerHTML = `
     <h2>4. Deploy on chain</h2>
     <label for="chain-id">Chain ID</label>
@@ -360,13 +402,17 @@ async function loadManifestFromRelease(): Promise<void> {
 
 async function generateBootstrap(): Promise<void> {
   if (state.bootstrapAlg === "ks256") {
-    const { address } = generateKs256BootstrapKey();
+    const { address, privateKey } = generateKs256BootstrapKey();
     state.ks256Signer = address;
+    state.ks256PrivateKey = privateKey;
   } else {
     const { pem } = await generateEs256BootstrapKey();
     state.es256Pem = pem;
+    state.ks256PrivateKey = null;
   }
+  state.bootstrapBackedUp = false;
   renderBootstrap();
+  renderDeploy();
 }
 
 async function runDeploy(): Promise<void> {
@@ -406,4 +452,4 @@ async function runDeploy(): Promise<void> {
   }
 }
 
-export { buildDeploymentTxData, state as appStateForTests };
+export { buildDeploymentTxData, bootstrapAckRequired, state as appStateForTests };

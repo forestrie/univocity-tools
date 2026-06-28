@@ -119,6 +119,27 @@ button:disabled {
   margin: 0 0 0.75rem;
 }
 
+.warning {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.warning .ack {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+textarea[readonly] {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+}
+
 pre {
   background: #0b1220;
   padding: 0.75rem;
