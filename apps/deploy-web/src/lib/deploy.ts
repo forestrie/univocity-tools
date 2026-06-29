@@ -6,8 +6,9 @@ import {
   type GenesisBinding,
   type ImutableBytecode,
 } from "@univocity-tools/deploy-core";
-import type { Address, Hex } from "viem";
+import { isHex, type Address, type Hex } from "viem";
 import type { EthereumProvider } from "./privy.js";
+import { resolveDeployAccount } from "./wallet-accounts.js";
 import { ensureWalletChain } from "./wallet-chain.js";
 
 export {
@@ -17,6 +18,8 @@ export {
 
 export type DeployParams = {
   provider: EthereumProvider;
+  /** Connected wallet; avoids empty eth_accounts on injected providers. */
+  from?: Address | string | null;
   chainId: number;
   rpcUrl: string;
   artifact: ImutableBytecode;
@@ -33,31 +36,25 @@ export async function buildDeploymentTxData(
   artifact: ImutableBytecode,
   bootstrap: BootstrapKeyInput,
 ): Promise<{ deploymentData: Hex; bootstrapAlg: BootstrapAlg }> {
+  const bytecode = artifact.bytecode;
+  if (typeof bytecode !== "string" || !isHex(bytecode) || bytecode === "0x") {
+    throw new Error(
+      "manifest bytecode is missing — fetch and verify the release manifest again",
+    );
+  }
   const resolved = await resolveBootstrapKey(bootstrap);
   const deploymentData = buildImutableDeploymentData(
-    artifact.bytecode,
+    bytecode,
     resolved.algId,
     resolved.key,
   );
   return { deploymentData, bootstrapAlg: resolved.alg };
 }
 
-async function getDeployAccount(provider: EthereumProvider): Promise<Address> {
-  const accounts = (await provider.request({
-    method: "eth_accounts",
-  })) as string[];
-  const account = accounts[0];
-  if (account === undefined || account.length === 0) {
-    throw new Error("wallet has no account");
-  }
-  return account as Address;
-}
-
 /** Send a contract-creation transaction via EIP-1193 (avoids viem Buffer usage). */
 export async function sendContractCreationTx(
   provider: EthereumProvider,
   from: Address,
-  chainId: number,
   data: Hex,
 ): Promise<Hex> {
   const hash = await provider.request({
@@ -67,7 +64,6 @@ export async function sendContractCreationTx(
         from,
         data,
         value: "0x0",
-        chainId: `0x${chainId.toString(16)}`,
       },
     ],
   });
@@ -85,11 +81,10 @@ export async function deployImutableContract(
     params.artifact,
     params.bootstrap,
   );
-  const account = await getDeployAccount(params.provider);
+  const account = await resolveDeployAccount(params.provider, params.from);
   const hash = await sendContractCreationTx(
     params.provider,
     account,
-    params.chainId,
     deploymentData,
   );
   const receipt = await waitForReceipt(params.rpcUrl, hash);

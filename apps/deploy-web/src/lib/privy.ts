@@ -10,6 +10,7 @@ import {
   MOCK_E2E_WALLET_ADDRESS,
   createMockEthereumProvider,
 } from "./privy/mock-ethereum-provider.js";
+import { normalizeEthereumAccounts } from "./wallet-accounts.js";
 
 export type EthereumProvider = {
   request(args: { method: string; params?: unknown[] }): Promise<unknown>;
@@ -175,8 +176,13 @@ export async function requestInjectedAccounts(): Promise<string[]> {
   if (!provider) {
     throw new Error("No injected wallet found (install MetaMask or similar)");
   }
-  const accounts = (await provider.request({
-    method: "eth_requestAccounts",
-  })) as string[];
+  const accounts = normalizeEthereumAccounts(
+    await provider.request({
+      method: "eth_requestAccounts",
+    }),
+  );
+  if (accounts.length === 0) {
+    throw new Error("wallet did not return an account");
+  }
   return accounts;
 }
