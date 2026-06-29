@@ -24,6 +24,7 @@ import {
 } from "./create3-deploy-helpers.js";
 import {
   DEFAULT_CREATE_CALL,
+  DEFAULT_RELEASE_TAG,
   DEFAULT_SAFE_TX_SERVICE_URL,
 } from "./deploy-constants.js";
 import {
@@ -182,11 +183,7 @@ export function parseDeployCreate3FromReleaseOptions(
   args: LooseParsedArgs,
 ): DeployCreate3FromReleaseOptions {
   const base = parseDeployCreate3Options(args);
-  const fromRelease = readOption(args, "from-release", "FROM_RELEASE");
-  if (fromRelease === undefined) {
-    throw new Error("--from-release (or FROM_RELEASE) is required");
-  }
-  return { ...base, fromRelease };
+  return { ...base, fromRelease: resolveFromRelease(args) };
 }
 
 export type DeployUupsOptions = DeployerCommonOptions & {
@@ -288,11 +285,10 @@ export function parseDeployUupsFromReleaseOptions(
   args: LooseParsedArgs,
 ): DeployUupsFromReleaseOptions {
   const base = parseDeployUupsOptions(args);
-  const fromRelease = readOption(args, "from-release", "FROM_RELEASE");
-  if (fromRelease === undefined) {
-    throw new Error("--from-release (or FROM_RELEASE) is required");
-  }
-  const options: DeployUupsFromReleaseOptions = { ...base, fromRelease };
+  const options: DeployUupsFromReleaseOptions = {
+    ...base,
+    fromRelease: resolveFromRelease(args),
+  };
   const manifestOut = readOption(args, "deployment-manifest-out");
   if (manifestOut !== undefined) {
     options.deploymentManifestOut = manifestOut;
@@ -318,6 +314,13 @@ export function parseDeployUupsPredictOptions(
   const rpcUrl = resolveOptionalRpcUrl(args as RpcArgSlice);
   if (rpcUrl !== undefined) options.rpcUrl = rpcUrl;
   return options;
+}
+
+/** Release tag for --from-release (flag, FROM_RELEASE, or {@link DEFAULT_RELEASE_TAG}). */
+function resolveFromRelease(args: LooseParsedArgs): string {
+  return (
+    readOption(args, "from-release", "FROM_RELEASE") ?? DEFAULT_RELEASE_TAG
+  );
 }
 
 /**
@@ -553,13 +556,9 @@ export function parseDeployImutableFromReleaseOptions(
   args: LooseParsedArgs,
 ): DeployImutableFromReleaseOptions {
   const base = parseProposeImutableOptions(args);
-  const fromRelease = readOption(args, "from-release", "FROM_RELEASE");
-  if (fromRelease === undefined) {
-    throw new Error("--from-release (or FROM_RELEASE) is required");
-  }
   const options: DeployImutableFromReleaseOptions = {
     ...base,
-    fromRelease,
+    fromRelease: resolveFromRelease(args),
   };
   const manifestOut = readOption(args, "deployment-manifest-out");
   if (manifestOut !== undefined) {

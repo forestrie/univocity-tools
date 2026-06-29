@@ -1,5 +1,6 @@
 import {
   defineDeployerCommand,
+  fromReleaseArgs,
   withDeployerArgs,
 } from "@univocity-tools/deployer-common";
 import {
@@ -23,12 +24,7 @@ export default defineDeployerCommand({
       "Deploy the shared CREATE3 factory via Arachnid if not already deployed",
   },
   args: withDeployerArgs({
-    "from-release": {
-      type: "string",
-      description:
-        "Univocity release tag to fetch (deploy-manifest preferred; env: FROM_RELEASE)",
-      valueHint: "tag",
-    },
+    ...fromReleaseArgs,
     "create3-salt": {
       type: "string",
       description:

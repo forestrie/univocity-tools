@@ -1,6 +1,7 @@
 import {
   defineDeployerCommand,
   defineCommandRunner,
+  fromReleaseArgs,
   withDeployerArgs,
 } from "@univocity-tools/deployer-common";
 import { runDeployImutableFromRelease } from "@univocity-tools/deployer-common/main";
@@ -13,13 +14,7 @@ export default defineDeployerCommand({
       "One-shot EOA deploy of ImutableUnivocity from a Univocity GitHub release",
   },
   args: withDeployerArgs({
-    "from-release": {
-      type: "string",
-      description:
-        "Univocity release tag to fetch (deploy-manifest preferred, else " +
-        "build archive; env: FROM_RELEASE)",
-      valueHint: "tag",
-    },
+    ...fromReleaseArgs,
     "deployment-manifest-out": {
       type: "string",
       description:
