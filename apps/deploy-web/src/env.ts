@@ -1,5 +1,6 @@
 /** Vite public env (no secrets). */
 
+import { DEFAULT_RELEASE_TAG } from "@univocity-tools/deploy-core";
 import { getDefaultDeployChain } from "./lib/supported-deploy-chains.js";
 
 /** Hermetic E2E / Playwright — deterministic mock Privy (mandate plan-0047 convention). */
@@ -12,7 +13,9 @@ export function isE2ePrivyMock(): boolean {
 }
 
 export function getDefaultReleaseTag(): string {
-  return import.meta.env.VITE_DEFAULT_RELEASE_TAG?.trim() || "v0.1.4";
+  return (
+    import.meta.env.VITE_DEFAULT_RELEASE_TAG?.trim() || DEFAULT_RELEASE_TAG
+  );
 }
 
 /** Shared Forestrie testing Privy app (client-safe app id only). */

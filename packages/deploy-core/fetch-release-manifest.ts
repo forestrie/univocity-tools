@@ -1,5 +1,5 @@
 import { univocityManifestUrls } from "./manifest-verify.js";
-import { normalizeUnivocityReleaseTag } from "./release-tag.js";
+import { resolveUnivocityReleaseTag } from "./resolve-release-tag.js";
 
 export type FetchedReleaseManifest = {
   releaseTag: string;
@@ -30,7 +30,7 @@ export async function fetchUnivocityReleaseManifest(
   releaseTagInput: string,
   options: FetchUnivocityReleaseManifestOptions = {},
 ): Promise<FetchedReleaseManifest> {
-  const releaseTag = normalizeUnivocityReleaseTag(releaseTagInput);
+  const releaseTag = await resolveUnivocityReleaseTag(releaseTagInput);
   const { manifestUrl, sidecarUrl } = univocityManifestUrls(
     releaseTag,
     options.releasesBase,

@@ -27,7 +27,7 @@ Env:
 | `TESTING_PRIVY_APP_ID` | Shared Forestrie testing Privy app id (public; safe in client bundle) |
 | `TESTING_PRIVY_CLIENT_ID` | Optional Privy client id |
 | `TESTING_PRIVY_APP_SECRET` | Server-side only — **not** used by deploy-web; keep out of Vite |
-| `VITE_DEFAULT_RELEASE_TAG` | Default manifest tag (`v0.1.4`) |
+| `VITE_DEFAULT_RELEASE_TAG` | Default manifest tag (`latest` → newest GitHub release) |
 | `VITE_DEFAULT_CHAIN_ID` | Default chain (`84532`) |
 | `VITE_DEFAULT_RPC_URL` | Receipt polling RPC |
 | `PUBLIC_E2E_PRIVY` | Set to `mock` for hermetic UI / future Playwright (no Privy network). Unset in production. |

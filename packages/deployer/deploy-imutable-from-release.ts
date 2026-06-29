@@ -1,8 +1,10 @@
 import type { Out } from "@univocity-tools/cli-kit/reporting";
 import { runArchiveExtract } from "@univocity-tools/contract-artefacts-common/main";
+import { isLatestReleaseTag } from "@univocity-tools/deploy-core";
 import {
   createGithubClient,
   DEFAULT_AUTH_KIND,
+  getLatestRelease,
   getReleaseByTag,
   resolveGithubToken,
   type GithubClient,
@@ -140,7 +142,9 @@ export async function resolveReleaseInputs(
       repo: DEFAULT_GITHUB_REPO,
       token: await resolveGithubToken(out, DEFAULT_AUTH_KIND),
     });
-  const release = await getReleaseByTag(githubClient, releaseTag);
+  const release = isLatestReleaseTag(releaseTag)
+    ? await getLatestRelease(githubClient)
+    : await getReleaseByTag(githubClient, releaseTag);
   out.print("Resolved release %s", release.tag_name);
 
   const tempDir = await fs.mkdtemp(

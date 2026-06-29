@@ -9,3 +9,4 @@ export * from "./encoding.js";
 export * from "./imutable-deploy-data.js";
 export * from "./manifest-verify.js";
 export * from "./release-tag.js";
+export * from "./resolve-release-tag.js";
