@@ -135,6 +135,19 @@ describe("buildDeploymentTxData", () => {
     expect(bootstrapAlg).toBe("ks256");
     expect(deploymentData.startsWith("0x6001")).toBe(true);
   });
+
+  test("rejects manifest artifact without bytecode", async () => {
+    const { buildDeploymentTxData } = await import("../src/lib/deploy.js");
+    await expect(
+      buildDeploymentTxData(
+        { bytecode: undefined as unknown as `0x${string}` },
+        {
+          alg: "ks256",
+          signer: "0x1528b86ff561f617602356efdbD05908a07AA788",
+        },
+      ),
+    ).rejects.toThrow("manifest bytecode is missing");
+  });
 });
 
 describe("assertWalletChainMatches", () => {
@@ -197,6 +210,7 @@ describe("deployImutableContract", () => {
 
     const result = await deployImutableContract({
       provider,
+      from: "0x1528b86ff561f617602356efdbD05908a07AA788",
       chainId: 84532,
       rpcUrl: "http://localhost:8545",
       artifact,
@@ -207,6 +221,51 @@ describe("deployImutableContract", () => {
     });
     expect(chainHex).toBe("0x14a34");
     expect(result.genesis.chainId).toBe(84532);
+  });
+
+  test("deploys with connected from when eth_accounts is empty (MetaMask)", async () => {
+    const { deployImutableContract } = await import("../src/lib/deploy.js");
+    const { artifact } = await verifyAndParseImutableManifest(FIXTURE);
+    const from = "0x1528b86ff561f617602356efdbD05908a07AA788";
+    const sendTransaction = vi.fn().mockResolvedValue("0x" + "ab".repeat(32));
+    const provider = {
+      request: vi.fn(
+        async ({ method, params }: { method: string; params?: unknown[] }) => {
+          if (method === "eth_accounts") {
+            return [];
+          }
+          if (method === "eth_sendTransaction") {
+            const tx = params?.[0] as { from?: string; data?: string };
+            expect(tx.from).toBe(from);
+            expect(tx.data?.startsWith("0x")).toBe(true);
+            return sendTransaction();
+          }
+          if (method === "eth_chainId") {
+            return "0x14a34";
+          }
+          return null;
+        },
+      ),
+    };
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        result: {
+          contractAddress: "0x" + "11".repeat(20),
+        },
+      }),
+    }) as unknown as typeof fetch;
+
+    const result = await deployImutableContract({
+      provider,
+      from,
+      chainId: 84532,
+      rpcUrl: "http://localhost:8545",
+      artifact,
+      bootstrap: { alg: "ks256", signer: from },
+    });
+    expect(result.genesis.bootstrapAlg).toBe("ks256");
+    expect(sendTransaction).toHaveBeenCalled();
   });
 
   test("sends contract creation tx via mock provider", async () => {
@@ -243,6 +302,7 @@ describe("deployImutableContract", () => {
 
     const result = await deployImutableContract({
       provider,
+      from: "0x1528b86ff561f617602356efdbD05908a07AA788",
       chainId: 84532,
       rpcUrl: "http://localhost:8545",
       artifact,

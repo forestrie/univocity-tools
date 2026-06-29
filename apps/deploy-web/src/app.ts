@@ -460,6 +460,17 @@ async function generateBootstrap(): Promise<void> {
   renderDeploy();
 }
 
+function resolveKs256BootstrapSigner(): string {
+  const typed = state.ks256Signer.trim();
+  if (typed.length > 0) {
+    return typed;
+  }
+  if (!state.walletAddress) {
+    throw new Error("connect a wallet or enter a KS256 signer address");
+  }
+  return state.walletAddress;
+}
+
 async function runDeploy(): Promise<void> {
   if (!state.artifact || !state.walletAddress) {
     return;
@@ -479,11 +490,12 @@ async function runDeploy(): Promise<void> {
       state.bootstrapAlg === "ks256"
         ? {
             alg: "ks256" as const,
-            signer: state.ks256Signer || state.walletAddress,
+            signer: resolveKs256BootstrapSigner(),
           }
         : { alg: "es256" as const, pem: state.es256Pem };
     state.deployResult = await deployImutableContract({
       provider,
+      from: state.walletAddress,
       chainId: state.chainId,
       rpcUrl: state.rpcUrl,
       artifact: state.artifact,
