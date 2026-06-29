@@ -10,6 +10,7 @@ import { runDeployCreate3 } from "../deploy-create3.js";
 import { runDeployUups } from "../deploy-uups.js";
 import {
   parseDeployCreate3Options,
+  parseDeployUupsFromReleaseOptions,
   parseDeployUupsOptions,
 } from "../options.js";
 import { createFakeRpcClients } from "./helpers/fake-rpc-clients.js";
@@ -119,5 +120,19 @@ describe("runDeployUups", () => {
     expect(txCount).toBe(2);
     expect(result.proxy.toLowerCase()).toBe(proxy);
     expect(result.implementation.toLowerCase()).toBe(IMPL.toLowerCase());
+  });
+});
+
+describe("parseDeployUupsFromReleaseOptions", () => {
+  test("defaults from-release to latest when omitted", () => {
+    const options = parseDeployUupsFromReleaseOptions({
+      "source-root": ROOT,
+      "deploy-key": KEY_A,
+      "rpc-url": "http://127.0.0.1:8545",
+      "upgrade-admin": OWNER,
+      "bootstrap-alg": "ks256",
+      "bootstrap-ks256-signer": OWNER,
+    });
+    expect(options.fromRelease).toBe("latest");
   });
 });

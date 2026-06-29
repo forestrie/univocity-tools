@@ -9,7 +9,19 @@ import { create3Args } from "@univocity-tools/create3-options/commoncli";
 import { foundryBinArgs } from "@univocity-tools/foundry-exec/commoncli";
 import { forgeArgs } from "@univocity-tools/forge-options/commoncli";
 import type { ArgsDef, CommandDef } from "citty";
+import { DEFAULT_RELEASE_TAG } from "./deploy-constants.js";
 import { signerArgs } from "./signer-options.js";
+
+/** Shared `--from-release` flag for deploy commands that fetch GitHub releases. */
+export const fromReleaseArgs = {
+  "from-release": {
+    type: "string",
+    description:
+      `Univocity release tag to fetch (default: ${DEFAULT_RELEASE_TAG}; ` +
+      "env: FROM_RELEASE)",
+    valueHint: "tag",
+  },
+} as const satisfies ArgsDef;
 
 const deployerOnlyArgs = {
   "rpc-url": {

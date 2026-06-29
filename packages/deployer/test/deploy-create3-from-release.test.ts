@@ -173,13 +173,12 @@ describe("runDeployCreate3FromRelease", () => {
 });
 
 describe("parseDeployCreate3FromReleaseOptions", () => {
-  test("requires from-release", () => {
-    expect(() =>
-      parseDeployCreate3FromReleaseOptions({
-        "source-root": ROOT,
-        "deploy-key": KEY_A,
-        "rpc-url": "http://127.0.0.1:8545",
-      }),
-    ).toThrow("--from-release");
+  test("defaults from-release to latest when omitted", () => {
+    const options = parseDeployCreate3FromReleaseOptions({
+      "source-root": ROOT,
+      "deploy-key": KEY_A,
+      "rpc-url": "http://127.0.0.1:8545",
+    });
+    expect(options.fromRelease).toBe("latest");
   });
 });

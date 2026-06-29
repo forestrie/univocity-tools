@@ -344,14 +344,13 @@ describe("runDeployImutableFromRelease", () => {
 });
 
 describe("parseDeployImutableFromReleaseOptions", () => {
-  test("requires from-release", () => {
-    expect(() =>
-      parseDeployImutableFromReleaseOptions({
-        "source-root": ROOT,
-        "bootstrap-alg": "ks256",
-        "bootstrap-ks256-signer": OWNER,
-        "deploy-key": KEY_A,
-      }),
-    ).toThrow("--from-release");
+  test("defaults from-release to latest when omitted", () => {
+    const options = parseDeployImutableFromReleaseOptions({
+      "source-root": ROOT,
+      "bootstrap-alg": "ks256",
+      "bootstrap-ks256-signer": OWNER,
+      "deploy-key": KEY_A,
+    });
+    expect(options.fromRelease).toBe("latest");
   });
 });

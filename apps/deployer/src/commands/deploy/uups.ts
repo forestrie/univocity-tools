@@ -1,5 +1,6 @@
 import {
   defineDeployerCommand,
+  fromReleaseArgs,
   withDeployerArgs,
 } from "@univocity-tools/deployer-common";
 import {
@@ -22,12 +23,7 @@ export default defineDeployerCommand({
     description: "Deploy UUPSUnivocity proxy via CREATE3 (foundry-free)",
   },
   args: withDeployerArgs({
-    "from-release": {
-      type: "string",
-      description:
-        "Univocity release tag to fetch (deploy-manifest preferred; env: FROM_RELEASE)",
-      valueHint: "tag",
-    },
+    ...fromReleaseArgs,
     "proxy-salt": {
       type: "string",
       description:
