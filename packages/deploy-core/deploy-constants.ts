@@ -30,9 +30,11 @@ export const DEFAULT_SAFE_TX_SERVICE_URL =
 /** `bytes4(keccak256("performCreate2(uint256,bytes,bytes32)"))`. */
 export const PERFORM_CREATE2_SELECTOR = "0x4847be6f";
 
-/** Default Univocity release tag for deploy-manifest fetch. */
-export const DEFAULT_RELEASE_TAG = "v0.1.4";
+/** Default Univocity release tag for deploy-manifest fetch (`latest` → GitHub). */
+export const DEFAULT_RELEASE_TAG = "latest";
 
 /** GitHub org/repo for Univocity contract releases. */
-export const UNIVOCITY_RELEASES_BASE =
-  "https://github.com/forestrie/univocity/releases/download";
+export const UNIVOCITY_GITHUB_ORG = "forestrie";
+export const UNIVOCITY_GITHUB_REPO = "univocity";
+
+export const UNIVOCITY_RELEASES_BASE = `https://github.com/${UNIVOCITY_GITHUB_ORG}/${UNIVOCITY_GITHUB_REPO}/releases/download`;

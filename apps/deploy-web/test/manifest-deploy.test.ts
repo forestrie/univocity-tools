@@ -27,6 +27,35 @@ describe("fetchVerifiedManifest", () => {
     vi.restoreAllMocks();
   });
 
+  test("fetches and verifies manifest via same-origin API for latest", async () => {
+    const manifest = FIXTURE.replace(
+      '"releaseId": "v0.4.0-fixture"',
+      '"releaseId": "v0.1.5"',
+    );
+    const bytes = new TextEncoder().encode(manifest);
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const hex = [...new Uint8Array(digest)]
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    const sidecar = `${hex}  deploy-manifest-v0.1.5.json\n`;
+
+    globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+      expect(String(input)).toBe("/api/manifest/latest");
+      return new Response(
+        JSON.stringify({
+          releaseTag: "v0.1.5",
+          raw: manifest,
+          sidecar,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const result = await fetchVerifiedManifest("latest");
+    expect(result.releaseTag).toBe("v0.1.5");
+    expect(result.artifact.bytecode).toBe("0x6001");
+  });
+
   test("fetches and verifies manifest via same-origin API for v0.1.4", async () => {
     const manifest = FIXTURE.replace(
       '"releaseId": "v0.4.0-fixture"',
