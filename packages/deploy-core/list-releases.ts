@@ -1,32 +1,10 @@
-import { access, readFile } from "node:fs/promises";
-import path from "node:path";
 import type { ContractRelease } from "./contract-release.js";
 
 export type { ContractRelease } from "./contract-release.js";
 
-export type ListContractReleasesOptions = {
-  /** Univocity contracts checkout; reads `deployment.json` when present. */
-  univocityRoot?: string | undefined;
-  /** Override catalog JSON path (tests and explicit callers). */
-  catalogPath?: string | undefined;
-};
-
-const DEFAULT_CATALOG = path.join(
-  import.meta.dirname,
-  "fixtures/contract-releases.json",
-);
-
 type DeploymentJson = {
   releases?: ContractRelease[];
 };
-
-function parseCatalogJson(raw: string): ContractRelease[] {
-  const parsed: unknown = JSON.parse(raw);
-  if (!Array.isArray(parsed)) {
-    throw new Error("contract releases catalog must be a JSON array");
-  }
-  return parsed.map(normalizeReleaseEntry);
-}
 
 function normalizeReleaseEntry(entry: unknown): ContractRelease {
   if (entry === null || typeof entry !== "object") {
@@ -53,51 +31,25 @@ function normalizeReleaseEntry(entry: unknown): ContractRelease {
   return release;
 }
 
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function resolveCatalogPath(
-  options: ListContractReleasesOptions,
-): Promise<string> {
-  if (options.catalogPath !== undefined) {
-    return options.catalogPath;
-  }
-  if (options.univocityRoot !== undefined) {
-    const deploymentPath = path.join(options.univocityRoot, "deployment.json");
-    if (await fileExists(deploymentPath)) {
-      return deploymentPath;
-    }
-  }
-  return DEFAULT_CATALOG;
-}
-
-/** List published contract releases and optional bootstrap addresses. */
-export async function listContractReleases(
-  options: ListContractReleasesOptions = {},
-): Promise<ContractRelease[]> {
-  const catalogPath = await resolveCatalogPath(options);
-  const raw = await readFile(catalogPath, "utf8");
+/** Parse a contract releases catalog JSON array. */
+export function parseContractReleasesCatalog(raw: string): ContractRelease[] {
   const parsed: unknown = JSON.parse(raw);
-
-  if (
-    options.catalogPath === undefined &&
-    options.univocityRoot !== undefined &&
-    catalogPath.endsWith("deployment.json") &&
-    parsed !== null &&
-    typeof parsed === "object" &&
-    !Array.isArray(parsed)
-  ) {
-    const deployment = parsed as DeploymentJson;
-    if (Array.isArray(deployment.releases)) {
-      return deployment.releases.map(normalizeReleaseEntry);
-    }
+  if (!Array.isArray(parsed)) {
+    throw new Error("contract releases catalog must be a JSON array");
   }
+  return parsed.map(normalizeReleaseEntry);
+}
 
-  return parseCatalogJson(raw);
+/** Read `releases` from a parsed `deployment.json` object when present. */
+export function parseReleasesFromDeploymentJson(
+  parsed: unknown,
+): ContractRelease[] | undefined {
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return undefined;
+  }
+  const deployment = parsed as DeploymentJson;
+  if (!Array.isArray(deployment.releases)) {
+    return undefined;
+  }
+  return deployment.releases.map(normalizeReleaseEntry);
 }

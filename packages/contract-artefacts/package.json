@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@univocity-tools/cli-kit": "workspace:*",
+    "@univocity-tools/deploy-core": "workspace:*",
     "@univocity-tools/foundry-artefacts": "workspace:*",
     "@univocity-tools/foundry-exec": "workspace:*",
     "@univocity-tools/github-api": "workspace:*",

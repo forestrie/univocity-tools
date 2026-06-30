@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "univocity-tools",
@@ -61,6 +62,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@univocity-tools/cli-kit": "workspace:*",
+        "@univocity-tools/deploy-core": "workspace:*",
         "@univocity-tools/forge-options": "workspace:*",
         "@univocity-tools/foundry-artefacts": "workspace:*",
         "@univocity-tools/foundry-exec": "workspace:*",
