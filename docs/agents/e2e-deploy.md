@@ -135,3 +135,17 @@ Checklist:
    request with `univocityAddr` from genesis JSON.
 
 See [deploy-web.md](./deploy-web.md) for env vars and CI deploy workflow.
+
+## Tier T4 — list-releases confidence (schedule / dispatch)
+
+**Test:** `packages/contract-artefacts/test/e2e/list-releases.confidence.test.ts`
+
+Hermetic confidence for `contract-artefacts list-releases` and
+`@univocity-tools/deploy-core` catalog parsing. Asserts stdout JSON matches the
+committed fixture shape and that `deployment.json` `releases` entries round-trip
+through `listContractReleases`. **Not** gated on every PR — run via the
+`confidence-t4` workflow (`workflow_dispatch` or weekly schedule).
+
+```bash
+bun test packages/contract-artefacts/test/e2e/list-releases.confidence.test.ts
+```

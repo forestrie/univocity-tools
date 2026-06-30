@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "v1",
+  "shared": {
+    "arachnid": {
+      "proxy": "0x4e59b44847b379578588920cA78FbF26c0B4956C"
+    }
+  },
+  "environments": {
+    "dev": {
+      "deployerAddress": "0x0000000000000000000000000000000000000001",
+      "contracts": {}
+    }
+  },
+  "releases": [
+    {
+      "version": "v0.1.4",
+      "es256Address": "0x7A4E8ad88D6Df29FEBEc0d546d148Ed4bea8Cb94"
+    }
+  ]
+}
