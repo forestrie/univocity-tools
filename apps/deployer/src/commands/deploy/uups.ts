@@ -20,7 +20,10 @@ import {
 export default defineDeployerCommand({
   meta: {
     name: "uups",
-    description: "Deploy UUPSUnivocity proxy via CREATE3 (foundry-free)",
+    description:
+      "Deploy UUPSUnivocity proxy via CREATE3 (foundry-free). " +
+      "Breaking change (ADR-0042): omitting --log-id mints a UUID and " +
+      "counterfactual salt; legacy …/UUPSUnivocity/0 via --proxy-salt.",
   },
   args: withDeployerArgs({
     ...fromReleaseArgs,

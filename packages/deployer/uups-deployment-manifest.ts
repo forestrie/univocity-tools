@@ -12,6 +12,10 @@ export type UupsDeploymentManifest = {
   upgradeAdmin: Address;
   bootstrapAlg: string;
   releaseTag?: string;
+  /** SHA-256 of on-chain implementation runtime bytecode (see ADR-0010). */
+  implementationBytecodeSha256?: string;
+  /** SHA-256 of release UUPSUnivocity creationBytecode at deploy time. */
+  releaseUupsBytecodeSha256?: string;
 };
 
 export function parseUupsDeploymentManifestJson(

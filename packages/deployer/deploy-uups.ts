@@ -1,6 +1,7 @@
 import type { Out } from "@univocity-tools/cli-kit/reporting";
 import {
   buildErc1967ProxyCreationCode,
+  bytecodeSha256,
   encodeFactoryDeployCalldata,
   encodeUupsInitializeData,
   hashProxySaltString,
@@ -44,12 +45,18 @@ export type DeployUupsRunDeps = {
   clients?: ReturnType<typeof createRpcClients>;
 };
 
+type UupsDeploymentDigestFields = {
+  implementationBytecodeSha256?: string;
+  releaseUupsBytecodeSha256?: string;
+};
+
 function buildUupsDeploymentManifest(
   options: DeployUupsOptions,
   deployer: Address,
   chainId: number,
   proxy: Address,
   implementation: Address,
+  digests?: UupsDeploymentDigestFields,
 ): UupsDeploymentManifest {
   return {
     kind: "uups-deployment",
@@ -65,11 +72,29 @@ function buildUupsDeploymentManifest(
     ...(options.expectedReleaseId !== undefined
       ? { releaseTag: options.expectedReleaseId }
       : {}),
+    ...(digests?.implementationBytecodeSha256 !== undefined
+      ? { implementationBytecodeSha256: digests.implementationBytecodeSha256 }
+      : {}),
+    ...(digests?.releaseUupsBytecodeSha256 !== undefined
+      ? { releaseUupsBytecodeSha256: digests.releaseUupsBytecodeSha256 }
+      : {}),
   };
+}
+
+async function readImplementationBytecodeSha256(
+  publicClient: ReturnType<typeof createRpcClients>["publicClient"],
+  implementation: Address,
+): Promise<string> {
+  const code = await publicClient.getBytecode({ address: implementation });
+  if (!code || code === "0x") {
+    throw new Error(`no bytecode at implementation ${implementation}`);
+  }
+  return bytecodeSha256(code);
 }
 
 async function loadUupsArtifacts(options: DeployUupsOptions): Promise<{
   uupsImplBytecode: Hex;
+  uupsCreationBytecodeSha256?: string;
   erc1967ProxyBytecode: Hex;
   initializeAbi: readonly unknown[];
 }> {
@@ -84,7 +109,12 @@ async function loadUupsArtifacts(options: DeployUupsOptions): Promise<{
       options.fromManifest,
       manifestLoadOptions,
     );
-    return loaded;
+    return {
+      uupsImplBytecode: loaded.uupsImplBytecode,
+      uupsCreationBytecodeSha256: loaded.uupsCreationBytecodeSha256,
+      erc1967ProxyBytecode: loaded.erc1967ProxyBytecode,
+      initializeAbi: loaded.initializeAbi,
+    };
   }
   if (options.releaseRoot !== undefined) {
     return readUupsArtifactsFromReleaseRoot(options.releaseRoot);
@@ -136,12 +166,22 @@ export async function runDeployUups(
       implementation,
     );
     const chainId = await publicClient.getChainId();
+    const implementationBytecodeSha256 = await readImplementationBytecodeSha256(
+      publicClient,
+      implementation,
+    );
     return buildUupsDeploymentManifest(
       options,
       account.address,
       chainId,
       predictedProxy,
       implementation,
+      {
+        implementationBytecodeSha256,
+        ...(artifacts.uupsCreationBytecodeSha256 !== undefined
+          ? { releaseUupsBytecodeSha256: artifacts.uupsCreationBytecodeSha256 }
+          : {}),
+      },
     );
   }
 
@@ -208,12 +248,22 @@ export async function runDeployUups(
   }
 
   const chainId = await publicClient.getChainId();
+  const implementationBytecodeSha256 = await readImplementationBytecodeSha256(
+    publicClient,
+    implementation,
+  );
   const manifest = buildUupsDeploymentManifest(
     options,
     account.address,
     chainId,
     predictedProxy,
     implementation,
+    {
+      implementationBytecodeSha256,
+      ...(artifacts.uupsCreationBytecodeSha256 !== undefined
+        ? { releaseUupsBytecodeSha256: artifacts.uupsCreationBytecodeSha256 }
+        : {}),
+    },
   );
   out.out("UUPSUnivocity proxy deployed at %s", predictedProxy);
   return manifest;

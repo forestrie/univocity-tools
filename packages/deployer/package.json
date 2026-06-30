@@ -23,6 +23,7 @@
     "@univocity-tools/github-api": "workspace:*",
     "@univocity-tools/git-options": "workspace:*",
     "viem": "^2.31.0",
-    "citty": "^0.2.2"
+    "citty": "^0.2.2",
+    "cbor-x": "^1.6.0"
   }
 }

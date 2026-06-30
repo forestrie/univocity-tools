@@ -53,10 +53,12 @@ describe("runDeployUups", () => {
     const factory = options.create3.factory.toLowerCase();
     const implSlot =
       "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
+    const impl = IMPL.toLowerCase();
     const clients = createFakeRpcClients({
       bytecode: {
         [factory]: "0x6001",
         [predicted.toLowerCase()]: "0x6001",
+        [impl]: "0x6001",
       },
       storage: {
         [`${predicted.toLowerCase()}:${implSlot}`]: `0x000000000000000000000000${IMPL.slice(2)}`,
@@ -98,8 +100,9 @@ describe("runDeployUups", () => {
     const factory = options.create3.factory.toLowerCase();
     const proxy = predicted.toLowerCase();
     let txCount = 0;
+    const impl = IMPL.toLowerCase();
     const clients = createFakeRpcClients({
-      bytecode: { [factory]: "0x6001", [proxy]: "0x" },
+      bytecode: { [factory]: "0x6001", [proxy]: "0x", [impl]: "0x6001" },
       contractAddress: IMPL,
     });
     clients.walletClient.sendTransaction = async () => {

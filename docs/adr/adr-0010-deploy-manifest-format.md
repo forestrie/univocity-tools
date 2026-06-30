@@ -131,7 +131,9 @@ corresponding forge artifact in the release archive.
   "implementation": "0x…",
   "upgradeAdmin": "0x…",
   "bootstrapAlg": "ks256",
-  "releaseTag": "v0.6.0"
+  "releaseTag": "v0.6.0",
+  "implementationBytecodeSha256": "…",
+  "releaseUupsBytecodeSha256": "…"
 }
 ```
 
@@ -139,11 +141,21 @@ corresponding forge artifact in the release archive.
   (ADR-0042); consumed by `deploy uups verify` and canopy genesis re-derivation.
 - **`proxy`**: CREATE3 UUPS proxy address (canonical `univocityAddr`).
 - **`upgradeAdmin`**: expected owner-controlled admin (≠ `deployer`).
-- **`releaseTag`**: optional pin for implementation bytecode checks in verify.
+- **`releaseTag`**: optional pin for release deploy-manifest `releaseId`.
+- **`implementationBytecodeSha256`**: SHA-256 of on-chain implementation
+  **runtime** bytecode recorded at deploy (differs from release creation digest).
+- **`releaseUupsBytecodeSha256`**: SHA-256 of release `UUPSUnivocity`
+  `creationBytecode` pinned at deploy when using `--from-manifest`.
 
 `deploy uups verify --deployment-manifest <path>` re-derives `proxy` from
 `(deployer, saltString, factory)` and reads on-chain `upgradeAdmin()` and
 ERC-1967 implementation.
+
+When **`--from-manifest`** is supplied, verify also loads the release
+deploy-manifest (sidecar + digest checks), pins `releaseTag` against
+`releaseId`, and asserts on-chain implementation runtime bytecode matches
+`implementationBytecodeSha256` while `releaseUupsBytecodeSha256` matches the
+loaded release `UUPSUnivocity.bytecodeSha256`.
 
 ## Consequences
 

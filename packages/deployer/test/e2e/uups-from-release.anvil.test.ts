@@ -20,6 +20,11 @@ import {
   parseDeployUupsOptions,
   parseDeployUupsVerifyOptions,
 } from "../../options.js";
+import {
+  buildUupsCounterfactualGenesisBody,
+  decodeGenesisCborMap,
+  UUPS_GENESIS_LABELS,
+} from "../helpers/uups-genesis-cbor.js";
 
 const ROOT = "/tmp/univocity";
 const KEY_A =
@@ -123,6 +128,49 @@ describe.skipIf(!haveAnvil)("uups from manifest on anvil", () => {
           "from-manifest": MANIFEST_PATH,
         }),
       );
+
+      // Hermetic S8: genesis CBOR binds deployer + logId for canopy C2 (no POST).
+      const genesisBody = buildUupsCounterfactualGenesisBody({
+        logId: LOG_ID,
+        chainId: String(manifest.chainId),
+        proxyAddress: manifest.proxy,
+        deployerAddress: manifest.deployer,
+        bootstrapKeyAddress: OWNER,
+      });
+      const genesisMap = decodeGenesisCborMap(genesisBody);
+      expect(genesisMap.get(UUPS_GENESIS_LABELS.LABEL_UNIVOCITY_VARIANT)).toBe(
+        UUPS_GENESIS_LABELS.VARIANT_UUPS,
+      );
+      expect(
+        Buffer.from(
+          genesisMap.get(UUPS_GENESIS_LABELS.LABEL_UNIVOCITY_DEPLOYER) as Uint8Array,
+        ).toString("hex"),
+      ).toBe(manifest.deployer.slice(2).toLowerCase());
+      const logIdBytes = genesisMap.get(
+        UUPS_GENESIS_LABELS.LABEL_BOOTSTRAP_LOG_ID,
+      ) as Uint8Array;
+      expect(Buffer.from(logIdBytes.slice(16)).toString("hex")).toBe(
+        LOG_ID.replace(/-/g, "").toLowerCase(),
+      );
+
+      const tamperedPath = path.join(workDir, "uups-tampered.json");
+      const tampered = {
+        ...manifest,
+        implementationBytecodeSha256: `${"b".repeat(64)}`,
+      };
+      await Bun.write(tamperedPath, `${JSON.stringify(tampered, null, 2)}\n`);
+      await expect(
+        runDeployUupsVerify(
+          out,
+          parseDeployUupsVerifyOptions({
+            "source-root": ROOT,
+            "deploy-key": KEY_A,
+            "rpc-url": ANVIL_RPC,
+            "deployment-manifest": tamperedPath,
+            "from-manifest": MANIFEST_PATH,
+          }),
+        ),
+      ).rejects.toThrow(/implementation bytecodeSha256 mismatch/);
 
       const deployerOnly = privateKeyToAccount(KEY_B);
       const deployerOnlyClient = createWalletClient({
