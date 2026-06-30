@@ -16,12 +16,19 @@ describe("parseContractReleasesCatalog", () => {
     expect(releases).toEqual([
       {
         version: "v0.4.0",
+        channel: "dev",
         es256Address: "0x1111111111111111111111111111111111111111",
         ks256Address: "0x2222222222222222222222222222222222222222",
       },
       {
         version: "v0.3.0",
+        channel: "stg",
         es256Address: "0x3333333333333333333333333333333333333333",
+      },
+      {
+        version: "v0.4.0",
+        channel: "prod",
+        ks256Address: "0x4444444444444444444444444444444444444444",
       },
     ]);
   });

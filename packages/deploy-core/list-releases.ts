@@ -1,4 +1,5 @@
 import type { ContractRelease } from "./contract-release.js";
+import { parseContractReleaseChannel } from "./contract-release-channel.js";
 
 export type { ContractRelease } from "./contract-release.js";
 
@@ -27,6 +28,9 @@ function normalizeReleaseEntry(entry: unknown): ContractRelease {
       throw new Error("ks256Address must be a string when present");
     }
     release.ks256Address = record.ks256Address;
+  }
+  if (record.channel !== undefined) {
+    release.channel = parseContractReleaseChannel(record.channel);
   }
   return release;
 }
