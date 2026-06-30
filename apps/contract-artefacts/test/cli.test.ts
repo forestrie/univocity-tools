@@ -39,6 +39,7 @@ describe("contract-artefacts CLI", () => {
     expect(logs.join("\n")).toContain("archive-validate");
     expect(logs.join("\n")).toContain("fetch-release");
     expect(logs.join("\n")).toContain("fetch-run");
+    expect(logs.join("\n")).toContain("list-releases");
   });
 
   test("--version", async () => {

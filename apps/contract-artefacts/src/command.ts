@@ -22,6 +22,8 @@ export default defineCartCommand({
       import("./commands/fetch-run.js").then((m) => m.default),
     "release-id": () =>
       import("./commands/release-id.js").then((m) => m.default),
+    "list-releases": () =>
+      import("./commands/list-releases.js").then((m) => m.default),
     validate: () => import("./commands/validate.js").then((m) => m.default),
   },
 });

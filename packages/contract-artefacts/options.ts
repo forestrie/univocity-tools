@@ -40,6 +40,9 @@ export type ArchiveOptions = CartCommonOptions & {
 /** Semver level to increment when deriving the release id. */
 export type BumpLevel = "major" | "minor" | "patch";
 
+/** Options for `contract-artefacts list-releases`. */
+export type ListReleasesOptions = CartCommonOptions;
+
 /** Options for `contract-artefacts release-id`. */
 export type ReleaseIdOptions = CartCommonOptions & {
   /** Optional bump applied to the most recent semver tag. */
@@ -149,6 +152,12 @@ function booleanFlag(
   camel: string,
 ): boolean {
   return args[kebab] === true || args[camel] === true;
+}
+
+export function parseListReleasesOptions(
+  args: LooseParsedArgs,
+): ListReleasesOptions {
+  return parseCartCommonOptions(args as CommonArgSlice);
 }
 
 export function parseReleaseIdOptions(
