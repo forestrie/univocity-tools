@@ -42,5 +42,7 @@ export default defineDeployerCommand({
       default: false,
     },
   }),
-  run: defineCommandRunner(parseDeployUupsVerifyOptions, runDeployUupsVerify),
+  run: defineCommandRunner(parseDeployUupsVerifyOptions, async (out, options) => {
+    await runDeployUupsVerify(out, options);
+  }),
 });

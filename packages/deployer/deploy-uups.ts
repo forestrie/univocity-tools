@@ -166,10 +166,8 @@ export async function runDeployUups(
       implementation,
     );
     const chainId = await publicClient.getChainId();
-    const implementationBytecodeSha256 = await readImplementationBytecodeSha256(
-      publicClient,
-      implementation,
-    );
+    const implementationBytecodeSha256 =
+      await readImplementationBytecodeSha256(publicClient, implementation);
     return buildUupsDeploymentManifest(
       options,
       account.address,

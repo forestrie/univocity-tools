@@ -26,7 +26,9 @@ export function parseUupsDeploymentManifestJson(
     throw new Error("expected uups-deployment manifest version 1");
   }
   if (!parsed.deployer || !parsed.saltString || !parsed.proxy) {
-    throw new Error("deployment manifest missing deployer, saltString, or proxy");
+    throw new Error(
+      "deployment manifest missing deployer, saltString, or proxy",
+    );
   }
   return {
     ...parsed,

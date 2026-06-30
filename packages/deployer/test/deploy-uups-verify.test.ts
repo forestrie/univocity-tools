@@ -6,7 +6,10 @@ import { createNullOut } from "@univocity-tools/cli-kit/reporting";
 import { bytecodeSha256 } from "@univocity-tools/deploy-core";
 import type { Address, Hex, PublicClient } from "viem";
 import { runDeployUupsVerify } from "../deploy-uups-verify.js";
-import type { DeployUupsVerifyOptions } from "../options.js";
+import {
+  parseDeployUupsVerifyOptions,
+  type DeployUupsVerifyOptions,
+} from "../options.js";
 import type { UupsDeploymentManifest } from "../uups-deployment-manifest.js";
 import { createFakeRpcClients } from "./helpers/fake-rpc-clients.js";
 
@@ -17,7 +20,6 @@ const PROXY = "0xbFb9Ef37B28BD71a89a6D8aFe27eB368CEF17347" as Address;
 const DEPLOYER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" as Address;
 const UPGRADE_ADMIN = "0x1528b86ff561f617602356efdbD05908a07AA788" as Address;
 const IMPL = "0x1111111111111111111111111111111111111111" as Address;
-const FACTORY = "0x988e1Ef32F200E84197266eC0Fd36cC9a1d849dF" as Address;
 const ERC1967_SLOT =
   "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc" as Hex;
 
@@ -45,27 +47,25 @@ function baseDeploymentManifest(
 }
 
 function encodeAddressSlot(address: Address): Hex {
-  return (`0x${"0".repeat(24)}${address.slice(2).toLowerCase()}`) as Hex;
+  return `0x${"0".repeat(24)}${address.slice(2).toLowerCase()}` as Hex;
 }
 
 function buildVerifyOptions(
+  dir: string,
   deploymentManifest: UupsDeploymentManifest,
   releaseManifestPath?: string,
 ): DeployUupsVerifyOptions {
-  return {
-    sourceRoot: ROOT,
-    deployKey: KEY_A,
-    rpcUrl: "http://127.0.0.1:8545",
-    create3: {
-      factory: FACTORY,
-      proxy: "0x0000000000000000000000000000000000000001",
-      signer: "0x0000000000000000000000000000000000000002",
-    },
-    deploymentManifest,
+  const deploymentPath = path.join(dir, "uups-deployment.json");
+  writeFileSync(deploymentPath, JSON.stringify(deploymentManifest, null, 2));
+  return parseDeployUupsVerifyOptions({
+    "source-root": ROOT,
+    "deploy-key": KEY_A,
+    "rpc-url": "http://127.0.0.1:8545",
+    "deployment-manifest": deploymentPath,
     ...(releaseManifestPath !== undefined
-      ? { fromManifest: releaseManifestPath }
+      ? { "from-manifest": releaseManifestPath }
       : {}),
-  };
+  });
 }
 
 async function writeReleaseManifest(
@@ -146,11 +146,12 @@ describe("runDeployUupsVerify release manifest", () => {
           encodeAddressSlot(IMPL),
       },
     });
-    clients.publicClient.readContract = async () => UPGRADE_ADMIN;
+    clients.publicClient.readContract = (async () =>
+      UPGRADE_ADMIN) as PublicClient["readContract"];
 
     await runDeployUupsVerify(
       createNullOut(),
-      buildVerifyOptions(deployment, releasePath),
+      buildVerifyOptions(tempDir, deployment, releasePath),
       { publicClient: clients.publicClient as PublicClient },
     );
   });
@@ -175,12 +176,13 @@ describe("runDeployUupsVerify release manifest", () => {
           encodeAddressSlot(IMPL),
       },
     });
-    clients.publicClient.readContract = async () => UPGRADE_ADMIN;
+    clients.publicClient.readContract = (async () =>
+      UPGRADE_ADMIN) as PublicClient["readContract"];
 
     await expect(
       runDeployUupsVerify(
         createNullOut(),
-        buildVerifyOptions(deployment, releasePath),
+        buildVerifyOptions(tempDir, deployment, releasePath),
         { publicClient: clients.publicClient as PublicClient },
       ),
     ).rejects.toThrow(/implementation bytecodeSha256 mismatch/);
@@ -208,12 +210,13 @@ describe("runDeployUupsVerify release manifest", () => {
           encodeAddressSlot(IMPL),
       },
     });
-    clients.publicClient.readContract = async () => UPGRADE_ADMIN;
+    clients.publicClient.readContract = (async () =>
+      UPGRADE_ADMIN) as PublicClient["readContract"];
 
     await expect(
       runDeployUupsVerify(
         createNullOut(),
-        buildVerifyOptions(deployment, releasePath),
+        buildVerifyOptions(tempDir, deployment, releasePath),
         { publicClient: clients.publicClient as PublicClient },
       ),
     ).rejects.toThrow(/releaseId mismatch/);

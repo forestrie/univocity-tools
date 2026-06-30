@@ -112,7 +112,9 @@ describe.skipIf(!haveAnvil)("uups from manifest on anvil", () => {
       });
       expect(manifest.proxy.toLowerCase()).toBe(predicted.toLowerCase());
       expect(manifest.logId).toBe(LOG_ID);
-      expect(manifest.deployer.toLowerCase()).toBe(account.address.toLowerCase());
+      expect(manifest.deployer.toLowerCase()).toBe(
+        account.address.toLowerCase(),
+      );
       const code = await publicClient.getBytecode({ address: predicted });
       expect(code !== undefined && code.length > 2).toBe(true);
 
@@ -143,7 +145,9 @@ describe.skipIf(!haveAnvil)("uups from manifest on anvil", () => {
       );
       expect(
         Buffer.from(
-          genesisMap.get(UUPS_GENESIS_LABELS.LABEL_UNIVOCITY_DEPLOYER) as Uint8Array,
+          genesisMap.get(
+            UUPS_GENESIS_LABELS.LABEL_UNIVOCITY_DEPLOYER,
+          ) as Uint8Array,
         ).toString("hex"),
       ).toBe(manifest.deployer.slice(2).toLowerCase());
       const logIdBytes = genesisMap.get(

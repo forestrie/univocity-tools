@@ -4,12 +4,7 @@ import {
   bytecodeSha256,
   predictCreate3Address,
 } from "@univocity-tools/deploy-core";
-import {
-  getAddress,
-  type Address,
-  type Hex,
-  type PublicClient,
-} from "viem";
+import { getAddress, type Address, type Hex, type PublicClient } from "viem";
 import { createRpcClients } from "./rpc-client.js";
 import type { DeployUupsVerifyOptions } from "./options.js";
 import {
@@ -129,7 +124,9 @@ async function verifyReleaseManifestBinding(
   }
   const uupsEntry = release.manifest.contracts.UUPSUnivocity;
   if (uupsEntry === undefined) {
-    throw new Error("release deploy-manifest has no UUPSUnivocity contract entry");
+    throw new Error(
+      "release deploy-manifest has no UUPSUnivocity contract entry",
+    );
   }
   await assertReleasedImplementationBytecode(
     publicClient,
@@ -182,9 +179,7 @@ export async function runDeployUupsVerify(
     publicClient,
     manifest.proxy,
   );
-  if (
-    implementation.toLowerCase() !== manifest.implementation.toLowerCase()
-  ) {
+  if (implementation.toLowerCase() !== manifest.implementation.toLowerCase()) {
     throw new Error(
       `implementation mismatch: on-chain ${implementation}, manifest ${manifest.implementation}`,
     );
