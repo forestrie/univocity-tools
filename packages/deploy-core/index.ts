@@ -7,6 +7,8 @@ export * from "./deploy-manifest-contract.js";
 export * from "./deploy-manifest.js";
 export * from "./encoding.js";
 export * from "./imutable-deploy-data.js";
+export * from "./contract-release.js";
+export * from "./list-releases.js";
 export * from "./manifest-verify.js";
 export * from "./release-tag.js";
 export * from "./resolve-release-tag.js";
