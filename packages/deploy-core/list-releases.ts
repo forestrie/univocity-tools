@@ -69,10 +69,7 @@ async function resolveCatalogPath(
     return options.catalogPath;
   }
   if (options.univocityRoot !== undefined) {
-    const deploymentPath = path.join(
-      options.univocityRoot,
-      "deployment.json",
-    );
+    const deploymentPath = path.join(options.univocityRoot, "deployment.json");
     if (await fileExists(deploymentPath)) {
       return deploymentPath;
     }
