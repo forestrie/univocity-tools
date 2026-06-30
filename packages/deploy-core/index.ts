@@ -2,6 +2,7 @@ export * from "./bootstrap-key.js";
 export * from "./create3-address.js";
 export * from "./deploy-constants.js";
 export * from "./fetch-release-manifest.js";
+export * from "./uups-proxy-salt.js";
 export * from "./uups-deploy-data.js";
 export * from "./deploy-manifest-contract.js";
 export * from "./deploy-manifest.js";

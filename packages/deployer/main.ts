@@ -6,6 +6,7 @@ export { runDeployCreate3 } from "./deploy-create3.js";
 export { runDeployCreate3FromRelease } from "./deploy-create3-from-release.js";
 export { runDeployUups } from "./deploy-uups.js";
 export { runDeployUupsFromRelease } from "./deploy-uups-from-release.js";
+export { runDeployUupsVerify } from "./deploy-uups-verify.js";
 export { runDeployUupsPredict } from "./deploy-uups-predict.js";
 export { runProposeImutable } from "./propose-imutable.js";
 export { runExecuteProposal } from "./execute-proposal.js";

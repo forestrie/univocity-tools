@@ -13,15 +13,20 @@ import type { ForgeOptions } from "@univocity-tools/forge-options/options";
 import { parseForgeOptions } from "@univocity-tools/forge-options/options";
 import type { AuthKind } from "@univocity-tools/git-options/options";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { getAddress, isHex, size, type Address, type Hex } from "viem";
 import type { BootstrapAlg } from "./bootstrap-key.js";
 import {
   resolveCreate3Salt,
   resolveOptionalRpcUrl,
-  resolveProxySalt,
   resolveRpcUrl,
-  type ProxySaltArgSlice,
 } from "./create3-deploy-helpers.js";
+import {
+  resolveUpgradeAdminForUups,
+  resolveUupsSaltAndLogId,
+} from "./uups-deploy-options.js";
+import { parseUupsDeploymentManifestJson } from "./uups-deployment-manifest.js";
+import type { UupsDeploymentManifest } from "./uups-deployment-manifest.js";
 import {
   DEFAULT_CREATE_CALL,
   DEFAULT_RELEASE_TAG,
@@ -190,6 +195,9 @@ export type DeployUupsOptions = DeployerCommonOptions & {
   rpcUrl: string;
   deployKey: Hex;
   proxySalt: string;
+  /** Counterfactual forest logId (dashed UUID); absent for legacy fixed salt. */
+  logId?: string;
+  mintedLogId: boolean;
   upgradeAdmin: Address;
   bootstrapAlg: BootstrapAlg;
   es256Pem?: string;
@@ -236,18 +244,20 @@ export function parseDeployUupsOptions(
   args: LooseParsedArgs,
 ): DeployUupsOptions {
   const common = parseDeployerCommonOptions(args as CommonArgSlice);
-  const upgradeAdminRaw = readOption(args, "upgrade-admin", "UPGRADE_ADMIN");
-  if (upgradeAdminRaw === undefined) {
-    throw new Error("--upgrade-admin (or UPGRADE_ADMIN) is required");
-  }
+  const bootstrapAlg = parseBootstrapAlg(args);
+  const saltResolution = resolveUupsSaltAndLogId(args);
   const options: DeployUupsOptions = {
     ...common,
     rpcUrl: resolveRpcUrl(args as RpcArgSlice),
     deployKey: resolveDeployKey(args),
-    proxySalt: resolveProxySalt(args as ProxySaltArgSlice),
-    upgradeAdmin: getAddress(upgradeAdminRaw),
-    bootstrapAlg: parseBootstrapAlg(args),
+    proxySalt: saltResolution.proxySalt,
+    mintedLogId: saltResolution.mintedLogId,
+    upgradeAdmin: resolveUpgradeAdminForUups(args, bootstrapAlg),
+    bootstrapAlg,
   };
+  if (saltResolution.logId !== undefined) {
+    options.logId = saltResolution.logId;
+  }
   parseUupsBootstrapFields(args, options);
 
   const releaseRoot = resolveReleaseRoot(args);
@@ -299,6 +309,8 @@ export function parseDeployUupsFromReleaseOptions(
 export type DeployUupsPredictOptions = DeployerCommonOptions & {
   deployKey: Hex;
   proxySalt: string;
+  logId?: string;
+  mintedLogId: boolean;
   rpcUrl?: string;
 };
 
@@ -306,13 +318,56 @@ export function parseDeployUupsPredictOptions(
   args: LooseParsedArgs,
 ): DeployUupsPredictOptions {
   const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const saltResolution = resolveUupsSaltAndLogId(args);
   const options: DeployUupsPredictOptions = {
     ...common,
     deployKey: resolveDeployKey(args),
-    proxySalt: resolveProxySalt(args as ProxySaltArgSlice),
+    proxySalt: saltResolution.proxySalt,
+    mintedLogId: saltResolution.mintedLogId,
   };
+  if (saltResolution.logId !== undefined) {
+    options.logId = saltResolution.logId;
+  }
   const rpcUrl = resolveOptionalRpcUrl(args as RpcArgSlice);
   if (rpcUrl !== undefined) options.rpcUrl = rpcUrl;
+  return options;
+}
+
+export type DeployUupsVerifyOptions = DeployerCommonOptions & {
+  rpcUrl: string;
+  deployKey: Hex;
+  deploymentManifest: UupsDeploymentManifest;
+  fromManifest?: string;
+  manifestSidecar?: string;
+  expectedReleaseId?: string;
+  insecure?: boolean;
+};
+
+export function parseDeployUupsVerifyOptions(
+  args: LooseParsedArgs,
+): DeployUupsVerifyOptions {
+  const common = parseDeployerCommonOptions(args as CommonArgSlice);
+  const manifestPath = readOption(args, "deployment-manifest");
+  if (manifestPath === undefined) {
+    throw new Error("--deployment-manifest is required");
+  }
+  const options: DeployUupsVerifyOptions = {
+    ...common,
+    rpcUrl: resolveRpcUrl(args as RpcArgSlice),
+    deployKey: resolveDeployKey(args),
+    deploymentManifest: parseUupsDeploymentManifestJson(
+      readFileSync(manifestPath, "utf8"),
+    ),
+  };
+  const fromManifest = readOption(args, "from-manifest", "DEPLOY_MANIFEST");
+  if (fromManifest !== undefined) options.fromManifest = fromManifest;
+  const manifestSidecar = readOption(
+    args,
+    "manifest-sidecar",
+    "DEPLOY_MANIFEST_SIDECAR",
+  );
+  if (manifestSidecar !== undefined) options.manifestSidecar = manifestSidecar;
+  if (Boolean(args.insecure)) options.insecure = true;
   return options;
 }
 

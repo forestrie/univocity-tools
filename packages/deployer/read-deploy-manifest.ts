@@ -120,6 +120,7 @@ export async function readCreate3FromDeployManifest(
 export type UupsManifestArtifacts = {
   manifest: DeployManifest;
   uupsImplBytecode: `0x${string}`;
+  uupsCreationBytecodeSha256: string;
   erc1967ProxyBytecode: `0x${string}`;
   initializeAbi: readonly unknown[];
 };
@@ -154,6 +155,7 @@ export async function readUupsFromDeployManifest(
   return {
     manifest,
     uupsImplBytecode: uups.creationBytecode,
+    uupsCreationBytecodeSha256: uups.bytecodeSha256,
     erc1967ProxyBytecode: proxy.creationBytecode,
     initializeAbi,
   };

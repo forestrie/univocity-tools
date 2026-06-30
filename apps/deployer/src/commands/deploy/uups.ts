@@ -20,19 +20,29 @@ import {
 export default defineDeployerCommand({
   meta: {
     name: "uups",
-    description: "Deploy UUPSUnivocity proxy via CREATE3 (foundry-free)",
+    description:
+      "Deploy UUPSUnivocity proxy via CREATE3 (foundry-free). " +
+      "Breaking change (ADR-0042): omitting --log-id mints a UUID and " +
+      "counterfactual salt; legacy …/UUPSUnivocity/0 via --proxy-salt.",
   },
   args: withDeployerArgs({
     ...fromReleaseArgs,
     "proxy-salt": {
       type: "string",
       description:
-        "CREATE3 proxy salt string (default: forestrie.eth/univocity/UUPSUnivocity/0)",
+        "Legacy CREATE3 proxy salt string (overrides counterfactual --log-id)",
       valueHint: "string",
+    },
+    "log-id": {
+      type: "string",
+      description:
+        "Forest logId UUID for counterfactual salt (env: LOG_ID); mints if omitted",
+      valueHint: "uuid",
     },
     "upgrade-admin": {
       type: "string",
-      description: "UUPS upgrade admin address (env: UPGRADE_ADMIN)",
+      description:
+        "UUPS upgrade admin (env: UPGRADE_ADMIN); KS256 defaults to bootstrap signer",
       valueHint: "address",
     },
     "bootstrap-alg": {
@@ -99,6 +109,7 @@ export default defineDeployerCommand({
   }),
   subCommands: {
     predict: () => import("./uups/predict.js").then((m) => m.default),
+    verify: () => import("./uups/verify.js").then((m) => m.default),
   },
   run: async ({ args, rawArgs }) => {
     const loose = args as LooseParsedArgs;

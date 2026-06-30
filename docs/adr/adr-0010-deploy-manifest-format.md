@@ -114,9 +114,54 @@ The deploy manifest is a **derived, variant** for deploy-only consumers
 (CLI one-shot, browser installer). Bytecode in the manifest must match the
 corresponding forge artifact in the release archive.
 
+## Post-deploy UUPS manifest (`uups-deployment`)
+
+`deploy uups` writes a separate **post-deploy** JSON artifact (not the release
+`deploy-manifest-<tag>.json`). Schema version 1:
+
+```json
+{
+  "kind": "uups-deployment",
+  "version": 1,
+  "chainId": 84532,
+  "deployer": "0x…",
+  "logId": "550e8400-e29b-41d4-a716-446655440000",
+  "saltString": "forestrie.eth/univocity/UUPSUnivocity/v1/…",
+  "proxy": "0x…",
+  "implementation": "0x…",
+  "upgradeAdmin": "0x…",
+  "bootstrapAlg": "ks256",
+  "releaseTag": "v0.6.0",
+  "implementationBytecodeSha256": "…",
+  "releaseUupsBytecodeSha256": "…"
+}
+```
+
+- **`deployer`**, **`logId`**, **`saltString`**: counterfactual binding inputs
+  (ADR-0042); consumed by `deploy uups verify` and canopy genesis re-derivation.
+- **`proxy`**: CREATE3 UUPS proxy address (canonical `univocityAddr`).
+- **`upgradeAdmin`**: expected owner-controlled admin (≠ `deployer`).
+- **`releaseTag`**: optional pin for release deploy-manifest `releaseId`.
+- **`implementationBytecodeSha256`**: SHA-256 of on-chain implementation
+  **runtime** bytecode recorded at deploy (differs from release creation digest).
+- **`releaseUupsBytecodeSha256`**: SHA-256 of release `UUPSUnivocity`
+  `creationBytecode` pinned at deploy when using `--from-manifest`.
+
+`deploy uups verify --deployment-manifest <path>` re-derives `proxy` from
+`(deployer, saltString, factory)` and reads on-chain `upgradeAdmin()` and
+ERC-1967 implementation.
+
+When **`--from-manifest`** is supplied, verify also loads the release
+deploy-manifest (sidecar + digest checks), pins `releaseTag` against
+`releaseId`, and asserts on-chain implementation runtime bytecode matches
+`implementationBytecodeSha256` while `releaseUupsBytecodeSha256` matches the
+loaded release `UUPSUnivocity.bytecodeSha256`.
+
 ## Consequences
 
 - Browser and foundry-free CLI paths can fetch a single small JSON file.
 - Manifest schema is versioned; bump `version` for breaking changes.
 - Producer (univocity release CI) and consumer (univocity-tools deployer) must
   land together or in producer-first order.
+- Post-deploy UUPS manifests are written per deployment; verify and system-testing
+  preflight consume them alongside the release deploy-manifest asset.

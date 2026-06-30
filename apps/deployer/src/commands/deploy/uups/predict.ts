@@ -15,8 +15,14 @@ export default defineDeployerCommand({
     "proxy-salt": {
       type: "string",
       description:
-        "CREATE3 proxy salt string (default: forestrie.eth/univocity/UUPSUnivocity/0)",
+        "Legacy CREATE3 proxy salt string (overrides counterfactual --log-id)",
       valueHint: "string",
+    },
+    "log-id": {
+      type: "string",
+      description:
+        "Forest logId UUID for counterfactual salt (env: LOG_ID); mints if omitted",
+      valueHint: "uuid",
     },
   }),
   run: defineCommandRunner(
