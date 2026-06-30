@@ -28,6 +28,8 @@ async function readErc1967Implementation(
 import { resolveBootstrapKey } from "./bootstrap-key.js";
 import { hasContractCode } from "./create3-deploy-helpers.js";
 import type { DeployUupsOptions } from "./options.js";
+import type { UupsDeploymentManifest } from "./uups-deployment-manifest.js";
+import { warnUpgradeAdminGuardrails } from "./uups-deploy-options.js";
 import {
   readUupsFromDeployManifest,
   pickManifestLoadOptions,
@@ -36,20 +38,35 @@ import {
 import { createRpcClients, hasBytecodeAt } from "./rpc-client.js";
 import { readUupsArtifactsFromReleaseRoot } from "./uups-artifact-paths.js";
 
-export type UupsDeploymentManifest = {
-  kind: "uups-deployment";
-  version: 1;
-  chainId: number;
-  proxy: Address;
-  implementation: Address;
-  upgradeAdmin: Address;
-  bootstrapAlg: string;
-  releaseTag?: string;
-};
+export type { UupsDeploymentManifest } from "./uups-deployment-manifest.js";
 
 export type DeployUupsRunDeps = {
   clients?: ReturnType<typeof createRpcClients>;
 };
+
+function buildUupsDeploymentManifest(
+  options: DeployUupsOptions,
+  deployer: Address,
+  chainId: number,
+  proxy: Address,
+  implementation: Address,
+): UupsDeploymentManifest {
+  return {
+    kind: "uups-deployment",
+    version: 1,
+    chainId,
+    deployer,
+    saltString: options.proxySalt,
+    proxy,
+    implementation,
+    upgradeAdmin: options.upgradeAdmin,
+    bootstrapAlg: options.bootstrapAlg,
+    ...(options.logId !== undefined ? { logId: options.logId } : {}),
+    ...(options.expectedReleaseId !== undefined
+      ? { releaseTag: options.expectedReleaseId }
+      : {}),
+  };
+}
 
 async function loadUupsArtifacts(options: DeployUupsOptions): Promise<{
   uupsImplBytecode: Hex;
@@ -87,6 +104,10 @@ export async function runDeployUups(
     deps?.clients ?? createRpcClients(options.rpcUrl, options.deployKey);
   const { publicClient, walletClient, account } = clients;
   const factory = options.create3.factory;
+  warnUpgradeAdminGuardrails(out, account.address, options.upgradeAdmin);
+  if (options.mintedLogId && options.logId !== undefined) {
+    out.print("Minted forest logId: %s", options.logId);
+  }
   const factoryCode = await publicClient.getBytecode({
     address: factory,
   });
@@ -115,18 +136,13 @@ export async function runDeployUups(
       implementation,
     );
     const chainId = await publicClient.getChainId();
-    return {
-      kind: "uups-deployment",
-      version: 1,
+    return buildUupsDeploymentManifest(
+      options,
+      account.address,
       chainId,
-      proxy: predictedProxy,
+      predictedProxy,
       implementation,
-      upgradeAdmin: options.upgradeAdmin,
-      bootstrapAlg: options.bootstrapAlg,
-      ...(options.expectedReleaseId !== undefined
-        ? { releaseTag: options.expectedReleaseId }
-        : {}),
-    };
+    );
   }
 
   const bootstrap =
@@ -192,18 +208,13 @@ export async function runDeployUups(
   }
 
   const chainId = await publicClient.getChainId();
-  const manifest: UupsDeploymentManifest = {
-    kind: "uups-deployment",
-    version: 1,
+  const manifest = buildUupsDeploymentManifest(
+    options,
+    account.address,
     chainId,
-    proxy: predictedProxy,
+    predictedProxy,
     implementation,
-    upgradeAdmin: options.upgradeAdmin,
-    bootstrapAlg: options.bootstrapAlg,
-    ...(options.expectedReleaseId !== undefined
-      ? { releaseTag: options.expectedReleaseId }
-      : {}),
-  };
+  );
   out.out("UUPSUnivocity proxy deployed at %s", predictedProxy);
   return manifest;
 }

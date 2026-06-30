@@ -14,5 +14,11 @@ export async function runDeployUupsPredict(
     options.proxySalt,
     options.create3.factory,
   );
+  if (options.mintedLogId && options.logId !== undefined) {
+    out.print("Minted forest logId: %s", options.logId);
+  }
+  if (options.logId !== undefined) {
+    out.print("Forest logId: %s", options.logId);
+  }
   out.out("%s", predicted);
 }

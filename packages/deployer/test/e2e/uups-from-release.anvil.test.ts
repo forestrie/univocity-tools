@@ -14,15 +14,20 @@ import { privateKeyToAccount } from "viem/accounts";
 import { anvil } from "viem/chains";
 import { runDeployCreate3 } from "../../deploy-create3.js";
 import { runDeployUups } from "../../deploy-uups.js";
+import { runDeployUupsVerify } from "../../deploy-uups-verify.js";
 import {
   parseDeployCreate3Options,
   parseDeployUupsOptions,
+  parseDeployUupsVerifyOptions,
 } from "../../options.js";
 
 const ROOT = "/tmp/univocity";
 const KEY_A =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+const KEY_B =
+  "0x59c6995e998f97a5a0044966f094538e9dcaa4cf2848bfdc17e7828a0847c9d2";
 const OWNER = "0x1528b86ff561f617602356efdbD05908a07AA788";
+const LOG_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
 const ANVIL_PORT = 18_547;
 const ANVIL_RPC = `http://127.0.0.1:${ANVIL_PORT}`;
 const MANIFEST_PATH = path.join(
@@ -53,7 +58,7 @@ describe.skipIf(!haveAnvil)("uups from manifest on anvil", () => {
       "deploy-key": KEY_A,
       "rpc-url": ANVIL_RPC,
       "from-manifest": MANIFEST_PATH,
-      "upgrade-admin": OWNER,
+      "log-id": LOG_ID,
       "bootstrap-alg": "ks256",
       "bootstrap-ks256-signer": OWNER,
     });
@@ -101,8 +106,51 @@ describe.skipIf(!haveAnvil)("uups from manifest on anvil", () => {
         clients: { publicClient, walletClient, account },
       });
       expect(manifest.proxy.toLowerCase()).toBe(predicted.toLowerCase());
+      expect(manifest.logId).toBe(LOG_ID);
+      expect(manifest.deployer.toLowerCase()).toBe(account.address.toLowerCase());
       const code = await publicClient.getBytecode({ address: predicted });
       expect(code !== undefined && code.length > 2).toBe(true);
+
+      const manifestPath = path.join(workDir, "uups-deployed.json");
+      await Bun.write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+      await runDeployUupsVerify(
+        out,
+        parseDeployUupsVerifyOptions({
+          "source-root": ROOT,
+          "deploy-key": KEY_A,
+          "rpc-url": ANVIL_RPC,
+          "deployment-manifest": manifestPath,
+          "from-manifest": MANIFEST_PATH,
+        }),
+      );
+
+      const deployerOnly = privateKeyToAccount(KEY_B);
+      const deployerOnlyClient = createWalletClient({
+        account: deployerOnly,
+        chain: anvil,
+        transport: http(ANVIL_RPC),
+      });
+      await expect(
+        deployerOnlyClient.writeContract({
+          account: deployerOnly,
+          chain: anvil,
+          address: manifest.proxy,
+          abi: [
+            {
+              type: "function",
+              name: "upgradeToAndCall",
+              inputs: [
+                { name: "newImplementation", type: "address" },
+                { name: "data", type: "bytes" },
+              ],
+              outputs: [],
+              stateMutability: "payable",
+            },
+          ],
+          functionName: "upgradeToAndCall",
+          args: [manifest.implementation, "0x"],
+        }),
+      ).rejects.toThrow();
     } finally {
       process.env.PATH = savedPath;
       proc.kill();
