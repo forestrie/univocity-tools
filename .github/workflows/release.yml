@@ -30,6 +30,9 @@ jobs:
       - name: Build Linux binaries
         run: bun run build:binary:linux-x64
 
+      - name: Smoke test linux deployer binary
+        run: ./apps/deployer/dist/deployer-linux-x64 --help
+
       - name: Stage Linux release assets
         run: |
           set -euo pipefail

@@ -100,7 +100,7 @@ const result = await Bun.build({
   compile,
   minify: true,
   sourcemap: "linked",
-  bytecode: true,
+  bytecode: false,
 });
 
 if (!result.success) {
