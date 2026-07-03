@@ -113,10 +113,6 @@ jobs:
           done
           chmod +x upload/*-linux-x64 upload/*-darwin-arm64
 
-      - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
-
       - name: Write components.jsonc
         env:
           TAG: ${{ github.ref_name }}
