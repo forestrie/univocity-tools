@@ -112,6 +112,24 @@ jobs:
           done
           chmod +x upload/*-linux-x64 upload/*-darwin-arm64
 
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Write components.jsonc
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VERSION="${TAG#v}"
+          jq -n \
+            --arg ecosystem "binary" \
+            --arg pkg "@univocity-tools/deployer" \
+            --arg ver "$VERSION" \
+            '{ ecosystem: $ecosystem, components: { ($pkg): $ver } }' \
+            > upload/components.jsonc
+          cat upload/components.jsonc
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -125,3 +143,4 @@ jobs:
             upload/contract-artefacts-darwin-arm64.sha256
             upload/deployer-darwin-arm64
             upload/deployer-darwin-arm64.sha256
+            upload/components.jsonc
