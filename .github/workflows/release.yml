@@ -68,9 +68,10 @@ jobs:
       - name: Build darwin-arm64 binaries
         run: bun run build:binary:darwin-arm64
 
-      - name: Smoke test darwin deployer binary
-        continue-on-error: true
-        run: ./apps/deployer/dist/deployer-darwin-arm64 --help
+      - name: Smoke test darwin binaries
+        run: |
+          ./apps/deployer/dist/deployer-darwin-arm64 --help
+          ./apps/contract-artefacts/dist/contract-artefacts-darwin-arm64 --help
 
       - name: Stage darwin release assets
         run: |
