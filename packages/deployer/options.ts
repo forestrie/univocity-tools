@@ -4,7 +4,7 @@ import {
   readEvaluatedStringOption,
   resolveReleaseRoot,
   type LooseParsedArgs,
-} from "@univocity-tools/cli-kit";
+} from "@forestrie/cli-kit";
 import type { Create3Config } from "@univocity-tools/create3-options/create3-config";
 import { parseCreate3Options } from "@univocity-tools/create3-options/options";
 import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";

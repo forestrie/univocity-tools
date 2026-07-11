@@ -9,4 +9,4 @@ export {
   DEFAULT_SAFE_VERSION,
   PERFORM_CREATE2_SELECTOR,
   UNIVOCITY_RELEASES_BASE,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";

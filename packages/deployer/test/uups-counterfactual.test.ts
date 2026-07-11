@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   predictCreate3Address,
   uupsProxySaltString,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 import type { Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {

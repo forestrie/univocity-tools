@@ -5,7 +5,7 @@ import {
   parseSha256Sidecar,
   verifyAndParseImutableManifest,
   verifyManifestBytesWithSidecar,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 import {
   fetchVerifiedManifest,
   verifyManifestFiles,

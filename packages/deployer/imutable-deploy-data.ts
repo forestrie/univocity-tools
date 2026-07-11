@@ -5,4 +5,4 @@ export {
   encodePerformCreate2Calldata,
   predictCreate2Address,
   predictImutableFromPerformCreate2,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";

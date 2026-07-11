@@ -8,7 +8,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createNullOut } from "@univocity-tools/cli-kit/reporting";
+import { createNullOut } from "@forestrie/cli-kit/reporting";
 import { ALG_KS256 } from "../deploy-constants.js";
 import { IMUTABLE_ARTIFACT_REL } from "../imutable-artifact.js";
 import { runProvisionImutableAlg } from "../provision-imutable-alg.js";

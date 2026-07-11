@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "univocity-tools",
@@ -25,9 +24,9 @@
       "name": "@univocity-tools/deploy-web",
       "version": "0.6.0",
       "dependencies": {
+        "@forestrie/deploy-core": "workspace:*",
         "@privy-io/chains": "^0.0.2",
         "@privy-io/js-sdk-core": "^0.52.0",
-        "@univocity-tools/deploy-core": "workspace:*",
         "buffer": "^6.0.3",
         "viem": "^2.31.0",
       },
@@ -51,7 +50,7 @@
       },
     },
     "packages/cli-kit": {
-      "name": "@univocity-tools/cli-kit",
+      "name": "@forestrie/cli-kit",
       "version": "0.1.0",
       "dependencies": {
         "citty": "^0.2.2",
@@ -61,8 +60,8 @@
       "name": "@univocity-tools/contract-artefacts-common",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
-        "@univocity-tools/deploy-core": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
+        "@forestrie/deploy-core": "workspace:*",
         "@univocity-tools/forge-options": "workspace:*",
         "@univocity-tools/foundry-artefacts": "workspace:*",
         "@univocity-tools/foundry-exec": "workspace:*",
@@ -76,13 +75,13 @@
       "name": "@univocity-tools/create3-options",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
         "citty": "^0.2.2",
         "jsonc-parser": "^3.3.1",
       },
     },
     "packages/deploy-core": {
-      "name": "@univocity-tools/deploy-core",
+      "name": "@forestrie/deploy-core",
       "version": "0.6.0",
       "dependencies": {
         "viem": "^2.31.0",
@@ -92,10 +91,10 @@
       "name": "@univocity-tools/deployer-common",
       "version": "0.6.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
+        "@forestrie/deploy-core": "workspace:*",
         "@univocity-tools/contract-artefacts-common": "workspace:*",
         "@univocity-tools/create3-options": "workspace:*",
-        "@univocity-tools/deploy-core": "workspace:*",
         "@univocity-tools/forge-options": "workspace:*",
         "@univocity-tools/foundry-exec": "workspace:*",
         "@univocity-tools/git-options": "workspace:*",
@@ -109,7 +108,7 @@
       "name": "@univocity-tools/forge-options",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
         "citty": "^0.2.2",
       },
     },
@@ -121,7 +120,7 @@
       "name": "@univocity-tools/foundry-exec",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
         "@univocity-tools/subprocess": "workspace:*",
         "citty": "^0.2.2",
       },
@@ -130,7 +129,7 @@
       "name": "@univocity-tools/git-options",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
         "citty": "^0.2.2",
       },
     },
@@ -138,7 +137,7 @@
       "name": "@univocity-tools/github-api",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
         "@univocity-tools/subprocess": "workspace:*",
       },
     },
@@ -146,7 +145,7 @@
       "name": "@univocity-tools/subprocess",
       "version": "0.1.0",
       "dependencies": {
-        "@univocity-tools/cli-kit": "workspace:*",
+        "@forestrie/cli-kit": "workspace:*",
       },
     },
   },
@@ -265,6 +264,10 @@
 
     "@ethersproject/web": ["@ethersproject/web@5.8.0", "", { "dependencies": { "@ethersproject/base64": "^5.8.0", "@ethersproject/bytes": "^5.8.0", "@ethersproject/logger": "^5.8.0", "@ethersproject/properties": "^5.8.0", "@ethersproject/strings": "^5.8.0" } }, "sha512-j7+Ksi/9KfGviws6Qtf9Q7KCqRhpwrYKQPs+JBA/rKVFF/yaWLHJEH3zfVP2plVu+eys0d2DlFmhoQJayFewcw=="],
 
+    "@forestrie/cli-kit": ["@forestrie/cli-kit@workspace:packages/cli-kit"],
+
+    "@forestrie/deploy-core": ["@forestrie/deploy-core@workspace:packages/deploy-core"],
+
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@noble/ciphers": ["@noble/ciphers@1.3.0", "", {}, "sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw=="],
@@ -347,15 +350,11 @@
 
     "@types/node": ["@types/node@25.9.2", "", { "dependencies": { "undici-types": ">=7.24.0 <7.24.7" } }, "sha512-G05zqtJhcDLb8uslf5EjCxXg9G1KQxiV8OS0R26IC//Eoyitzqe8z37I7cqvnZlrlSfgocQRfSn/AHBZJJFyGw=="],
 
-    "@univocity-tools/cli-kit": ["@univocity-tools/cli-kit@workspace:packages/cli-kit"],
-
     "@univocity-tools/contract-artefacts": ["@univocity-tools/contract-artefacts@workspace:apps/contract-artefacts"],
 
     "@univocity-tools/contract-artefacts-common": ["@univocity-tools/contract-artefacts-common@workspace:packages/contract-artefacts"],
 
     "@univocity-tools/create3-options": ["@univocity-tools/create3-options@workspace:packages/create3-options"],
-
-    "@univocity-tools/deploy-core": ["@univocity-tools/deploy-core@workspace:packages/deploy-core"],
 
     "@univocity-tools/deploy-web": ["@univocity-tools/deploy-web@workspace:apps/deploy-web"],
 

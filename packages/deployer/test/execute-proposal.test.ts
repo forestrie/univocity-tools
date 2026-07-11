@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
+import { createCaptureOut } from "@forestrie/cli-kit/reporting";
 import { runExecuteProposal } from "../execute-proposal.js";
 import { parseExecuteProposalOptions } from "../options.js";
 import { serializeProposal, type Proposal } from "../proposal.js";

@@ -50,7 +50,7 @@ Each app has a **companion package** `@univocity-tools/<name>-common`:
 | `options.ts`   | Per-command `*Options` types and `parse*Options(args)`              |
 | `main.ts`      | Per-command `run*(options: *Options)` implementations               |
 
-Shared merge helpers: **`@univocity-tools/cli-kit`**.
+Shared merge helpers: **`@forestrie/cli-kit`**.
 
 ### Why merge on every command?
 
@@ -62,7 +62,7 @@ Put **positionals only** on the leaf command that uses them.
 
 ## Option value sources
 
-`@univocity-tools/cli-kit` provides **`evaluateOptionValue`** for resolving
+`@forestrie/cli-kit` provides **`evaluateOptionValue`** for resolving
 named option value sources **before** any other parse processing (path
 resolution, implicit env fallbacks, file loading, etc.).
 
@@ -70,7 +70,7 @@ Call it as the **first step** for every string option value in `parse*`
 functions unless a command explicitly opts out.
 
 ```typescript
-import { evaluateOptionValue } from "@univocity-tools/cli-kit";
+import { evaluateOptionValue } from "@forestrie/cli-kit";
 
 const raw = evaluateOptionValue(
   "forge-config",
@@ -122,7 +122,7 @@ dirs resolve against `buildRoot` (no `foundry.toml` parsing). When spawning
 forge, pass `--config-path` with `options.forgeConfig` — not `--forge-config`.
 
 `--source-root` and `--work-dir` are the tool-wide **common options**
-(`commonOptionArgs` / `parseCommonOptions` in `@univocity-tools/cli-kit`),
+(`commonOptionArgs` / `parseCommonOptions` in `@forestrie/cli-kit`),
 spread into both Cart and deployer `commonArgs`. Parsed app options
 map cli-kit `sourceRoot` to `univocityRoot` (the **contracts checkout
 root**); Cart and deployer pass `gitRepoName: "univocity"` for git
@@ -149,7 +149,7 @@ omitting the flag uses embedded stable values (or discovery in a checkout).
 
 ### Output and verbosity
 
-`@univocity-tools/cli-kit/reporting` centralizes CLI output. Merge
+`@forestrie/cli-kit/reporting` centralizes CLI output. Merge
 **`verbosityArgs`** into each app's `commonArgs` (deployer and Cart already
 do). **`defineCommandRunner`** resolves verbosity from citty args, builds an
 **`Out`** instance, and passes it as the **first** argument to every
@@ -172,7 +172,7 @@ Pass **`Out`** into subprocess helpers (for example `FoundryExecContext.out`).
 
 ### Source root resolution (cli-kit)
 
-`resolveSourceGitRootEager` lives in `@univocity-tools/cli-kit`
+`resolveSourceGitRootEager` lives in `@forestrie/cli-kit`
 (wrapped by `parseCommonOptions`). At parse time, in order:
 
 1. `--source-root` / `SOURCE_ROOT` → `path.resolve(cwd, value)`
@@ -230,7 +230,7 @@ export function parseValidateBatchOptions(
 
 ```typescript
 // packages/contract-artefacts/main.ts — no citty
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 
 export async function runValidateBatch(
   out: Out,
@@ -243,7 +243,7 @@ export async function runValidateBatch(
 
 ```typescript
 // Another app or test — direct call (absolute paths)
-import { createOut } from "@univocity-tools/cli-kit/reporting";
+import { createOut } from "@forestrie/cli-kit/reporting";
 import { runValidateBatch } from "@univocity-tools/contract-artefacts-common/main";
 
 await runValidateBatch(createOut(0), {
@@ -299,7 +299,7 @@ Implement **`Bun.spawn`** only in `packages/<app>/main.ts` — see
 ## Dependencies
 
 - **`citty`** on each app.
-- **`@univocity-tools/cli-kit`** on each companion package only.
+- **`@forestrie/cli-kit`** on each companion package only.
 - **`@univocity-tools/forge-options`** on apps that merge forge flags
   (Cart via `@univocity-tools/contract-artefacts-common`).
 - **`@univocity-tools/git-options`** on apps that merge GitHub targeting flags

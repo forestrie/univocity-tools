@@ -1,4 +1,4 @@
-import { evaluateOptionValue } from "@univocity-tools/cli-kit";
+import { evaluateOptionValue } from "@forestrie/cli-kit";
 import {
   DEFAULT_CAST_BIN,
   DEFAULT_FORGE_BIN,

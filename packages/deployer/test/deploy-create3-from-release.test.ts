@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
+import { createCaptureOut } from "@forestrie/cli-kit/reporting";
 import type { PublicClient } from "viem";
 import { runDeployCreate3FromRelease } from "../deploy-create3-from-release.js";
 import { resolveReleaseInputs } from "../deploy-imutable-from-release.js";

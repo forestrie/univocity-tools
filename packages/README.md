@@ -20,7 +20,7 @@ packages/contract-artefacts/main.ts          → re-export barrel
 
 See [docs/agents/cli.md](../docs/agents/cli.md).
 
-Generic helpers: **`@univocity-tools/cli-kit`**
+Generic helpers: **`@forestrie/cli-kit`**
 (`mergeCommandArgs`, `defineCommandRunner`, `evaluateOptionValue` for
 `${env}` / `${env:VAR}` option value sources, **`reporting`** for `Out`
 and `--verbosity`).

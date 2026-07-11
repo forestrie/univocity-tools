@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@univocity-tools/cli-kit": "workspace:*",
-    "@univocity-tools/deploy-core": "workspace:*",
+    "@forestrie/cli-kit": "workspace:*",
+    "@forestrie/deploy-core": "workspace:*",
     "@univocity-tools/foundry-artefacts": "workspace:*",
     "@univocity-tools/foundry-exec": "workspace:*",
     "@univocity-tools/github-api": "workspace:*",

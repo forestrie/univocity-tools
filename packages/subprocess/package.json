@@ -13,6 +13,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@univocity-tools/cli-kit": "workspace:*"
+    "@forestrie/cli-kit": "workspace:*"
   }
 }

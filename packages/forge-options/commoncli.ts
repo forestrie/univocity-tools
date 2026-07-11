@@ -1,4 +1,4 @@
-import { mergeCommandArgs } from "@univocity-tools/cli-kit";
+import { mergeCommandArgs } from "@forestrie/cli-kit";
 import type { ArgsDef } from "citty";
 
 /** Citty flags for commands that invoke forge. */

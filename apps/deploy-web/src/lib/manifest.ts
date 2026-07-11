@@ -6,7 +6,7 @@ import {
   verifyManifestBytesWithSidecar,
   type DeployManifest,
   type ImutableBytecode,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 
 export type VerifiedManifest = {
   manifest: DeployManifest;

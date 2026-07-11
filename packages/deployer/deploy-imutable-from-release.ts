@@ -1,6 +1,6 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import { runArchiveExtract } from "@univocity-tools/contract-artefacts-common/main";
-import { isLatestReleaseTag } from "@univocity-tools/deploy-core";
+import { isLatestReleaseTag } from "@forestrie/deploy-core";
 import {
   createGithubClient,
   DEFAULT_AUTH_KIND,

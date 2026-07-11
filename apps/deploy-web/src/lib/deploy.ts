@@ -5,7 +5,7 @@ import {
   type BootstrapKeyInput,
   type GenesisBinding,
   type ImutableBytecode,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 import { isHex, type Address, type Hex } from "viem";
 import type { EthereumProvider } from "./privy.js";
 import { resolveDeployAccount } from "./wallet-accounts.js";

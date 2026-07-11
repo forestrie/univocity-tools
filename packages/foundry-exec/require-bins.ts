@@ -1,4 +1,4 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 
 /** Narrowed options for subprocess helpers — only execution-relevant fields. */
 export type FoundryExecContext = {

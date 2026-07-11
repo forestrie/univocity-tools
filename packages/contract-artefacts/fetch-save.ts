@@ -1,4 +1,4 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { deriveArtefactBaseName } from "./artefact-name.js";

@@ -2,11 +2,11 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, test } from "bun:test";
-import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
+import { createCaptureOut } from "@forestrie/cli-kit/reporting";
 import { listContractReleases } from "../../list-releases.js";
 import { runListReleases } from "../../main.js";
 import { parseListReleasesOptions } from "../../options.js";
-import { parseContractReleasesCatalog } from "@univocity-tools/deploy-core/list-releases";
+import { parseContractReleasesCatalog } from "@forestrie/deploy-core/list-releases";
 
 const FIXTURE_CATALOG = path.join(
   import.meta.dirname,

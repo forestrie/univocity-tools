@@ -73,7 +73,7 @@ describe.skipIf(!mockPrivyEnabled)("mock Privy login seam", () => {
     const { readFileSync } = await import("node:fs");
     const path = await import("node:path");
     const { verifyAndParseImutableManifest } =
-      await import("@univocity-tools/deploy-core");
+      await import("@forestrie/deploy-core");
     const { deployImutableContract } = await import("../src/lib/deploy.js");
     const {
       getPrivyEthereumProvider,

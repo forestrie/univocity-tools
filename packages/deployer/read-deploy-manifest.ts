@@ -4,7 +4,7 @@ import {
   parseDeployManifest,
   verifyDeployManifestDigests,
   type DeployManifest,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 import type { ImutableArtifact } from "./imutable-artifact.js";
 import { verifyFileSha256Sidecar } from "./file-sha256.js";
 
@@ -39,7 +39,7 @@ export {
   assertManifestReleaseId,
   bytecodeSha256,
   verifyDeployManifestDigests,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 
 /** Load manifest JSON from a local path or http(s) URL. */
 export async function loadDeployManifestSource(

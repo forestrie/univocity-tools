@@ -2,8 +2,8 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createNullOut } from "@univocity-tools/cli-kit/reporting";
-import { bytecodeSha256 } from "@univocity-tools/deploy-core";
+import { createNullOut } from "@forestrie/cli-kit/reporting";
+import { bytecodeSha256 } from "@forestrie/deploy-core";
 import type { Address, Hex, PublicClient } from "viem";
 import { runDeployUupsVerify } from "../deploy-uups-verify.js";
 import {

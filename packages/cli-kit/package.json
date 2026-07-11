@@ -1,15 +1,53 @@
 {
-  "name": "@univocity-tools/cli-kit",
+  "name": "@forestrie/cli-kit",
   "version": "0.1.0",
-  "private": true,
+  "license": "MIT",
   "description": "Shared citty helpers for univocity-tools CLIs",
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./reporting": "./src/reporting/index.ts"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forestrie/univocity-tools.git",
+    "directory": "packages/cli-kit"
   },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./reporting": {
+      "types": "./src/reporting/index.ts",
+      "default": "./src/reporting/index.ts"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./reporting": {
+        "types": "./dist/reporting/index.d.ts",
+        "import": "./dist/reporting/index.js",
+        "default": "./dist/reporting/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "prepack": "bun run build"
   },
   "dependencies": {
     "citty": "^0.2.2"

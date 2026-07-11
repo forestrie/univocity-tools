@@ -1,4 +1,4 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import { resolveReleaseInputs } from "./deploy-imutable-from-release.js";
 import { runDeployCreate3 } from "./deploy-create3.js";
 import type { DeployCreate3FromReleaseOptions } from "./options.js";
