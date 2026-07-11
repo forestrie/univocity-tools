@@ -1,16 +1,53 @@
 {
-  "name": "@univocity-tools/deploy-core",
+  "name": "@forestrie/deploy-core",
   "version": "0.6.0",
-  "private": true,
+  "license": "MIT",
   "description": "Browser-safe Univocity deploy logic (manifest, bootstrap, tx data)",
   "type": "module",
-  "exports": {
-    ".": "./index.ts",
-    "./*": "./*.ts"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forestrie/univocity-tools.git",
+    "directory": "packages/deploy-core"
   },
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "default": "./index.ts"
+    },
+    "./*": {
+      "types": "./*.ts",
+      "default": "./*.ts"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "default": "./dist/index.js"
+      },
+      "./*": {
+        "types": "./dist/*.d.ts",
+        "import": "./dist/*.js",
+        "default": "./dist/*.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "*.ts"
+  ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "prepack": "bun run build"
   },
   "dependencies": {
     "viem": "^2.31.0"

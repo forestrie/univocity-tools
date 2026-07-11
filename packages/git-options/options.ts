@@ -1,4 +1,4 @@
-import { readEvaluatedStringOption } from "@univocity-tools/cli-kit";
+import { readEvaluatedStringOption } from "@forestrie/cli-kit";
 
 export const DEFAULT_GITHUB_ORG = "forestrie";
 export const DEFAULT_GITHUB_REPO = "univocity";

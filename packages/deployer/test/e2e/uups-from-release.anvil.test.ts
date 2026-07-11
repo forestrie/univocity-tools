@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createNullOut } from "@univocity-tools/cli-kit/reporting";
-import { predictCreate3Address } from "@univocity-tools/deploy-core";
+import { createNullOut } from "@forestrie/cli-kit/reporting";
+import { predictCreate3Address } from "@forestrie/deploy-core";
 import {
   createPublicClient,
   createWalletClient,

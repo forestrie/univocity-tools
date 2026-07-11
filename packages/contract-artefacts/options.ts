@@ -1,9 +1,9 @@
-import type { LooseParsedArgs } from "@univocity-tools/cli-kit";
+import type { LooseParsedArgs } from "@forestrie/cli-kit";
 import {
   parseCommonOptions,
   readEvaluatedStringOption,
   resolveReleaseRoot,
-} from "@univocity-tools/cli-kit";
+} from "@forestrie/cli-kit";
 import path from "node:path";
 import type { FoundryBinOptions } from "@univocity-tools/foundry-exec/options";
 import { parseFoundryBinOptions } from "@univocity-tools/foundry-exec/options";

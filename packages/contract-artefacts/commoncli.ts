@@ -2,9 +2,9 @@ import {
   commonOptionArgs,
   defineAppCommand,
   mergeCommandArgs,
-} from "@univocity-tools/cli-kit";
-export { defineCommandRunner } from "@univocity-tools/cli-kit";
-import { verbosityArgs } from "@univocity-tools/cli-kit/reporting";
+} from "@forestrie/cli-kit";
+export { defineCommandRunner } from "@forestrie/cli-kit";
+import { verbosityArgs } from "@forestrie/cli-kit/reporting";
 import { foundryBinArgs } from "@univocity-tools/foundry-exec/commoncli";
 import { forgeArgs } from "@univocity-tools/forge-options/commoncli";
 import { gitArgs } from "@univocity-tools/git-options/commoncli";

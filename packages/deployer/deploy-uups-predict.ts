@@ -1,5 +1,5 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
-import { predictCreate3Address } from "@univocity-tools/deploy-core";
+import type { Out } from "@forestrie/cli-kit/reporting";
+import { predictCreate3Address } from "@forestrie/deploy-core";
 import { privateKeyToAccount } from "viem/accounts";
 import type { DeployUupsPredictOptions } from "./options.js";
 

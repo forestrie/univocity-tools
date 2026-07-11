@@ -3,7 +3,7 @@ import {
   generateKs256BootstrapKey,
   type BootstrapAlg,
   type ImutableBytecode,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 import {
   getDefaultDeployChain,
   getSupportedDeployChain,

@@ -1,6 +1,6 @@
 /** Vite public env (no secrets). */
 
-import { DEFAULT_RELEASE_TAG } from "@univocity-tools/deploy-core";
+import { DEFAULT_RELEASE_TAG } from "@forestrie/deploy-core";
 import { getDefaultDeployChain } from "./lib/supported-deploy-chains.js";
 
 /** Hermetic E2E / Playwright — deterministic mock Privy (mandate plan-0047 convention). */

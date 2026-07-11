@@ -1,4 +1,4 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import type { Hex } from "viem";
 import type { ApproveProposalOptions } from "./options.js";
 import {

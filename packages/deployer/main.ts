@@ -1,4 +1,4 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import type { ConfigShowOptions } from "./options.js";
 import { runDeployCreate3 } from "./deploy-create3.js";
 

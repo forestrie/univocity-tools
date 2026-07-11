@@ -3,4 +3,4 @@ export {
   parseDeployManifest,
   validateDeployManifest,
   type DeployManifest,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";

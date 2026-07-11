@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { createCaptureOut } from "@univocity-tools/cli-kit/reporting";
+import { createCaptureOut } from "@forestrie/cli-kit/reporting";
 import { ALG_KS256, DEFAULT_CHAIN_ID } from "../deploy-constants.js";
 import { buildImutableDeploymentData } from "../imutable-deploy-data.js";
 import {

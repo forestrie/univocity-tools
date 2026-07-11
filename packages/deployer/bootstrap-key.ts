@@ -10,4 +10,4 @@ export {
   type BootstrapAlg,
   type BootstrapKey,
   type BootstrapKeyInput,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";

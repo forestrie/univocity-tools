@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createNullOut } from "@univocity-tools/cli-kit/reporting";
+import { createNullOut } from "@forestrie/cli-kit/reporting";
 import {
   existsSync,
   mkdtempSync,

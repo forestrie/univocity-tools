@@ -11,11 +11,8 @@ import {
   parseDeployCreate3FromReleaseOptions,
   parseDeployCreate3Options,
 } from "@univocity-tools/deployer-common/options";
-import type { LooseParsedArgs } from "@univocity-tools/cli-kit";
-import {
-  createOut,
-  resolveVerbosity,
-} from "@univocity-tools/cli-kit/reporting";
+import type { LooseParsedArgs } from "@forestrie/cli-kit";
+import { createOut, resolveVerbosity } from "@forestrie/cli-kit/reporting";
 
 export default defineDeployerCommand({
   meta: {

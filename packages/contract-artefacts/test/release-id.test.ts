@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createNullOut } from "@univocity-tools/cli-kit/reporting";
+import { createNullOut } from "@forestrie/cli-kit/reporting";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";

@@ -4,8 +4,8 @@ import {
   parseContractReleasesCatalog,
   parseReleasesFromDeploymentJson,
   type ContractRelease,
-} from "@univocity-tools/deploy-core/list-releases";
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+} from "@forestrie/deploy-core/list-releases";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import type { ListReleasesOptions } from "./options.js";
 
 export type ListContractReleasesOptions = {

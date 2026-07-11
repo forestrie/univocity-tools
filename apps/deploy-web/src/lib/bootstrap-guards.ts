@@ -1,4 +1,4 @@
-import type { BootstrapAlg } from "@univocity-tools/deploy-core";
+import type { BootstrapAlg } from "@forestrie/deploy-core";
 
 /** Genesis bootstrap material must be explicitly acknowledged before deploy. */
 export function bootstrapAckRequired(options: {

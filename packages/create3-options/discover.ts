@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { findGitRepoRootNamed } from "@univocity-tools/cli-kit";
+import { findGitRepoRootNamed } from "@forestrie/cli-kit";
 
 export const CREATE3_CONFIG_FILENAME = "create3.jsonc";
 

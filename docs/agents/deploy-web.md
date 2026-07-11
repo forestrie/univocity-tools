@@ -5,7 +5,7 @@ Browser-hosted **ImutableUnivocity** EOA deploy wizard (`apps/deploy-web`).
 ## Stack
 
 - Vite + TypeScript SPA
-- `@univocity-tools/deploy-core` — manifest verify, bootstrap, tx data (no Node polyfills)
+- `@forestrie/deploy-core` — manifest verify, bootstrap, tx data (no Node polyfills)
 - `@privy-io/js-sdk-core` — embedded wallet (optional injected EIP-1193 path)
 - viem `WalletClient` + `sendTransaction` for contract creation
 

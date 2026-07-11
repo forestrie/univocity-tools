@@ -1,4 +1,4 @@
-import { mergeCommandArgs } from "@univocity-tools/cli-kit";
+import { mergeCommandArgs } from "@forestrie/cli-kit";
 import { DEFAULT_CAST_BIN, DEFAULT_FORGE_BIN } from "./resolve-bin.js";
 import type { ArgsDef } from "citty";
 

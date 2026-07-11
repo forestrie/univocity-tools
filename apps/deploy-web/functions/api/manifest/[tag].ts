@@ -1,4 +1,4 @@
-import { fetchUnivocityReleaseManifest } from "@univocity-tools/deploy-core/fetch-release-manifest";
+import { fetchUnivocityReleaseManifest } from "@forestrie/deploy-core/fetch-release-manifest";
 
 type PagesContext = {
   request: Request;

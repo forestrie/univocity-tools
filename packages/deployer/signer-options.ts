@@ -2,7 +2,7 @@ import {
   optionNameToEnvVar,
   readEvaluatedStringOption,
   type LooseParsedArgs,
-} from "@univocity-tools/cli-kit";
+} from "@forestrie/cli-kit";
 import { getAddress, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { normalizePrivateKey } from "./create3-deploy-helpers.js";

@@ -1,4 +1,4 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import {
   buildErc1967ProxyCreationCode,
   bytecodeSha256,
@@ -6,7 +6,7 @@ import {
   encodeUupsInitializeData,
   hashProxySaltString,
   predictCreate3Address,
-} from "@univocity-tools/deploy-core";
+} from "@forestrie/deploy-core";
 import { getAddress, type Address, type Hex, type PublicClient } from "viem";
 
 /** EIP-1967 implementation storage slot. */

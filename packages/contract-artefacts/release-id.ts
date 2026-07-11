@@ -1,4 +1,4 @@
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import { runChecked } from "@univocity-tools/subprocess/run-checked";
 import { runProcess } from "@univocity-tools/subprocess/run-process";
 import type { BumpLevel, ReleaseIdOptions } from "./options.js";

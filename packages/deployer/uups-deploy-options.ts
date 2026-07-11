@@ -1,9 +1,9 @@
-import { readEvaluatedStringOption } from "@univocity-tools/cli-kit";
-import type { LooseParsedArgs } from "@univocity-tools/cli-kit";
-import { uupsProxySaltString } from "@univocity-tools/deploy-core";
+import { readEvaluatedStringOption } from "@forestrie/cli-kit";
+import type { LooseParsedArgs } from "@forestrie/cli-kit";
+import { uupsProxySaltString } from "@forestrie/deploy-core";
 import { randomUUID } from "node:crypto";
 import { getAddress, type Address } from "viem";
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import type { BootstrapAlg } from "./bootstrap-key.js";
 
 export type UupsSaltResolution = {

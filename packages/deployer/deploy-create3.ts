@@ -1,5 +1,5 @@
 import type { Create3Config } from "@univocity-tools/create3-options/create3-config";
-import type { Out } from "@univocity-tools/cli-kit/reporting";
+import type { Out } from "@forestrie/cli-kit/reporting";
 import {
   toFoundryExecContext,
   requireCastBin,

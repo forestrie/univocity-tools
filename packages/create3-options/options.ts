@@ -1,4 +1,4 @@
-import { evaluateOptionValue } from "@univocity-tools/cli-kit";
+import { evaluateOptionValue } from "@forestrie/cli-kit";
 import path from "node:path";
 import { CREATE3_DEFAULTS } from "./src/defaults.js";
 import type { Create3Config } from "./create3-config.js";

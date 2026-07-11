@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@univocity-tools/cli-kit": "workspace:*",
+    "@forestrie/cli-kit": "workspace:*",
     "citty": "^0.2.2",
     "jsonc-parser": "^3.3.1"
   }
