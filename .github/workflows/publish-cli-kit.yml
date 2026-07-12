@@ -94,7 +94,12 @@ jobs:
         run: bun run --filter @forestrie/cli-kit build
 
       - name: Publish to npmjs (trusted publishing)
+        # Explicit --provenance (mandate FOR-361 lesson): under OIDC trusted
+        # publishing npm can silently skip provenance generation, shipping an
+        # unattested version that still reports as trusted-published. The flag
+        # forces npm to error with the reason rather than no-op, so a release
+        # that cannot be attested fails loudly instead of shipping bare.
         working-directory: packages/cli-kit
         run: |
           pnpm pack
-          npm publish ./forestrie-cli-kit-*.tgz
+          npm publish --provenance ./forestrie-cli-kit-*.tgz
