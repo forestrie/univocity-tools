@@ -97,7 +97,12 @@ jobs:
         run: bun run --filter @forestrie/deploy-core build
 
       - name: Publish to npmjs (trusted publishing)
+        # Explicit --provenance (mandate FOR-361 lesson): under OIDC trusted
+        # publishing npm can silently skip provenance generation, shipping an
+        # unattested version that still reports as trusted-published. The flag
+        # forces npm to error with the reason rather than no-op, so a release
+        # that cannot be attested fails loudly instead of shipping bare.
         working-directory: packages/deploy-core
         run: |
           pnpm pack
-          npm publish ./forestrie-deploy-core-*.tgz
+          npm publish --provenance ./forestrie-deploy-core-*.tgz
