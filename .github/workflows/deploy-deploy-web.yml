@@ -23,7 +23,10 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-      VITE_DEFAULT_RELEASE_TAG: latest
+      # VITE_DEFAULT_RELEASE_TAG is resolved to the newest univocity release
+      # below — a `latest` sentinel would make every visitor hit the
+      # unauthenticated GitHub API from Cloudflare's shared egress IPs, whose
+      # anonymous rate-limit bucket is effectively always exhausted (403).
       VITE_DEFAULT_CHAIN_ID: "84532"
       VITE_DEFAULT_RPC_URL: https://sepolia.base.org
       TESTING_PRIVY_APP_ID: ${{ vars.TESTING_PRIVY_APP_ID }}
@@ -40,6 +43,15 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Resolve default release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh api repos/forestrie/univocity/releases/latest --jq .tag_name)
+          test -n "$TAG"
+          echo "VITE_DEFAULT_RELEASE_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "Default release tag: $TAG"
 
       - name: Build deploy-web
         run: bun run --filter @univocity-tools/deploy-web build

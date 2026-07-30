@@ -76,7 +76,7 @@ export function mountApp(root: HTMLElement): void {
   root.innerHTML = `
     <main>
       <h1>Univocity deploy</h1>
-      <p class="lead">Step 1 — deploy ImutableUnivocity (EOA). Save genesis JSON for onboard (Step 2).</p>
+      <p class="lead">Step 1 — deploy ImutableUnivocity. Save genesis JSON for onboard (Step 2).</p>
       <section id="wallet-section"></section>
       <section id="manifest-section"></section>
       <section id="bootstrap-section"></section>
@@ -101,6 +101,9 @@ function render(): void {
 
 function renderWallet(): void {
   const privyConfigured = Boolean(getPrivyAppId()) || isE2ePrivyMock();
+  if (!privyConfigured && state.walletMode === "privy") {
+    state.walletMode = "injected";
+  }
   const walletChainLine =
     state.walletChainId !== null
       ? `<p class="hint">Wallet network: chainId ${state.walletChainId}${
@@ -112,27 +115,27 @@ function renderWallet(): void {
   const section = el("wallet-section");
   section.innerHTML = `
     <h2>1. Connect wallet</h2>
-    <div class="wallet-tabs">
-      <button type="button" data-mode="privy" class="${state.walletMode === "privy" ? "active" : ""}" ${privyConfigured ? "" : "disabled"}>Privy</button>
-      <button type="button" data-mode="injected" class="${state.walletMode === "injected" ? "active" : ""}">Injected (MetaMask)</button>
-    </div>
+    <label for="wallet-mode">Wallet</label>
+    <select id="wallet-mode">
+      <option value="privy" ${state.walletMode === "privy" ? "selected" : ""} ${privyConfigured ? "" : "disabled"}>Privy (embedded email wallet)</option>
+      <option value="injected" ${state.walletMode === "injected" ? "selected" : ""}>Injected (MetaMask or similar)</option>
+    </select>
     ${privyConfigured ? "" : '<p class="hint">Privy not configured — use injected wallet or set TESTING_PRIVY_APP_ID.</p>'}
     <div class="row">
       ${
         state.walletAddress
-          ? `<span class="ok">Connected: ${state.walletAddress}</span>
-             <button type="button" class="secondary" id="disconnect-btn">Disconnect</button>`
-          : `<button type="button" id="connect-btn">Connect</button>`
+          ? `<button type="button" class="wallet-connect connected" id="disconnect-btn" title="Disconnect">Connected: ${state.walletAddress}</button>`
+          : `<button type="button" class="wallet-connect" id="connect-btn">Connect</button>`
       }
     </div>
+    ${state.walletAddress ? '<p class="hint">Click the connected wallet to disconnect.</p>' : ""}
     ${walletChainLine}
   `;
-  section.querySelectorAll("[data-mode]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.walletMode = (btn as HTMLElement).dataset.mode as WalletMode;
-      state.walletAddress = null;
-      render();
-    });
+  section.querySelector("#wallet-mode")?.addEventListener("change", (e) => {
+    const mode = (e.target as HTMLSelectElement).value as WalletMode;
+    if (mode !== state.walletMode) {
+      void switchWalletMode(mode);
+    }
   });
   section.querySelector("#connect-btn")?.addEventListener("click", () => {
     void connectWallet();
@@ -142,6 +145,16 @@ function renderWallet(): void {
   });
 }
 
+/** Disconnect the previous mode's wallet before switching so no state leaks. */
+async function switchWalletMode(mode: WalletMode): Promise<void> {
+  if (state.walletAddress) {
+    await disconnectWallet();
+  }
+  state.walletMode = mode;
+  state.deployError = null;
+  render();
+}
+
 function renderManifest(): void {
   const section = el("manifest-section");
   section.innerHTML = `
@@ -149,6 +162,7 @@ function renderManifest(): void {
     <p class="hint">Fetches deploy-manifest via this site's API proxy (GitHub release CDN blocks direct browser fetch) or drag-drop both files offline.</p>
     <label for="release-tag">Release tag</label>
     <input id="release-tag" value="${state.releaseTag}" />
+    <p class="hint">Look <a href="https://github.com/forestrie/univocity/releases" target="_blank" rel="noopener">here</a> for the latest release.</p>
     <div class="row">
       <button type="button" id="fetch-manifest-btn" ${state.busy ? "disabled" : ""}>Fetch & verify</button>
     </div>
@@ -235,7 +249,7 @@ function renderBootstrap(): void {
     <p class="hint">The bootstrap key is baked into genesis and is separate from your deploy wallet. Store it before deploying.</p>
     <label for="bootstrap-alg">Algorithm</label>
     <select id="bootstrap-alg">
-      <option value="ks256" ${state.bootstrapAlg === "ks256" ? "selected" : ""}>KS256 (EOA signer)</option>
+      <option value="ks256" ${state.bootstrapAlg === "ks256" ? "selected" : ""}>KS256 (signer address)</option>
       <option value="es256" ${state.bootstrapAlg === "es256" ? "selected" : ""}>ES256 (P-256 PEM)</option>
     </select>
     <div id="bootstrap-fields"></div>
@@ -259,6 +273,7 @@ function renderBootstrap(): void {
     fields.innerHTML = `
       <label for="ks256-signer">KS256 signer address</label>
       <input id="ks256-signer" value="${state.ks256Signer}" placeholder="0x…" />
+      <p class="hint">An EOA or a contract account (e.g. a Safe multisig) — contract signers verify via ERC-1271.</p>
       ${
         state.ks256PrivateKey
           ? `<label for="ks256-private-key">Generated private key (save now)</label>
