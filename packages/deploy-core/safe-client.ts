@@ -204,25 +204,36 @@ export type PostSafeTransactionInput = {
   origin?: string;
 };
 
+/**
+ * The STS checksum-validates every address field and 422s lowercase
+ * ("Address … is not checksumed" — hit live by the mandate console, whose
+ * wallet reports the sender lowercase; mandate#87). Normalise at the
+ * service boundary so every caller gets EIP-55 for free; lowercasing
+ * first keeps mixed-case input from tripping viem's checksum assertion.
+ */
+function checksummedAddress(address: string): Address {
+  return getAddress(address.toLowerCase());
+}
+
 /** POST a signed SafeTx to the Safe Transaction Service. */
 export async function postSafeTransaction(
   input: PostSafeTransactionInput,
 ): Promise<void> {
   const base = input.serviceUrl.replace(/\/$/, "");
-  const url = `${base}/api/v1/safes/${input.safe}/multisig-transactions/`;
+  const url = `${base}/api/v1/safes/${checksummedAddress(input.safe)}/multisig-transactions/`;
   const body = {
-    to: input.tx.to,
+    to: checksummedAddress(input.tx.to),
     value: input.tx.value.toString(),
     data: input.tx.data,
     operation: input.tx.operation,
     safeTxGas: input.tx.safeTxGas.toString(),
     baseGas: input.tx.baseGas.toString(),
     gasPrice: input.tx.gasPrice.toString(),
-    gasToken: input.tx.gasToken,
-    refundReceiver: input.tx.refundReceiver,
+    gasToken: checksummedAddress(input.tx.gasToken),
+    refundReceiver: checksummedAddress(input.tx.refundReceiver),
     nonce: input.tx.nonce.toString(),
     contractTransactionHash: input.safeTxHash,
-    sender: input.sender,
+    sender: checksummedAddress(input.sender),
     signature: input.signature,
     origin: input.origin ?? "univocity-tools deployer",
   };
