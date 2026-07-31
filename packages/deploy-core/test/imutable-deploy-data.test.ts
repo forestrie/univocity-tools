@@ -19,6 +19,7 @@ import {
   encodePerformCreate2Calldata,
   predictCreate2Address,
   predictImutableFromPerformCreate2,
+  safeBatchSaltAtIndex,
 } from "../imutable-deploy-data.js";
 
 const CREATION = "0x6001" as Hex;
@@ -67,6 +68,39 @@ describe("defaultSafeBatchSalt", () => {
           ["forestrie.eth/univocity/ImutableUnivocity/safe/", safe],
         ),
       ),
+    );
+  });
+});
+
+describe("safeBatchSaltAtIndex", () => {
+  const safe = "0x1528b86ff561f617602356efdbD05908a07AA788";
+
+  test("index 0 is exactly the default salt", () => {
+    expect(safeBatchSaltAtIndex(safe, 0)).toBe(defaultSafeBatchSalt(safe));
+  });
+
+  test("index > 0 appends uint256(index) to the packed preimage", () => {
+    expect(safeBatchSaltAtIndex(safe, 2)).toBe(
+      keccak256(
+        encodePacked(
+          ["string", "address", "uint256"],
+          ["forestrie.eth/univocity/ImutableUnivocity/safe/", safe, 2n],
+        ),
+      ),
+    );
+  });
+
+  test("distinct indices give distinct salts", () => {
+    const salts = [0, 1, 2, 3].map((i) => safeBatchSaltAtIndex(safe, i));
+    expect(new Set(salts).size).toBe(salts.length);
+  });
+
+  test("rejects negative and non-integer indices", () => {
+    expect(() => safeBatchSaltAtIndex(safe, -1)).toThrow(
+      "non-negative integer",
+    );
+    expect(() => safeBatchSaltAtIndex(safe, 1.5)).toThrow(
+      "non-negative integer",
     );
   });
 });

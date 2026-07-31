@@ -13,6 +13,11 @@ const FORBIDDEN: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /from\s+["']node:/, label: "node: import" },
   { pattern: /from\s+["']bun["']/, label: "bun import" },
   { pattern: /\bBuffer\b/, label: "Buffer usage" },
+  { pattern: /\bBun\./, label: "Bun global usage" },
+  {
+    pattern: /\bprocess\.(env|exit|cwd|argv)\b/,
+    label: "process global usage",
+  },
   { pattern: /from\s+["']node:fs/, label: "node:fs import" },
   { pattern: /from\s+["']fs["']/, label: "fs import" },
 ];
