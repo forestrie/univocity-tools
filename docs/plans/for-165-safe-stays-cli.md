@@ -1,9 +1,20 @@
 # ADR-0012: Safe deploy stays CLI-only
 
-**Status:** Accepted (spike — FOR-165)  
+**Status:** Accepted (spike — FOR-165); **narrowed 2026-07-31** by devdocs
+ADR-0060 / plan-2607-47 — see note below  
 **Date:** 2026-06-28  
 **Related:** [FOR-149](https://linear.app/forestrie/issue/FOR-149),
 [plan-0001](./plan-0001-tier2-browser-deploy.md)
+
+> **Narrowed, not reversed (2026-07-31, devdocs ADR-0060 / plan-2607-47,
+> FOR-512..514):** the Safe propose/execute client is now folded into the
+> published `@forestrie/deploy-core` (0.7.0), and a browser Safe
+> propose/execute deploy exists — but only in the **mandate console's**
+> `/onboard` wizard, which consciously owns that product surface and threat
+> model. This repo's `deploy-web` (univocity-deploy.pages.dev) remains the
+> neutral, console-free, **EOA-only** surface; the deployer CLI Safe path is
+> unchanged. Read the original decision below as "deploy-web stays
+> EOA-only", and the first Consequences bullet as superseded.
 
 ## Context
 
