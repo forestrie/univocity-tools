@@ -167,6 +167,31 @@ describe("Safe Transaction Service client", () => {
     expect(captured?.body.operation).toBe(0);
   });
 
+  test("checksums lowercase address fields — the STS 422s them otherwise", async () => {
+    // Wallets report addresses lowercase; the live STS rejected exactly this
+    // ("Address … is not checksumed", mandate#87). The service boundary must
+    // emit EIP-55 regardless of caller input case.
+    let captured: { url: string; body: Record<string, unknown> } | undefined;
+    globalThis.fetch = (async (url: string, init?: RequestInit) => {
+      captured = { url: String(url), body: JSON.parse(String(init?.body)) };
+      return new Response("{}", { status: 201 });
+    }) as unknown as typeof fetch;
+
+    const lowered = {
+      ...proposalInput(),
+      safe: SAFE.toLowerCase() as Address,
+      sender: SENDER.toLowerCase() as Address,
+      tx: { ...tx, to: CREATE_CALL.toLowerCase() as Address },
+    };
+    await postSafeTransaction(lowered);
+
+    expect(captured?.url).toContain(`/safes/${SAFE}/`);
+    expect(captured?.body.sender).toBe(SENDER);
+    expect(captured?.body.to).toBe(CREATE_CALL);
+    expect(captured?.body.gasToken).toBe(NULL_ADDRESS);
+    expect(captured?.body.refundReceiver).toBe(NULL_ADDRESS);
+  });
+
   test("network failure surfaces as SafeServiceUnavailableError", async () => {
     globalThis.fetch = (async () => {
       throw new TypeError("fetch failed");

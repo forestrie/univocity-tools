@@ -1,6 +1,6 @@
 {
   "name": "@forestrie/deploy-core",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "license": "MIT",
   "description": "Browser-safe Univocity deploy logic (manifest, bootstrap, tx data)",
   "type": "module",
