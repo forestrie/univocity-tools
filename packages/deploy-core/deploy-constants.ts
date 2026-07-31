@@ -23,9 +23,13 @@ export const DEFAULT_CREATE_CALL: Address =
 /** Default Safe contract version for SafeTx EIP-712 hashing. */
 export const DEFAULT_SAFE_VERSION = "1.4.1";
 
-/** Safe Transaction Service base URL for Base Sepolia. */
+/**
+ * Safe Transaction Service base URL for Base Sepolia (unified gateway,
+ * CORS `*`). The legacy `safe-transaction-base-sepolia.safe.global` hostname
+ * now 308-redirects here.
+ */
 export const DEFAULT_SAFE_TX_SERVICE_URL =
-  "https://safe-transaction-base-sepolia.safe.global";
+  "https://api.safe.global/tx-service/basesep";
 
 /** `bytes4(keccak256("performCreate2(uint256,bytes,bytes32)"))`. */
 export const PERFORM_CREATE2_SELECTOR = "0x4847be6f";

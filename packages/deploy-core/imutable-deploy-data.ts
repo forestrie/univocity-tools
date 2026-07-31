@@ -83,6 +83,9 @@ export function predictImutableFromPerformCreate2(
   return predictCreate2Address(createCall, salt, deploymentData);
 }
 
+const SAFE_BATCH_SALT_PREFIX =
+  "forestrie.eth/univocity/ImutableUnivocity/safe/";
+
 /**
  * Default CREATE2 salt for the Safe path:
  * keccak256(abi.encodePacked("forestrie.eth/univocity/ImutableUnivocity/safe/",
@@ -90,9 +93,27 @@ export function predictImutableFromPerformCreate2(
  */
 export function defaultSafeBatchSalt(safe: Address): Hex {
   return keccak256(
+    encodePacked(["string", "address"], [SAFE_BATCH_SALT_PREFIX, safe]),
+  );
+}
+
+/**
+ * CREATE2 salt for the Nth same-release instance on a Safe:
+ * keccak256(abi.encodePacked(prefix, safe, uint256(index))). Index 0 is the
+ * default salt (no index appended) so existing deployments keep their
+ * predicted addresses; indices > 0 are an explicit, visible choice.
+ */
+export function safeBatchSaltAtIndex(safe: Address, index: number): Hex {
+  if (!Number.isInteger(index) || index < 0) {
+    throw new Error(`instance index must be a non-negative integer: ${index}`);
+  }
+  if (index === 0) {
+    return defaultSafeBatchSalt(safe);
+  }
+  return keccak256(
     encodePacked(
-      ["string", "address"],
-      ["forestrie.eth/univocity/ImutableUnivocity/safe/", safe],
+      ["string", "address", "uint256"],
+      [SAFE_BATCH_SALT_PREFIX, safe, BigInt(index)],
     ),
   );
 }

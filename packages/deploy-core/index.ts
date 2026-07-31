@@ -14,5 +14,7 @@ export * from "./list-releases.js";
 export * from "./resolve-contract-release.js";
 export * from "./semver-range.js";
 export * from "./manifest-verify.js";
+export * from "./proposal.js";
 export * from "./release-tag.js";
 export * from "./resolve-release-tag.js";
+export * from "./safe-client.js";

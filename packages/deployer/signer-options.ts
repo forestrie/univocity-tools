@@ -3,6 +3,7 @@ import {
   readEvaluatedStringOption,
   type LooseParsedArgs,
 } from "@forestrie/cli-kit";
+import type { SignerRole } from "@forestrie/deploy-core";
 import { getAddress, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { normalizePrivateKey } from "./create3-deploy-helpers.js";
@@ -95,7 +96,7 @@ function optionalOwnerSigner(args: LooseParsedArgs): Hex | undefined {
   return raw === undefined ? undefined : normalizePrivateKey(raw);
 }
 
-export type SignerRole = "owner-address" | "deploy-key" | "deploy-address";
+export type { SignerRole } from "@forestrie/deploy-core";
 
 export type ProposeFrom = {
   /** Address recorded as the proposal `from` for every transaction. */
