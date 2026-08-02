@@ -19,6 +19,10 @@
 #             second decision point (plan 2608-05 Q2). `publish-cli-kit.yml`
 #             and `publish-deploy-core.yml` fire unchanged.
 #
+# `[no-release]` suppresses the SERVICE tag ONLY. A package version bump still
+# publishes — that is Q2, not an oversight. To hold a package back, do not bump
+# its version.
+#
 # The publish and release workflows were never the problem. The tag was the
 # step a human had to remember, and when it was forgotten for
 # `@forestrie/canopy-e2e-kit` the kit sat at npm 0.6.1 while its repo reached
