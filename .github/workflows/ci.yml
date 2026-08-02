@@ -17,6 +17,15 @@ jobs:
         with:
           persist-credentials: false
 
+      # `.github/auto-tag-packages.json` is what the auto-tag workflow reads on
+      # every merge to decide which packages to tag, so a package missing from
+      # it is a package that never publishes — silently. Offline, so it runs
+      # before the toolchain. No npm half here (plan 2608-05 Q3 keeps the
+      # recurring repo-vs-npm check in the frontier resolver); run
+      # `scripts/check-published-packages.sh npm` by hand.
+      - name: Declared packages match the publish workflows
+        run: bash scripts/check-published-packages.sh config
+
       - uses: jdx/mise-action@v3
         with:
           install: true
