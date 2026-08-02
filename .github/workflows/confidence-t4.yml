@@ -1,5 +1,14 @@
 name: Confidence T4
 
+# Weekly confidence that the contract-release surface has not drifted: the
+# deploy-core catalog parser, `listContractReleases`, and the CLI's JSON output
+# must all still agree with the committed fixtures.
+#
+# Alerting (plan-2608-02, FOR-518): the verdict goes to a Linear issue via the
+# org `linear-health-alert` action. This was the last scheduled health workflow
+# in the org with no way of telling anyone it had failed — and a weekly job
+# nobody is told about is indistinguishable from one that does not run.
+
 permissions:
   contents: read
 
@@ -26,3 +35,31 @@ jobs:
 
       - name: T4 list-releases confidence
         run: bun test packages/contract-artefacts/test/e2e/list-releases.confidence.test.ts
+
+      # Last, and always. A cancelled or timed-out run is reported as failing on
+      # purpose: a confidence check that did not finish has not delivered
+      # confidence, and that verdict is this workflow's only output.
+      - name: Report T4 confidence health
+        if: always()
+        uses: forestrie/.github/actions/linear-health-alert@main
+        with:
+          alert_key: univocity-tools-confidence-t4
+          state: ${{ job.status == 'success' && 'green' || 'failing' }}
+          title: "univocity-tools T4 list-releases confidence is red"
+          labels: cicd
+          linear_api_key: ${{ secrets.LINEAR_API_KEY }}
+          body_md: |
+            The weekly T4 list-releases confidence check failed.
+            Job status: `${{ job.status }}`.
+
+            T4 is fixture-driven and touches no network, so this is **drift, not
+            an outage**. It asserts three layers still agree with the committed
+            fixtures: the `deploy-core` catalog parser, `listContractReleases`,
+            and the JSON the CLI prints. A failure means one of them moved
+            without the others — or the toolchain under them did.
+
+            Because it runs weekly rather than per-PR, the change that broke it
+            may be days old. Start from the diff since the last green run of this
+            workflow, not from the most recent commit.
+
+            This issue closes itself when T4 next passes.
