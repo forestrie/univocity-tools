@@ -1,0 +1,6 @@
+{
+  "packages": [
+    { "dir": "packages/deploy-core", "tag_prefix": "deploy-core" },
+    { "dir": "packages/cli-kit", "tag_prefix": "cli-kit" }
+  ]
+}
