@@ -3,9 +3,10 @@
 Univocity-tools: Bun/TypeScript CLIs for Univocity contract build,
 release, deploy, and ops. Human setup: [README.md](README.md). Tooling
 glossary: [CONTEXT.md](CONTEXT.md). Platform glossary:
-[devdocs/glossary.md](../devdocs/glossary.md).
+[protocol/glossary.md](https://github.com/forestrie/protocol/blob/main/glossary.md).
 
 **Plans:** After a Cursor-built plan exists, persist under `docs/plans/`.
+Layout and numbering: `.claude/rules/plan-docs.md`.
 
 ## Git worktrees
 
@@ -57,13 +58,14 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
   out). See [docs/agents/cli.md](docs/agents/cli.md#option-value-sources).
 - **Subprocesses:** Use **`Bun.spawn`** in `packages/<app>/main.ts` (not in
   citty `run`). See [docs/agents/subprocess.md](docs/agents/subprocess.md).
-- **Cursor:** [.cursor/rules/citty-cli.mdc](.cursor/rules/citty-cli.mdc),
+- **Team rules:** commits, branch naming, TypeScript comments, rules of the
+  road and more in [.claude/rules/](.claude/rules/), synced from
+  forestrie-agents (see the documentation map).
+- **Cursor:** [.cursorrules](.cursorrules), [.cursor/rules/citty-cli.mdc](.cursor/rules/citty-cli.mdc),
   [.cursor/rules/cli-command-structure.mdc](.cursor/rules/cli-command-structure.mdc),
   [.cursor/rules/bun-spawn-subprocess.mdc](.cursor/rules/bun-spawn-subprocess.mdc),
-  [.cursor/rules/commit-conventions.mdc](.cursor/rules/commit-conventions.mdc),
-  [.cursor/rules/branch-naming.mdc](.cursor/rules/branch-naming.mdc),
-  [.cursor/rules/typescript-comments.mdc](.cursor/rules/typescript-comments.mdc),
-  [.cursor/rules/types-single-responsibility.mdc](.cursor/rules/types-single-responsibility.mdc)
+  [.cursor/rules/option-value-sources.mdc](.cursor/rules/option-value-sources.mdc)
+  (Cursor only; the repo-specific CLI rules, also covered by `docs/agents/`)
 
 ## Commands
 
@@ -81,7 +83,7 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 
 ## Gotchas (critical)
 
-- Do not duplicate platform terms in `CONTEXT.md` — link devdocs glossary.
+- Do not duplicate platform terms in `CONTEXT.md` — link the protocol glossary.
 - No package `lint` script — use `bun run check` + typecheck +
   `check:subprocess`.
 - Future deploy tasks: inject secrets via **Doppler outside** npm
@@ -90,7 +92,7 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
   checkout); see ADR-0001.
 - **Commits:** [Conventional Commits](https://www.conventionalcommits.org/)
   — title ≤100 chars, body lines ≤72; see
-  [.cursor/rules/commit-conventions.mdc](.cursor/rules/commit-conventions.mdc).
+  [.claude/rules/commit-conventions.md](.claude/rules/commit-conventions.md).
 
 ## Documentation map
 
@@ -103,4 +105,5 @@ Sibling repo: **univocity** (Foundry, `forge`, Python deploy scripts).
 - **ADR-0001**: [docs/adr/adr-0001-typescript-tools-sibling-repo.md](docs/adr/adr-0001-typescript-tools-sibling-repo.md)
 - **ADR-0003**: [docs/adr/adr-0003-create3-config-build-snapshot.md](docs/adr/adr-0003-create3-config-build-snapshot.md)
 - **ADR-0012**: [docs/adr/adr-0012-foundry-free-uups-deploy.md](docs/adr/adr-0012-foundry-free-uups-deploy.md)
-- **Platform**: [../devdocs/](../devdocs/)
+- **Platform**: [devdocs](https://github.com/forestrie/devdocs) — architecture, arc/, adr/ (private)
+- **Team rules and skills**: synced from [forestrie-agents](https://github.com/forestrie/forestrie-agents) (private) by `agentfiles sync` with `sync/univocity-tools.manifest`. Rules in [.claude/rules/](.claude/rules/), skills in [.agents/skills/](.agents/skills/). Do not edit the copies; change forestrie-agents and re-sync.
