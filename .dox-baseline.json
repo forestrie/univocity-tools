@@ -1,0 +1,295 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "check": "id-unique",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "number ADR-0011 is shared with adr-0011-e2e-provision-in-deployer"
+    },
+    {
+      "check": "id-unique",
+      "path": "docs/adr/adr-0011-e2e-provision-in-deployer.md",
+      "message": "number ADR-0011 is shared with adr-0011-browser-safe-deploy-core"
+    },
+    {
+      "check": "index-fresh",
+      "path": "docs/adr/README.md",
+      "message": "generated index missing"
+    },
+    {
+      "check": "links-local",
+      "path": "CONTEXT.md",
+      "message": "link leaves the repository: ../devdocs/glossary.md"
+    },
+    {
+      "check": "links-local",
+      "path": "README.md",
+      "message": "link leaves the repository: ../devdocs/glossary.md"
+    },
+    {
+      "check": "links-local",
+      "path": "docs/adr/adr-0011-e2e-provision-in-deployer.md",
+      "message": "link leaves the repository: ../../../canopy/docs/plans/plan-0049-e2e-imutable-provision-consolidation.md"
+    },
+    {
+      "check": "links-local",
+      "path": "docs/agents/README.md",
+      "message": "relative link does not resolve: ../../devdocs/glossary.md"
+    },
+    {
+      "check": "links-local",
+      "path": "docs/agents/deploy-web.md",
+      "message": "link leaves the repository: ../../../mandate/FORKING.md"
+    },
+    {
+      "check": "links-local",
+      "path": "docs/agents/e2e-deploy.md",
+      "message": "link leaves the repository: ../../../canopy/docs/plans/plan-0049-e2e-imutable-provision-consolidation.md"
+    },
+    {
+      "check": "links-local",
+      "path": "docs/agents/e2e-deploy.md",
+      "message": "link leaves the repository: ../../../mandate/FORKING.md"
+    },
+    {
+      "check": "links-local",
+      "path": "docs/agents/e2e-deploy.md",
+      "message": "link leaves the repository: ../../../mandate/FORKING.md"
+    },
+    {
+      "check": "links-local",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "link leaves the repository: ../../../mandate/FORKING.md"
+    },
+    {
+      "check": "no-plans-in-canon",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "work file in a canon tree"
+    },
+    {
+      "check": "no-plans-in-canon",
+      "path": "docs/plans/plan-0001-from-release-integration-confidence.md",
+      "message": "plan document in a canon repository"
+    },
+    {
+      "check": "no-plans-in-canon",
+      "path": "docs/plans/plan-0001-tier2-browser-deploy.md",
+      "message": "plan document in a canon repository"
+    },
+    {
+      "check": "no-plans-in-canon",
+      "path": "docs/plans/plan-0002-foundry-free-create3-uups.md",
+      "message": "plan document in a canon repository"
+    },
+    {
+      "check": "no-plans-in-canon",
+      "path": "docs/plans/plan-0003-privy-chain-alignment.md",
+      "message": "plan document in a canon repository"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0008-fetch-release-and-run.md",
+      "message": "bold header (use frontmatter) **Date:** in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0008-fetch-release-and-run.md",
+      "message": "bold header (use frontmatter) **Status:** in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "bold header (use frontmatter) **Date:** in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "bold header (use frontmatter) **Status:** in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "plan id plan-0001 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "plan id plan-0001 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "tracker id FOR-149 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "tracker id FOR-149 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "tracker id FOR-165 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-e2e-provision-in-deployer.md",
+      "message": "plan id plan-0049 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/adr/adr-0011-e2e-provision-in-deployer.md",
+      "message": "plan id plan-0049 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/agents/deploy-web.md",
+      "message": "plan id plan-0001 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/agents/deploy-web.md",
+      "message": "plan id plan-0001 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/agents/deploy-web.md",
+      "message": "plan id plan-0047 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/agents/e2e-deploy.md",
+      "message": "plan id plan-0049 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/agents/e2e-deploy.md",
+      "message": "plan id plan-0049 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "bold header (use frontmatter) **Date:** in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "bold header (use frontmatter) **Status:** in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "plan id plan-0001 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "plan id plan-0001 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "plan id plan-2607 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "plan id plan-2607 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "tracker id FOR-149 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "tracker id FOR-149 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "tracker id FOR-149 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "tracker id FOR-163 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "tracker id FOR-165 in canon prose"
+    },
+    {
+      "check": "no-work-ids",
+      "path": "docs/plans/for-165-safe-stays-cli.md",
+      "message": "tracker id FOR-512 in canon prose"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0001-typescript-tools-sibling-repo.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0002-contracts-checkout-root-discovery.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0003-create3-config-build-snapshot.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0004-deploy-propose-execute-model.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0005-safe-approve-command.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0006-build-archive-decouples-deploy.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0007-release-id-format.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0008-fetch-release-and-run.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0009-propose-from-build-archive.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0010-deploy-manifest-format.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0011-browser-safe-deploy-core.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0011-e2e-provision-in-deployer.md",
+      "message": "no YAML frontmatter (adr)"
+    },
+    {
+      "check": "schema",
+      "path": "docs/adr/adr-0012-foundry-free-uups-deploy.md",
+      "message": "no YAML frontmatter (adr)"
+    }
+  ]
+}
