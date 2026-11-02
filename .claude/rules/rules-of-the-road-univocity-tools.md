@@ -19,13 +19,13 @@ Each authority is its own verb (`deploy`, `create-log`, `register-grant`,
 `delegate`); do NOT collapse authorities into flag combinations. **Why:**
 least-privilege must be legible — grant flags follow from the verb, so a caller
 cannot accidentally over-authorise via a flag mix.
-[ADR-0052](https://github.com/forestrie/devdocs/blob/main/archive/2607/adr/adr-0052-cli-authority-taxonomy.md).
+[ADR-0052](https://github.com/forestrie/devdocs/blob/main/adr/adr-0052-cli-authority-taxonomy.md).
 
 ### T3 — Zero-config signing is COSE-native and key-derived
 Default signing produces registration-free, key-derived identity (hex `kid`
 ES256 / CAIP-10 KS256) — no certificate or registration dependency. **Why:** the
 CLI must emit SCITT-compliant statements offline with no setup.
-⤷ specialises P11. [ADR-0055](https://github.com/forestrie/devdocs/blob/main/archive/2607/adr/adr-0055-statement-issuer-subject-identity.md).
+⤷ specialises P11. [ADR-0055](https://github.com/forestrie/devdocs/blob/main/adr/adr-0055-statement-issuer-subject-identity.md).
 
 ### T4 — Subprocess/forge exec goes through the documented policy
 Shell out only via the sanctioned subprocess policy (`Bun.spawn`, `doppler run`
@@ -38,11 +38,11 @@ forge contract.
 No Safe/console/deploy-orchestration logic belongs in deploy-web — it is the
 neutral shell narrowed by ADR-0060. **Why:** the neutral deploy path must stay
 provider-agnostic; Safe logic lives in mandate + deploy-core.
-[ADR-0060](https://github.com/forestrie/devdocs/blob/main/archive/2607/adr/adr-0060-inline-safe-deploy-in-mandate-console.md).
+[ADR-0060](https://github.com/forestrie/devdocs/blob/main/adr/adr-0060-inline-safe-deploy-in-mandate-console.md).
 
 ### T6 — Consume published packages, not source symlinks
 Shared deploy logic lives in the published `@forestrie/deploy-core`; tools depend
 on the published package (exact/transitive pins), never source symlinks.
 **Why:** neutrality and reproducibility — a source symlink hides which version a
 deploy actually ran.
-[ADR-0060](https://github.com/forestrie/devdocs/blob/main/archive/2607/adr/adr-0060-inline-safe-deploy-in-mandate-console.md).
+[ADR-0060](https://github.com/forestrie/devdocs/blob/main/adr/adr-0060-inline-safe-deploy-in-mandate-console.md).
