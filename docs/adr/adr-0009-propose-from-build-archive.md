@@ -1,3 +1,11 @@
+---
+id: adr-0009-propose-from-build-archive
+title: "Propose imutable from a build archive (--release-root)"
+status: accepted
+created: 2026-06-13
+updated: 2026-06-13
+---
+
 # Propose imutable from a build archive (--release-root)
 
 [ADR-0006](./adr-0006-build-archive-decouples-deploy.md) introduced **build

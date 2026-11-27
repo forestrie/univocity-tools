@@ -1,3 +1,11 @@
+---
+id: adr-0010-deploy-manifest-format
+title: "Deploy manifest release asset format"
+status: accepted
+created: 2026-06-27
+updated: 2026-07-01
+---
+
 # Deploy manifest release asset format
 
 Univocity GitHub releases already ship **build archives** (`univocity-<id>.tar.gz`)

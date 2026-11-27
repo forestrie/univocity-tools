@@ -1,10 +1,14 @@
-# ADR-0011: Browser-safe deploy-core boundary
+---
+id: adr-0011-browser-safe-deploy-core
+title: "Browser-safe deploy-core boundary"
+status: accepted
+created: 2026-06-28
+updated: 2026-06-28
+decisions: [adr-0010-deploy-manifest-format]
+refs: ["FOR-149", "FOR-165", "plan-0001-tier2-browser-deploy"]
+---
 
-**Status:** Accepted  
-**Date:** 2026-06-28  
-**Related:** [FOR-149](https://linear.app/forestrie/issue/FOR-149),
-[ADR-0010](./adr-0010-deploy-manifest-format.md),
-[plan-0001](../plans/plan-0001-tier2-browser-deploy.md)
+# ADR-0011: Browser-safe deploy-core boundary
 
 ## Context
 
@@ -46,4 +50,4 @@ and fails CI on forbidden patterns. Run after `check:subprocess` in
 - New deploy logic that must run in the browser belongs in deploy-core first;
   CLI wrappers stay thin re-exports or I/O adapters.
 - CREATE3 / UUPS browser deploy remains out of scope; Safe deploy stays CLI
-  only (see FOR-165).
+  only.

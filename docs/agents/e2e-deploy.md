@@ -10,8 +10,7 @@ cross-stack provision and foundry-free `--from-release` are different flows.
 | From-release EOA deploy | `deploy imutable --from-release <tag>` | **No** (deployer binary only) |
 | Fresh-chain CREATE3 + UUPS | `deploy create3 --from-release` then `deploy uups --from-release` | **No** |
 
-See also [plan-0049](../../../canopy/docs/plans/plan-0049-e2e-imutable-provision-consolidation.md)
-(provision consolidation), [ADR-0010](../adr/adr-0010-deploy-manifest-format.md)
+See also [ADR-0010](../adr/adr-0010-deploy-manifest-format.md)
 (deploy-manifest trust model), and [ADR-0012](../adr/adr-0012-foundry-free-uups-deploy.md)
 (UUPS foundry-free deploy).
 
@@ -81,7 +80,7 @@ Checklist:
    ```
 4. Confirm sidecar verification log, deployment manifest written under
    `--work-dir`, and `imutableUnivocity` address printed.
-5. Optional Step 2 (onboard): [mandate FORKING.md](../../../mandate/FORKING.md)
+5. Optional Step 2 (onboard): [mandate FORKING.md](https://github.com/forestrie/mandate/blob/main/FORKING.md)
    with `univocityAddr` from the deployment manifest.
 
 Use **`v0.1.4`** (manifest asset) — older docs referencing `v0.4.0` fall back
@@ -131,7 +130,7 @@ Checklist:
 3. Fetch & verify manifest for **`v0.1.4`** (or drag-drop manifest + `.sha256`).
 4. Choose KS256 bootstrap (generate or paste signer); confirm genesis-critical warning.
 5. Deploy; wait for receipt; download `{ chainId, univocityAddr, bootstrapAlg }`.
-6. Optional Step 2: [mandate FORKING.md](../../../mandate/FORKING.md) onboard
+6. Optional Step 2: [mandate FORKING.md](https://github.com/forestrie/mandate/blob/main/FORKING.md) onboard
    request with `univocityAddr` from genesis JSON.
 
 See [deploy-web.md](./deploy-web.md) for env vars and CI deploy workflow.

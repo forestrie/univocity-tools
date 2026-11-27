@@ -1,3 +1,11 @@
+---
+id: adr-0003-create3-config-build-snapshot
+title: "Create3 config build-time snapshot"
+status: accepted
+created: 2026-06-08
+updated: 2026-06-08
+---
+
 # Create3 config build-time snapshot
 
 Deploy CLIs must ship stable Arachnid proxy and CREATE3 factory defaults

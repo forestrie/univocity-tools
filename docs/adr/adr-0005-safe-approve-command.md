@@ -1,3 +1,11 @@
+---
+id: adr-0005-safe-approve-command
+title: "Safe approve command"
+status: accepted
+created: 2026-06-08
+updated: 2026-06-08
+---
+
 # Safe approve command
 
 The unified propose/execute model (ADR-0004) originally left Safe

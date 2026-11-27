@@ -2,7 +2,7 @@
 
 TypeScript/Bun command-line tools and shared packages for building,
 releasing, deploying, and operating Univocity smart contracts. Platform
-domain terms live in [devdocs/glossary.md](../devdocs/glossary.md).
+domain terms live in [forestrie/protocol glossary.md](https://github.com/forestrie/protocol/blob/main/glossary.md).
 
 ## Language
 
