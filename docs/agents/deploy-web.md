@@ -70,7 +70,7 @@ There is no reliable “default chain” control in the Privy dashboard for
 
 ### Mock Privy seam (`PUBLIC_E2E_PRIVY=mock`)
 
-Hermetic path for local UI and future in-repo Playwright (mandate plan-0047
+Hermetic path for local UI and future in-repo Playwright (the mandate
 convention). [`src/lib/privy/mock-ethereum-provider.ts`](../../apps/deploy-web/src/lib/privy/mock-ethereum-provider.ts)
 returns fixed address `0xe2E0000000000000000000000000000000000000001` and
 deterministic `eth_sendTransaction` — no Privy network. Real Privy integration
@@ -141,5 +141,4 @@ Manual acceptance: [e2e-deploy.md](./e2e-deploy.md) Tier D.
 ## Related
 
 - [ADR-0011](../adr/adr-0011-browser-safe-deploy-core.md)
-- [plan-0001](../plans/plan-0001-tier2-browser-deploy.md)
-- [mandate FORKING.md](../../../mandate/FORKING.md) Step 1 Path B-browser
+- [mandate FORKING.md](https://github.com/forestrie/mandate/blob/main/FORKING.md) Step 1 Path B-browser

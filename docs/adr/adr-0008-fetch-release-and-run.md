@@ -1,9 +1,13 @@
-# Fetch release and workflow run artefacts
+---
+id: adr-0008-fetch-release-and-run
+title: "Fetch release and workflow run artefacts"
+status: accepted
+created: 2026-06-13
+updated: 2026-06-13
+decisions: [adr-0006-build-archive-decouples-deploy, adr-0007-release-id-format]
+---
 
-**Status:** ACCEPTED  
-**Date:** 2026-06-13  
-**Related:** [ADR-0006](./adr-0006-build-archive-decouples-deploy.md),
-[ADR-0007](./adr-0007-release-id-format.md)
+# Fetch release and workflow run artefacts
 
 `contract-artefacts fetch-release` and `fetch-run` download contract build
 archives from GitHub without curl URLs or hand-rolled `gh` download scripts.

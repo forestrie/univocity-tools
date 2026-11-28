@@ -1,3 +1,11 @@
+---
+id: adr-0007-release-id-format
+title: "Release id format and derivation"
+status: accepted
+created: 2026-06-12
+updated: 2026-06-12
+---
+
 # Release id format and derivation
 
 `contract-artefacts release-id` derives a **release id** that identifies a

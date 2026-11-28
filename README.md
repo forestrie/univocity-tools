@@ -4,7 +4,7 @@ TypeScript/Bun command-line tools for building, releasing, deploying, and
 operating [Univocity](https://github.com/forestrie/univocity) smart
 contracts.
 
-Platform glossary: [devdocs/glossary.md](../devdocs/glossary.md). Tooling
+Platform glossary: [forestrie/protocol glossary.md](https://github.com/forestrie/protocol/blob/main/glossary.md). Tooling
 terms: [CONTEXT.md](./CONTEXT.md).
 
 ## Setup

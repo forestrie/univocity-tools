@@ -1,3 +1,11 @@
+---
+id: adr-0002-contracts-checkout-root-discovery
+title: "Contracts checkout root discovery"
+status: accepted
+created: 2026-06-08
+updated: 2026-06-11
+---
+
 # Contracts checkout root discovery
 
 ADR-0001 accepts explicit cross-repo paths such as `UNIVOCITY_ROOT`. The

@@ -1,3 +1,11 @@
+---
+id: adr-0006-build-archive-decouples-deploy
+title: "Build archive decouples deploy and verify from the contracts repo"
+status: accepted
+created: 2026-06-11
+updated: 2026-06-13
+---
+
 # Build archive decouples deploy and verify from the contracts repo
 
 [ADR-0004](./adr-0004-deploy-propose-execute-model.md) made `forge` a pure

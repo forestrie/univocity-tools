@@ -1,4 +1,12 @@
-# ADR-0012 — Foundry-free UUPS deploy from release
+---
+id: adr-0012-foundry-free-uups-deploy
+title: "Foundry-free UUPS deploy from release"
+status: accepted
+created: 2026-06-28
+updated: 2026-06-28
+---
+
+# Foundry-free UUPS deploy from release
 
 ## Context
 

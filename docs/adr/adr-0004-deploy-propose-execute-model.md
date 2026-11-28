@@ -1,3 +1,11 @@
+---
+id: adr-0004-deploy-propose-execute-model
+title: "Unified propose/execute deploy model"
+status: accepted
+created: 2026-06-08
+updated: 2026-06-08
+---
+
 # Unified propose/execute deploy model
 
 Deploying `ImutableUnivocity` must serve two first-class production paths:

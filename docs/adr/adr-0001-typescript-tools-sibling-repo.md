@@ -1,3 +1,11 @@
+---
+id: adr-0001-typescript-tools-sibling-repo
+title: "TypeScript tools in a sibling repo"
+status: accepted
+created: 2026-06-07
+updated: 2026-06-07
+---
+
 # TypeScript tools in a sibling repo
 
 Univocity contract tooling lives in the **univocity-tools** repository
